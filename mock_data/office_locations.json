@@ -1,0 +1,74 @@
+[
+  {
+    "location_id": "austin-hq",
+    "city": "Austin",
+    "state": "TX",
+    "country": "US",
+    "timezone": "America/Chicago",
+    "legal_entity": "Northwind Robotics US",
+    "remote_tax_notes": "Standard US payroll and withholding apply."
+  },
+  {
+    "location_id": "seattle-hq",
+    "city": "Seattle",
+    "state": "WA",
+    "country": "US",
+    "timezone": "America/Los_Angeles",
+    "legal_entity": "Northwind Robotics US",
+    "remote_tax_notes": "Standard US payroll and withholding apply."
+  },
+  {
+    "location_id": "new-york-hq",
+    "city": "New York",
+    "state": "NY",
+    "country": "US",
+    "timezone": "America/New_York",
+    "legal_entity": "Northwind Robotics US",
+    "remote_tax_notes": "Standard US payroll and withholding apply."
+  },
+  {
+    "location_id": "san-francisco-hq",
+    "city": "San Francisco",
+    "state": "CA",
+    "country": "US",
+    "timezone": "America/Los_Angeles",
+    "legal_entity": "Northwind Robotics US",
+    "remote_tax_notes": "Standard US payroll and withholding apply."
+  },
+  {
+    "location_id": "denver-hq",
+    "city": "Denver",
+    "state": "CO",
+    "country": "US",
+    "timezone": "America/Denver",
+    "legal_entity": "Northwind Robotics US",
+    "remote_tax_notes": "Standard US payroll and withholding apply."
+  },
+  {
+    "location_id": "remote-ca",
+    "city": "Remote",
+    "state": "CA",
+    "country": "US",
+    "timezone": "America/Los_Angeles",
+    "legal_entity": "Northwind Robotics US",
+    "remote_tax_notes": "California remote work taxes and payroll review may apply."
+  },
+  {
+    "location_id": "remote-fl",
+    "city": "Remote",
+    "state": "FL",
+    "country": "US",
+    "timezone": "America/New_York",
+    "legal_entity": "Northwind Robotics US",
+    "remote_tax_notes": "Florida remote work taxes and payroll review may apply."
+  },
+  {
+    "location_id": "dublin",
+    "city": "Dublin",
+    "state": "IE",
+    "country": "IE",
+    "timezone": "Europe/Dublin",
+    "legal_entity": "Northwind Robotics Ireland",
+    "remote_tax_notes": "International remote work requires legal and payroll review."
+  }
+]

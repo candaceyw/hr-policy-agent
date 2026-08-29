@@ -1,0 +1,142 @@
+[
+  {
+    "employee_id": "E-1001",
+    "medical_plan": "ppo",
+    "dental": true,
+    "vision": true,
+    "retirement_401k_pct": 6,
+    "fsa_annual": 2500,
+    "eligibility_status": "eligible",
+    "effective_date": "2025-01-01"
+  },
+  {
+    "employee_id": "E-1002",
+    "medical_plan": "hdhp",
+    "dental": true,
+    "vision": true,
+    "retirement_401k_pct": 7,
+    "fsa_annual": 2000,
+    "eligibility_status": "eligible",
+    "effective_date": "2025-01-01"
+  },
+  {
+    "employee_id": "E-1003",
+    "medical_plan": "ppo",
+    "dental": true,
+    "vision": true,
+    "retirement_401k_pct": 5,
+    "fsa_annual": 1500,
+    "eligibility_status": "eligible",
+    "effective_date": "2025-01-01"
+  },
+  {
+    "employee_id": "E-1004",
+    "medical_plan": "ppo",
+    "dental": true,
+    "vision": false,
+    "retirement_401k_pct": 4,
+    "fsa_annual": 1000,
+    "eligibility_status": "eligible",
+    "effective_date": "2025-01-01"
+  },
+  {
+    "employee_id": "E-1005",
+    "medical_plan": "none",
+    "dental": false,
+    "vision": false,
+    "retirement_401k_pct": 0,
+    "fsa_annual": 0,
+    "eligibility_status": "pending",
+    "effective_date": "2025-04-01"
+  },
+  {
+    "employee_id": "E-1006",
+    "medical_plan": "none",
+    "dental": false,
+    "vision": false,
+    "retirement_401k_pct": 0,
+    "fsa_annual": 0,
+    "eligibility_status": "ineligible",
+    "effective_date": null
+  },
+  {
+    "employee_id": "E-1007",
+    "medical_plan": "hdhp",
+    "dental": true,
+    "vision": true,
+    "retirement_401k_pct": 5,
+    "fsa_annual": 1800,
+    "eligibility_status": "eligible",
+    "effective_date": "2025-02-01"
+  },
+  {
+    "employee_id": "E-1008",
+    "medical_plan": "ppo",
+    "dental": true,
+    "vision": true,
+    "retirement_401k_pct": 8,
+    "fsa_annual": 2500,
+    "eligibility_status": "eligible",
+    "effective_date": "2025-01-15"
+  },
+  {
+    "employee_id": "E-1009",
+    "medical_plan": "ppo",
+    "dental": true,
+    "vision": true,
+    "retirement_401k_pct": 8,
+    "fsa_annual": 3000,
+    "eligibility_status": "eligible",
+    "effective_date": "2024-12-01"
+  },
+  {
+    "employee_id": "E-1010",
+    "medical_plan": "ppo",
+    "dental": true,
+    "vision": true,
+    "retirement_401k_pct": 10,
+    "fsa_annual": 3000,
+    "eligibility_status": "eligible",
+    "effective_date": "2024-12-01"
+  },
+  {
+    "employee_id": "E-1011",
+    "medical_plan": "ppo",
+    "dental": true,
+    "vision": true,
+    "retirement_401k_pct": 8,
+    "fsa_annual": 2200,
+    "eligibility_status": "eligible",
+    "effective_date": "2025-01-05"
+  },
+  {
+    "employee_id": "E-1012",
+    "medical_plan": "hdhp",
+    "dental": true,
+    "vision": true,
+    "retirement_401k_pct": 6,
+    "fsa_annual": 1800,
+    "eligibility_status": "eligible",
+    "effective_date": "2025-01-01"
+  },
+  {
+    "employee_id": "E-1013",
+    "medical_plan": "none",
+    "dental": false,
+    "vision": false,
+    "retirement_401k_pct": 0,
+    "fsa_annual": 0,
+    "eligibility_status": "ineligible",
+    "effective_date": null
+  },
+  {
+    "employee_id": "E-1014",
+    "medical_plan": "ppo",
+    "dental": true,
+    "vision": true,
+    "retirement_401k_pct": 6,
+    "fsa_annual": 2000,
+    "eligibility_status": "eligible",
+    "effective_date": "2025-01-01"
+  }
+]

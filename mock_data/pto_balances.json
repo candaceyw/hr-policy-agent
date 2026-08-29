@@ -1,0 +1,114 @@
+[
+  {
+    "employee_id": "E-1001",
+    "accrual_rate_hours_per_month": 10.0,
+    "accrued_hours": 95.0,
+    "used_hours": 44.0,
+    "pending_hours": 8.0,
+    "carryover_hours": 12.0
+  },
+  {
+    "employee_id": "E-1002",
+    "accrual_rate_hours_per_month": 10.0,
+    "accrued_hours": 120.0,
+    "used_hours": 52.0,
+    "pending_hours": 0.0,
+    "carryover_hours": 18.0
+  },
+  {
+    "employee_id": "E-1003",
+    "accrual_rate_hours_per_month": 10.0,
+    "accrued_hours": 88.0,
+    "used_hours": 36.0,
+    "pending_hours": 0.0,
+    "carryover_hours": 10.0
+  },
+  {
+    "employee_id": "E-1004",
+    "accrual_rate_hours_per_month": 10.0,
+    "accrued_hours": 108.0,
+    "used_hours": 49.0,
+    "pending_hours": 6.0,
+    "carryover_hours": 20.0
+  },
+  {
+    "employee_id": "E-1005",
+    "accrual_rate_hours_per_month": 10.0,
+    "accrued_hours": 72.0,
+    "used_hours": 28.0,
+    "pending_hours": 0.0,
+    "carryover_hours": 6.0
+  },
+  {
+    "employee_id": "E-1006",
+    "accrual_rate_hours_per_month": 5.0,
+    "accrued_hours": 36.0,
+    "used_hours": 12.0,
+    "pending_hours": 0.0,
+    "carryover_hours": 4.0
+  },
+  {
+    "employee_id": "E-1007",
+    "accrual_rate_hours_per_month": 10.0,
+    "accrued_hours": 110.0,
+    "used_hours": 58.0,
+    "pending_hours": 8.0,
+    "carryover_hours": 14.0
+  },
+  {
+    "employee_id": "E-1008",
+    "accrual_rate_hours_per_month": 10.0,
+    "accrued_hours": 90.0,
+    "used_hours": 42.0,
+    "pending_hours": 0.0,
+    "carryover_hours": 8.0
+  },
+  {
+    "employee_id": "E-1009",
+    "accrual_rate_hours_per_month": 10.0,
+    "accrued_hours": 130.0,
+    "used_hours": 64.0,
+    "pending_hours": 4.0,
+    "carryover_hours": 25.0
+  },
+  {
+    "employee_id": "E-1010",
+    "accrual_rate_hours_per_month": 10.0,
+    "accrued_hours": 140.0,
+    "used_hours": 68.0,
+    "pending_hours": 0.0,
+    "carryover_hours": 30.0
+  },
+  {
+    "employee_id": "E-1011",
+    "accrual_rate_hours_per_month": 10.0,
+    "accrued_hours": 126.0,
+    "used_hours": 44.0,
+    "pending_hours": 0.0,
+    "carryover_hours": 22.0
+  },
+  {
+    "employee_id": "E-1012",
+    "accrual_rate_hours_per_month": 10.0,
+    "accrued_hours": 118.0,
+    "used_hours": 63.0,
+    "pending_hours": 0.0,
+    "carryover_hours": 12.0
+  },
+  {
+    "employee_id": "E-1013",
+    "accrual_rate_hours_per_month": 5.0,
+    "accrued_hours": 44.0,
+    "used_hours": 14.0,
+    "pending_hours": 0.0,
+    "carryover_hours": 6.0
+  },
+  {
+    "employee_id": "E-1014",
+    "accrual_rate_hours_per_month": 10.0,
+    "accrued_hours": 117.0,
+    "used_hours": 46.0,
+    "pending_hours": 12.0,
+    "carryover_hours": 15.0
+  }
+]
