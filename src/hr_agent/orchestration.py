@@ -1,44 +1,82 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+from langgraph.graph import END, START, StateGraph
+
 from hr_agent.answering import build_grounded_answer
-from hr_agent.retrieval import retrieve
 from hr_agent.routing import route_query
 from hr_agent.tools import plan_tool_workflow
 
 
-def run_workflow(query: str, corpus_dir: str | None = None) -> dict:
-    """A tiny orchestration layer for learning.
+def _classify_query(state: dict) -> dict:
+    decision = route_query(state["query"])
+    state["intent"] = decision["intent"]
+    state["reason"] = decision["reason"]
+    return state
 
-    This demonstrates how a simple workflow layers together:
-    1. classify intent
-    2. decide if a tool is needed
-    3. retrieve relevant policy text when appropriate
-    4. return a structured result
-    """
-    decision = route_query(query)
-    tool_plan = plan_tool_workflow(query)
 
-    if tool_plan["needs_tool"]:
-        return {
-            "intent": decision["intent"],
-            "needs_tool": True,
-            "tool_name": tool_plan["tool_name"],
-            "answer": "This request requires a compliance check against the expense policy before a final answer can be given.",
-            "citations": [],
-            "reason": tool_plan["reason"],
-        }
+def _decide_tool_use(state: dict) -> dict:
+    tool_plan = plan_tool_workflow(state["query"])
+    state["needs_tool"] = tool_plan["needs_tool"]
+    state["tool_name"] = tool_plan["tool_name"]
+    return state
 
+
+def _needs_tool_branch(state: dict) -> str:
+    return "tool" if state.get("needs_tool") else "answer"
+
+
+def _tool_response(state: dict) -> dict:
+    state["answer"] = "This request requires a compliance check against the expense policy before a final answer can be given."
+    state["citations"] = []
+    state["reason"] = state.get("reason", "Tool-based workflow selected.")
+    return state
+
+
+def _answer_response(state: dict, corpus_dir: str | Path | None = None) -> dict:
     if corpus_dir is None:
-        from pathlib import Path
         corpus_dir = Path(__file__).resolve().parents[2] / "corpus"
 
-    answer_data = build_grounded_answer(query, corpus_dir=corpus_dir, k=3)
+    answer_data = build_grounded_answer(state["query"], corpus_dir=corpus_dir, k=3)
+    state["answer"] = answer_data["answer"]
+    state["citations"] = answer_data["citations"]
+    return state
 
-    return {
-        "intent": decision["intent"],
-        "needs_tool": False,
-        "tool_name": "none",
-        "answer": answer_data["answer"],
-        "citations": answer_data["citations"],
-        "reason": decision["reason"],
-    }
+
+def build_orchestration_graph() -> StateGraph:
+    """Build a minimal LangGraph workflow for the HR policy assistant."""
+    workflow = StateGraph(dict)
+
+    workflow.add_node("classify", _classify_query)
+    workflow.add_node("decide_tool", _decide_tool_use)
+    workflow.add_node("tool_response", _tool_response)
+    workflow.add_node("answer", _answer_response)
+
+    workflow.add_edge(START, "classify")
+    workflow.add_edge("classify", "decide_tool")
+    workflow.add_conditional_edges("decide_tool", _needs_tool_branch, {"tool": "tool_response", "answer": "answer"})
+    workflow.add_edge("tool_response", END)
+    workflow.add_edge("answer", END)
+
+    return workflow.compile()
+
+
+def run_workflow(query: str, corpus_dir: str | None = None) -> dict:
+    """Execute the orchestration graph for a single user query."""
+    graph = build_orchestration_graph()
+    result = graph.invoke({"query": query})
+
+    if "citations" not in result:
+        result["citations"] = []
+    if "tool_name" not in result:
+        result["tool_name"] = "none"
+    if "needs_tool" not in result:
+        result["needs_tool"] = False
+    if "intent" not in result:
+        result["intent"] = route_query(query)["intent"]
+
+    if corpus_dir is not None and result.get("needs_tool") is False:
+        result = _answer_response(result, corpus_dir=corpus_dir)
+
+    return result
