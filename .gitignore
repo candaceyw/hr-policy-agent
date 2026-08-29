@@ -15,6 +15,10 @@ __pycache__/
 frontend/node_modules/
 frontend/dist/
 
+# Personal/private developer notes
+build-note.md
+build-not.md
+
 # OS/editor
 .DS_Store
 .vscode/
