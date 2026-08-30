@@ -1,0 +1,134 @@
+NORTHWIND ROBOTICS - INFORMATION CLASSIFICATION STANDARD
+
+PURPOSE
+This standard defines how Northwind Robotics classifies information and the
+minimum handling rules for each level. It supports the Data Security and
+Acceptable Use Policy and applies to information in any form - documents,
+email and chat, databases, source code, recordings, and printed material -
+and to every employee, contractor, and intern.
+
+WHY CLASSIFICATION MATTERS
+Not all information carries the same risk. Classifying information tells
+everyone how carefully to store, share, and dispose of it, so the company can
+protect customer trust, meet legal obligations, and avoid preventable
+incidents. When in doubt, apply the higher level and ask the data owner.
+
+CLASSIFICATION LEVELS
+The company uses four levels, from lowest to highest sensitivity: PUBLIC,
+INTERNAL, CONFIDENTIAL, and RESTRICTED.
+
+PUBLIC
+Definition: information the company has approved for release to anyone, or
+that is already lawfully public. Examples: published marketing material, the
+public website, press releases, published job postings, open-source code the
+company has released.
+Handling: no restrictions on sharing. Only the Communications or Marketing
+team, or an approved owner, may designate something Public or release it
+externally.
+
+INTERNAL
+Definition: information intended for Northwind employees and authorized
+contractors that would not cause serious harm if disclosed but is not meant
+for the public. This is the default level for day-to-day work product that is
+not more sensitive. Examples: internal announcements, most project plans,
+team documentation, non-sensitive meeting notes, the internal org chart.
+Handling: share within Northwind on a business-need basis. Do not post
+publicly or send to people outside the company without owner approval. Store
+in company-managed systems. May be processed on a company-managed device.
+
+CONFIDENTIAL
+Definition: information that could harm the company, a customer, an employee,
+or a partner if disclosed or altered without authorization. Examples:
+customer data and customer lists, employee personal and compensation data,
+non-public financial information, contracts and pricing, unreleased product
+designs and roadmaps, most source code, security documentation, investigation
+records.
+Handling: access is limited to people with a specific business need. Share
+only through approved company systems with correct permissions; external
+sharing requires the data owner's approval and an approved transfer method.
+Process only on company-managed devices with encryption and multi-factor
+authentication. Do not copy to personal storage, personal email, or
+unapproved cloud or file-sharing tools. Encrypt when sending outside the
+company network. Label the document or message "Confidential" where the tool
+allows.
+
+RESTRICTED
+Definition: the most sensitive information, where disclosure or misuse could
+cause severe harm, legal liability, or a reportable breach. Examples:
+government-regulated data, large sets of customer personal data, payment card
+data, authentication secrets and encryption keys, security vulnerability
+details before remediation, merger and acquisition material, litigation-hold
+content.
+Handling: access is granted only to named individuals approved by the data
+owner and is reviewed regularly. Use only designated systems; do not download
+or extract without owner approval. Encryption in transit and at rest is
+mandatory. No use on personal devices under any circumstances. No use from a
+location or jurisdiction not approved by Security. All access may be logged.
+Sharing outside the approved group - internal or external - requires written
+owner and Security approval.
+
+ROLES AND RESPONSIBILITIES
+Data owner: the team or leader accountable for a set of information. The owner
+assigns the classification, approves access and external sharing, and reviews
+access periodically.
+Data custodian: the team that operates the system where the information lives
+(often IT or Engineering). The custodian implements the required controls.
+All employees: apply the correct level to information they create, follow the
+handling rules, and report suspected mishandling.
+
+LABELING
+Apply a visible label ("Internal", "Confidential", "Restricted") on documents,
+spreadsheets, decks, and email subject lines where the tool supports it.
+Unlabeled information is treated as at least Internal. A collection of
+Internal items can become Confidential in aggregate (for example, a full
+export of a directory); classify the collection at the higher level.
+
+STORAGE AND ACCESS
+Keep information in approved company-managed repositories with access limited
+by business need. Do not place Confidential or Restricted information in
+personal cloud storage, personal email, personal devices, or unapproved
+file-sharing or note-taking tools. Use group-based access rather than
+sharing broadly or via public links. Review access when a project ends or a
+person changes roles.
+
+SHARING OUTSIDE NORTHWIND
+External sharing of Internal information needs owner approval. External
+sharing of Confidential information needs owner approval and an approved
+secure transfer method, and usually a confidentiality agreement. External
+sharing of Restricted information needs written owner and Security approval.
+Never use a personal account to move company information.
+
+RETENTION AND DESTRUCTION
+Keep information only as long as there is a business or legal reason, then
+dispose of it using an approved method: secure deletion for electronic files
+and media wiped or destroyed by IT, and shredding for paper. Do not destroy
+anything subject to a legal hold. Follow the records retention schedule
+maintained by Legal for specific record types.
+
+TRAVEL AND REMOTE WORK
+Carry only the information and devices you need. Use the company VPN on
+untrusted networks. Do not display or discuss Confidential or Restricted
+information where others can see or overhear. Follow the Out-of-State and
+International Remote Work Policy for access from a new location, and the
+Data Security and Acceptable Use Policy for border crossings.
+
+INCIDENTS
+If classified information may have been exposed, sent to the wrong person,
+lost, or accessed without authorization, report it to the security team
+within one hour and to your manager. Do not try to recall or delete evidence
+yourself beyond an immediate, obvious step such as unsharing a link.
+
+RELATED POLICIES
+Data Security and Acceptable Use Policy; Out-of-State and International Remote
+Work Policy; Workplace Conduct and Grievance Procedure; Leave of Absence
+Policy; Handbook Overview and Code of Conduct.
+
+SUMMARY
+Northwind classifies information as Public, Internal, Confidential, or
+Restricted. Internal is the default. Confidential and Restricted data stay on
+company-managed devices and approved systems, are shared only on a
+business-need basis with owner approval, and are encrypted when they leave the
+company network. Restricted data adds named-approver access, mandatory
+encryption at rest and in transit, and a strict no-personal-device rule.
+Label what you create, keep information only as long as needed, dispose of it
+properly, and report a suspected exposure within one hour.

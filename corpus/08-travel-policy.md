@@ -1,47 +1,53 @@
 # Travel Policy
 
 ## Purpose
-This policy sets expectations for business travel and travel-related expenses. It is designed to ensure that travel supports company goals while remaining cost-conscious, safe, and compliant with company procedures.
+This policy sets expectations for business travel and travel-related expenses at Northwind Robotics. It works together with the Expense and Reimbursement Policy, which governs limits, receipts, and how to file a claim.
 
 ## Travel Authorization
-Employees must receive approval before booking travel for business purposes when department practice or manager direction requires it. Employees traveling on company business should confirm the approval process before purchasing tickets, reserving hotels, or making other commitments.
+Employees must obtain manager approval before booking business travel. Advance **written** approval is required whenever the trip's expected total cost is **$1,000 or more**, when travel is international, or when department practice requires it. The request should state the business purpose (customer meeting, onsite work, conference, team onsite), the destination, the dates, and the estimated cost.
 
-Travel requests should be aligned with business needs, such as customer meetings, client events, required onsite work, or operational commitments. Personal travel should not be mixed with approved business travel unless specifically approved.
+Personal travel must not be combined with business travel unless the employee discloses it in advance, the personal portion is clearly separated, and only the business portion is claimed.
 
-## Reasonable and Cost-Conscious Travel
-Employees should choose the lowest-cost reasonable travel and lodging that still meets the business objective. The company generally does not reimburse luxury accommodations, premium tickets, or discretionary upgrades unless they are required for business reasons and approved in advance.
+## Booking
+Use the approved booking tool or the company travel partner where available so the company gets negotiated rates and duty-of-care tracking. If an employee books with personal funds, they must keep proof of purchase and claim reimbursement under the Expense and Reimbursement Policy. Book as far ahead as practical; last-minute booking that raises cost without a business reason may be questioned.
 
-Employees should use travel arrangements that align with the business need, the schedule, and the expected level of travel. If a more expensive option is necessary because of time constraints, security concerns, or client requirements, it should be explained in the request and approved when required.
+## Air Travel
+Economy fare is standard for flights under 6 hours. **Premium economy** is allowed for flights of **6 hours or more** with manager approval. Business or first class requires VP approval and is normally reserved for exceptional cases. One checked bag is reimbursable; additional bags need a business reason. Seat-selection and priority-boarding fees are not reimbursable unless required to meet the business schedule.
 
-## Booking Requirements
-Employees traveling for business should use the approved booking process or company travel partner when available. If personal funds are used, the employee should retain proof of purchase and submit the reimbursement request according to the Expense and Reimbursement Policy.
+## Lodging
+Book standard rooms within the lodging caps in the Expense and Reimbursement Policy (**$250/night** standard, **$350/night** high-cost cities). Choose lodging that is reasonably close to the business location. Resort fees and standard taxes are reimbursable; room upgrades, minibar, movies, and spa charges are not.
 
-Employees should be careful to keep travel records organized and should retain receipts for airfare, lodging, ground transportation, baggage, and other reimbursable expenses.
+## Meals and Incidentals
+Meals on travel are reimbursed on the per diem basis in the Expense and Reimbursement Policy (**$75/day** standard, **$100/day** high-cost cities). Alcohol is never reimbursable. When a meal is provided by a conference or host, the per diem for that meal is not claimed.
 
-## Safety and Risk Management
-Employees traveling on business must follow relevant safety guidelines, legal requirements, and company communications. Travel should be adjusted or postponed if there are health warnings, weather concerns, or security risks.
-
-Employees should inform their manager or HR if they have concerns about travel safety or if the travel plans create unanticipated risk or delays. The company may direct changes to travel plans if safety or business continuity is at issue.
+## Ground Transportation
+Use the most reasonable option: airport transit, rideshare, taxi, rail, or a rental car when it is the practical choice. For rental cars, book a mid-size or smaller class unless the group size or equipment requires more; decline the rental company's insurance for US rentals (the company's coverage applies) and accept it for most international rentals. Personal-vehicle mileage for business trips is reimbursed at the IRS standard rate for miles beyond the normal commute.
 
 ## International Travel
-International travel may require additional review for immigration, tax, export control, and data security considerations. Employees should not book international travel without required approvals if the policy or manager requires a review.
+International trips require advance approval and may need review for immigration, tax, export-control, and data-security reasons. Before international travel, employees should:
 
-Employees traveling outside the country may also need to comply with local or company policies related to equipment, confidentiality, and information access. Travel that crosses borders may create tax, labor, or reporting obligations.
+- confirm passport validity and any visa or entry requirement,
+- carry only the data and devices needed for the trip and follow the Data Security and Acceptable Use Policy for border crossings,
+- check the company travel-risk guidance for the destination.
 
-## Reimbursement Timing
-Travel-related reimbursement requests should be filed with supporting receipts and approvals as soon as possible after the travel is complete. Documentation should be complete and accurate to avoid delays or denials.
+Extended international stays combined with work may fall under the Out-of-State and International Remote Work Policy.
 
-Typical required support may include receipts for airfare, hotels, parking, rental cars, meals, and other travel expenses. If a report or receipt is missing, employees should provide a reasonable explanation and additional support when possible.
+## Traveler Safety and Duty of Care
+Employee safety comes first. Postpone or change travel when there is a credible health, weather, or security concern, and tell the manager or People Operations. The company may direct changes to travel plans for safety or business-continuity reasons. Employees should keep their itinerary current in the booking tool so the company can reach them in an emergency, and should report any travel incident or injury under the Workplace Health and Safety Policy.
 
-## Compliance and Overnight Travel
-Employees who travel overnight or for extended periods should maintain a professional standard of behavior, keep company contacts informed, and follow all policy requirements for security, expense reporting, and work communication during the trip.
+## During and After the Trip
+Keep company contacts informed of schedule changes, follow all security and expense rules while traveling, and maintain professional conduct consistent with the Code of Conduct. File the expense report with itemized receipts and approvals within **30 days** of returning. The company may deny reimbursement or require repayment for personal elements, unapproved upgrades, or unsupported charges.
 
-The company may deny reimbursement or request repayment if a trip is found to include personal elements, unapproved upgrades, or unsupported charges.
+## Responsibilities
+- Employees: get approval before booking, use the approved tool, travel cost-consciously, keep the itinerary current, and file expenses within 30 days.
+- Managers: confirm the business need and budget, approve within the limits, and support safety-driven changes.
+- Finance and the travel partner: maintain rates and the high-cost city list, track travelers for duty of care, and review claims.
 
 ## Related Policies
 - Expense and Reimbursement Policy
-- Remote and Hybrid Work Policy
+- Out-of-State and International Remote Work Policy
 - Data Security and Acceptable Use Policy
+- Workplace Health and Safety Policy
 
 ## Summary
-Business travel should be planned, approved, and documented in a way that serves company needs while remaining cost-conscious and compliant. Employees are expected to follow manager direction, keep receipts, and avoid non-business or unsupported travel expenses.
+Get manager approval before booking, and written approval for any trip of $1,000 or more or any international trip. Economy air under 6 hours, premium economy allowed 6+ hours with approval. Lodging is capped at $250/night ($350 high-cost), meals are on per diem, and alcohol and upgrades are not reimbursable. Keep your itinerary current for safety, and file expenses within 30 days of returning.

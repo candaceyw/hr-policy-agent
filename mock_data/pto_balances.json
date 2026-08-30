@@ -97,11 +97,11 @@
   },
   {
     "employee_id": "E-1013",
-    "accrual_rate_hours_per_month": 5.0,
-    "accrued_hours": 44.0,
-    "used_hours": 14.0,
+    "accrual_rate_hours_per_month": 10.0,
+    "accrued_hours": 104.0,
+    "used_hours": 40.0,
     "pending_hours": 0.0,
-    "carryover_hours": 6.0
+    "carryover_hours": 12.0
   },
   {
     "employee_id": "E-1014",

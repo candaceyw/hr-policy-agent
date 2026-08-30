@@ -3,7 +3,8 @@ import { useState } from 'react';
 const demoQuestions = [
   'How much PTO do employees accrue per month?',
   'Can I expense a company laptop and a home office chair?',
-  'What benefits are available to full-time employees?',
+  'I want to work from Ireland for six weeks. What approvals do I need and what applies to my laptop and data access?',
+  'What time does the pizza place close?',
 ];
 
 export default function App() {
@@ -17,15 +18,19 @@ export default function App() {
     setLoading(false);
   }
 
-  async function handleSubmit(event) {
-    event.preventDefault();
+  async function sendMessage(confirmValue) {
     setLoading(true);
+
+    const body = { message };
+    if (typeof confirmValue === 'boolean') {
+      body.confirm = confirmValue;
+    }
 
     try {
       const res = await fetch('http://localhost:8000/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify(body),
       });
 
       const data = await res.json();
@@ -39,6 +44,11 @@ export default function App() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    sendMessage();
   }
 
   return (
@@ -101,12 +111,50 @@ export default function App() {
                   <div className="mini-label">Latest response</div>
                   <h2>Policy answer</h2>
                 </div>
-                <div className="confidence-pill">Grounded answer</div>
+                <div className="pill-row">
+                  {response.escalation ? (
+                    <div className="escalation-pill">Recommend HR follow-up</div>
+                  ) : null}
+                  <div className="confidence-pill">Grounded answer</div>
+                </div>
               </div>
 
               <div className="answer-box">
                 <p>{response.answer}</p>
               </div>
+
+              {response.pending_action ? (
+                <div className="pending-action">
+                  <div className="section-label">Confirmation required</div>
+                  <p>
+                    {response.pending_action.description}. This is a mock action &mdash; nothing has run yet.
+                  </p>
+                  <div className="pending-action-buttons">
+                    <button
+                      type="button"
+                      className="primary-button"
+                      disabled={loading}
+                      onClick={() => sendMessage(true)}
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      type="button"
+                      className="ghost-button"
+                      disabled={loading}
+                      onClick={() => sendMessage(false)}
+                    >
+                      Deny
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+
+              {response.llm_error ? (
+                <div className="llm-warning">
+                  <strong>LLM fallback:</strong> {response.llm_error}
+                </div>
+              ) : null}
 
               <div className="meta-row">
                 <div className="citation-box">

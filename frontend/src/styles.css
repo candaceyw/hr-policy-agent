@@ -267,6 +267,54 @@ button:hover {
   font-size: clamp(1.12rem, 2vw, 1.5rem);
   line-height: 1.6;
   letter-spacing: -0.03em;
+  white-space: pre-wrap;
+}
+
+.pending-action {
+  background: rgba(217, 119, 6, 0.06);
+  border: 1px solid rgba(217, 119, 6, 0.22);
+  border-radius: 20px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+}
+
+.pending-action p {
+  margin: 6px 0 14px;
+  color: var(--text);
+}
+
+.pending-action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.pill-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.escalation-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(217, 119, 6, 0.1);
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  color: var(--orange);
+}
+
+.llm-warning {
+  background: rgba(217, 119, 6, 0.08);
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  font-size: 0.85rem;
+  color: var(--orange);
 }
 
 .meta-row {

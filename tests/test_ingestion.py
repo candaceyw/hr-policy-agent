@@ -1,4 +1,3 @@
-from pathlib import Path
 
 from hr_agent.ingest.builder import build_index
 

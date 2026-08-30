@@ -1,0 +1,9 @@
+{
+  "chunk_count": 232,
+  "content_hash": "ec4ff36edb3c1856c2e51a10d97724d9229d77e4d657686e14ec0823ecd28c4f",
+  "embedding_model": "gemini-embedding-001",
+  "embedding_dim": 768,
+  "chunk_size": 800,
+  "chunk_overlap": 120,
+  "built_at": "2026-08-30T18:22:00+00:00"
+}

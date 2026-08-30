@@ -19,7 +19,14 @@ A grounded HR policy assistant that answers employee questions using a curated p
 ## Project structure
 - `src/hr_agent/` — backend logic for retrieval, routing, answering, and orchestration
 - `src/hr_agent/web/` — FastAPI application and API endpoints
-- `corpus/` — HR policy source documents
+- `corpus/` — HR policy source documents (17 documents, ~40 pages) for the
+  fictional Northwind Robotics, in four formats: Markdown (13), PDF (2), HTML (1),
+  and plain text (1)
+- `corpus-facts.md` — internal reference listing every concrete figure used across
+  the corpus, kept consistent with `mock_data/`
+- `scripts/build_corpus_formats.py` — regenerates the PDF/HTML renditions from
+  their Markdown sources
+- `mock_data/` — synthetic employee, PTO, benefits, office, and ticket data
 - `frontend/` — React app
 - `tests/` — validation for ingestion, retrieval, routing, and API behavior
 

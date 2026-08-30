@@ -8,7 +8,7 @@ def build_index(corpus_dir: str | Path, index_path: str | Path) -> Path:
     index_path = Path(index_path)
     index_path.parent.mkdir(parents=True, exist_ok=True)
 
-    docs = list(sorted(corpus_dir.glob("*.md"))) + list(sorted(corpus_dir.glob("*.txt")))
+    docs = sorted(corpus_dir.glob("*.md")) + sorted(corpus_dir.glob("*.txt"))
     if not docs:
         raise FileNotFoundError(f"No corpus documents found in {corpus_dir}")
 

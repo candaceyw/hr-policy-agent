@@ -1,61 +1,68 @@
 # Holidays and Company Closure Policy
 
 ## Purpose
-This policy explains how Northwind Robotics recognizes paid holidays, determines closure-day practices, and communicates operational changes such as office shutdowns, weather adjustments, and emergency closures. It is intended to support employee planning while maintaining business continuity and compliance with applicable law.
+This policy explains how Northwind Robotics recognizes paid holidays, how floating holidays work, and how the company handles closures such as office shutdowns, weather adjustments, and emergency conditions. It is intended to support employee planning while maintaining business continuity and compliance with applicable law.
 
-## Company Holidays
-Northwind observes the following paid holidays each year, subject to company schedule and local legal requirements:
+## Recognized Company Holidays
+Northwind observes **nine paid company holidays each year**:
 
 - New Year's Day
 - Martin Luther King Jr. Day
 - Memorial Day
+- Juneteenth
 - Independence Day
 - Labor Day
 - Thanksgiving Day
 - Day after Thanksgiving
 - Christmas Day
-- Additional floating holidays may be granted at company discretion
 
-Employees may receive holiday pay if they are scheduled to work on a recognized holiday and otherwise meet the eligibility requirements in their role. Not all employees receive holiday pay in the same way; part-time, temporary, and non-exempt schedules may be treated differently under local law and the relevant payroll policies.
+When a holiday falls on a Saturday it is generally observed on the preceding Friday; when it falls on a Sunday it is generally observed on the following Monday. The observed dates for the year are published on the internal portal each January. International locations follow their local statutory holiday calendar instead of this list; the Dublin office holiday schedule is published separately.
+
+## Floating Holidays
+In addition to the nine company holidays, regular employees receive **two floating holidays per calendar year** to use for personal, religious, or cultural observances. Floating holidays:
+
+- are prorated for employees hired after June 30 (one floating holiday for the remainder of that year),
+- must be requested and approved like PTO, with reasonable notice,
+- do not carry over to the next year, and
+- are not paid out on separation.
 
 ## Eligibility for Holiday Pay
-Holiday pay is generally available to employees who are scheduled to work on the holiday and are active employees on the holiday date. The exact treatment depends on employment classification, schedule, and local law. Managers and HR should consult payroll guidance for unusual schedules or special arrangements.
+A regular full-time employee who is active on the holiday date receives their standard day's pay for a recognized company holiday whether or not the office is open. Regular part-time employees receive holiday pay prorated to their scheduled hours if the holiday falls on a day they are normally scheduled to work.
 
-Employees on unpaid leave, inactive status, or limited-term arrangements may not receive holiday pay unless specifically required by law or company practice.
+Employees on unpaid leave or inactive status on the holiday date do not receive holiday pay. Contractors, interns, and temporary workers are paid according to their engagement terms and are generally not eligible for company holiday pay.
 
-## Holiday Observance and Personal Time
-Employees are expected to plan personal obligations around the company holiday calendar when possible. Employees may also request additional time off for religious, cultural, or personal observances through the PTO or leave policies, subject to manager approval and business coverage.
+## Working on a Holiday
+Most roles are not scheduled on company holidays. Where a role requires holiday coverage (for example, on-call operations or customer-critical support), the manager schedules coverage in advance. A **non-exempt** employee who works on a recognized company holiday receives holiday pay plus pay for the hours worked; the manager may also offer an alternative day off. **Exempt** employees who provide holiday coverage may be given an alternative day off at the manager's discretion. Overtime rules in the Compensation and Payroll Policy still apply to hours over 40 in the week.
 
-The company does not guarantee that a requested holiday adjustment will be approved, but it will consider religious accommodation and other employee needs where legally required and operationally feasible.
+## Religious and Cultural Observances
+Employees may use a floating holiday, PTO, or an unpaid day for religious or cultural observances not on the company calendar. Northwind provides reasonable accommodation for religious observance where required by law and operationally feasible. Requests should go to the manager with as much notice as possible; if a request is denied for coverage reasons, the manager should work with the employee to find an alternative.
 
 ## Company Closures
-The company may close offices or reduce operations for reasons including severe weather, safety concerns, infrastructure issues, or other operational events. Closures are generally announced through standard communication channels such as email, the internal portal, or manager notifications.
+The company may close an office or reduce operations for severe weather, a safety hazard, a utility or infrastructure failure, or another operational event. Closures are announced through email, the internal portal, and manager notifications. Employees should check company communications before traveling to a worksite.
 
-Employees should check their email and manager communications before traveling to a worksite or assuming they may work from a physical office. Employees may be required to work from home or remain offsite depending on the closure and whether the role supports remote work.
+## Closure-Day Pay and Work Expectations
+When the company closes an office for a full scheduled workday:
 
-## Closure-Day Pay and Attendance
-For closure days, pay treatment depends on whether the employee was scheduled to work, whether remote work is permitted, and whether the company remains open for essential functions. Some employees may be paid for a full day even though the office is closed, while others may be assigned a different schedule or may work remotely if the business remains operational.
+- Employees scheduled to work that day receive their standard pay for the day and are not charged PTO.
+- If the business remains operational and the role supports remote work, the manager may direct the employee to work from home for that day.
+- If the role cannot be performed remotely and the office is closed, the employee is paid for the scheduled day without being required to work.
 
-If the company maintains business operations during a closure, employees may still be expected to work remotely or to follow a modified schedule. Managers are responsible for communicating the work expectation clearly.
+A closure does not automatically mean everyone is off. Leadership or People Operations will state whether a given closure is a paid non-working day, a work-from-home day, or a full shutdown of operations.
 
-## Remote Work During Closure
-Employees with approved remote work arrangements may still be expected to work during a company closure if the business remains operational and management directs them to do so. In general, employees should follow the latest communication from leadership or HR regarding work expectations during a closure.
-
-Employees should not assume that a closure means everyone is automatically off the clock; the company will specify whether the closure is paid, remote-workable, or a shutdown of operations.
-
-## Inclement Weather and Emergency Conditions
-Severe weather, power outages, transportation disruption, or other emergency situations may cause delayed openings, office closures, or work-from-home instructions. Employees should model a reasonable, safety-first approach and should follow company communications and local emergency guidance.
-
-In some circumstances, employees may be asked to work remotely or to use a different timekeeping code. Managers should direct employees to the most recent instructions, not to rely on assumptions or prior practice alone.
+## Inclement Weather and Emergencies
+Severe weather, power outages, transportation disruption, or other emergencies may cause a delayed opening, an early release, or a work-from-home instruction. Employees should take a safety-first approach, follow the most recent company communication and local emergency guidance, and not rely on prior practice. Managers direct their teams to the current instruction and record any schedule change for payroll.
 
 ## Communication Responsibilities
-Employees are expected to check company communications before making travel or commute plans. Managers are responsible for confirming attendance expectations and documenting any schedule changes. HR and payroll may also provide guidance on whether a holiday or closure day affects pay, PTO, or other benefits.
+- Employees: check email and the portal before commuting or traveling when a closure may be in effect, and follow the current instruction.
+- Managers: confirm attendance and work expectations for their team during a closure and document any schedule or timekeeping change.
+- People Operations and Payroll: confirm whether a holiday or closure day affects pay, PTO, or benefits for unusual schedules.
 
 ## Related Policies
 - PTO and Vacation Policy
 - Remote and Hybrid Work Policy
-- Leave of Absence Policy
+- Compensation and Payroll Policy
+- Workplace Health and Safety Policy
 - Travel Policy
 
 ## Summary
-Northwind recognizes a set of paid holidays and may temporarily close offices or adjust work schedules. Employees should follow company communications and manager instructions, not informal assumptions, when a closure or holiday schedule affects their workday.
+Northwind observes nine paid company holidays and grants two floating holidays a year (prorated for mid-year hires, no carryover). Full-time employees are paid for company holidays whether or not the office is open; part-time employees are paid pro rata for holidays on their scheduled days. During a closure, scheduled employees are paid, and the company will say whether the day is non-working, remote, or a shutdown.
