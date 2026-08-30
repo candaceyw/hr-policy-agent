@@ -11,6 +11,20 @@ def plan_tool_workflow(query: str) -> dict:
     """
     decision = route_query(query)
 
+    if decision["intent"] == "employee_data_request":
+        lowered = query.lower()
+        if "pto" in lowered and "balance" in lowered:
+            return {
+                "needs_tool": True,
+                "tool_name": "check_pto_balance",
+                "reason": "This request requires the employee's PTO record before answering accurately.",
+            }
+        return {
+            "needs_tool": True,
+            "tool_name": "lookup_employee_profile",
+            "reason": "This request needs structured employee data to answer accurately.",
+        }
+
     if decision["intent"] == "expense_check":
         return {
             "needs_tool": True,

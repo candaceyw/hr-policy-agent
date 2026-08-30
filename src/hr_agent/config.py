@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     app_name: str = "hr-policy-agent"
     app_env: str = "development"
     gemini_api_key: str | None = Field(default=None, alias="GEMINI_API_KEY")
-    llm_model: str = Field(default="gemini-2.0-flash", alias="LLM_MODEL")
+    llm_model: str = Field(default="gemini-3.6-flash", alias="LLM_MODEL")
     embedding_model: str = Field(default="text-embedding-004", alias="EMBEDDING_MODEL")
     retrieval_k: int = Field(default=5, alias="RETRIEVAL_K")
     chunk_size: int = Field(default=800, alias="CHUNK_SIZE")

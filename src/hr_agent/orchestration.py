@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import asyncio
+import json
+import re
 from pathlib import Path
 
 from langgraph.graph import END, START, StateGraph
 
-from hr_agent.answering import build_grounded_answer
+from hr_agent.answering import build_grounded_answer, generate_final_answer, synthesize_final_answer
+from hr_agent.mcp_server import build_mcp_server
 from hr_agent.routing import route_query
 from hr_agent.tools import plan_tool_workflow
 
@@ -27,10 +31,63 @@ def _needs_tool_branch(state: dict) -> str:
     return "tool" if state.get("needs_tool") else "answer"
 
 
+def _extract_employee_id(query: str) -> str | None:
+    match = re.search(r"E-\d+", query.upper())
+    return match.group(0) if match else None
+
+
+def _call_mcp_tool(tool_name: str, query: str) -> dict:
+    server = build_mcp_server()
+    args: dict[str, str] = {}
+
+    if tool_name in {"check_pto_balance", "lookup_employee_profile", "lookup_benefits_status"}:
+        employee_id = _extract_employee_id(query)
+        if employee_id is None:
+            return {"error": "missing_employee_id", "message": "No employee ID was found in the request."}
+        args["employee_id"] = employee_id
+    elif tool_name == "check_policy_compliance":
+        args["question"] = query
+    elif tool_name == "create_mock_hr_ticket":
+        employee_id = _extract_employee_id(query) or "E-1001"
+        args = {"employee_id": employee_id, "issue": query}
+    elif tool_name == "draft_hr_email":
+        employee_id = _extract_employee_id(query) or "E-1001"
+        args = {"employee_id": employee_id, "topic": query}
+    else:
+        return {"error": "unsupported_tool", "message": f"Tool {tool_name} is not supported in the demo workflow."}
+
+    result = asyncio.run(server.call_tool(tool_name, args))
+    if not result:
+        return {"error": "empty_tool_result", "message": "The tool returned no data."}
+
+    content = result[0]
+    if hasattr(content, "text"):
+        try:
+            payload = json.loads(content.text)
+            if isinstance(payload, dict):
+                return payload
+        except json.JSONDecodeError:
+            pass
+        return {"raw": content.text}
+
+    return {"raw": str(result)}
+
+
 def _tool_response(state: dict) -> dict:
-    state["answer"] = "This request requires a compliance check against the expense policy before a final answer can be given."
-    state["citations"] = []
+    tool_result = _call_mcp_tool(state["tool_name"], state["query"])
+    state["tool_result"] = tool_result
     state["reason"] = state.get("reason", "Tool-based workflow selected.")
+
+    if "error" in tool_result:
+        state["answer"] = tool_result["message"]
+        state["citations"] = []
+        return state
+
+    corpus_dir = Path(__file__).resolve().parents[2] / "corpus"
+    answer_data = synthesize_final_answer(state["query"], tool_result=tool_result, corpus_dir=corpus_dir, k=3)
+    state["answer"] = answer_data["answer"]
+    state["citations"] = answer_data["citations"]
+    state["trace"] = answer_data["trace"]
     return state
 
 
@@ -41,6 +98,7 @@ def _answer_response(state: dict, corpus_dir: str | Path | None = None) -> dict:
     answer_data = build_grounded_answer(state["query"], corpus_dir=corpus_dir, k=3)
     state["answer"] = answer_data["answer"]
     state["citations"] = answer_data["citations"]
+    state["trace"] = answer_data["trace"]
     return state
 
 
@@ -78,5 +136,16 @@ def run_workflow(query: str, corpus_dir: str | None = None) -> dict:
 
     if corpus_dir is not None and result.get("needs_tool") is False:
         result = _answer_response(result, corpus_dir=corpus_dir)
+
+    if result.get("needs_tool") and result.get("tool_result") is not None and "error" not in result.get("tool_result", {}):
+        final = generate_final_answer(
+            result["query"],
+            tool_result=result["tool_result"],
+            corpus_dir=corpus_dir or Path(__file__).resolve().parents[2] / "corpus",
+            k=3,
+        )
+        result["answer"] = final["answer"]
+        result["citations"] = final["citations"]
+        result["trace"] = final["trace"]
 
     return result

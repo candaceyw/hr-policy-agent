@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from hr_agent.answering import build_grounded_answer
+from hr_agent.orchestration import run_workflow
 
 app = FastAPI(title="HR Policy Agent")
 app.add_middleware(
@@ -35,12 +36,12 @@ def health() -> dict:
 @app.post("/chat")
 def chat(request: ChatRequest) -> dict:
     project_root = Path(__file__).resolve().parents[3]
-    corpus_dir = project_root / "corpus"
-    answer_data = build_grounded_answer(request.message, corpus_dir=corpus_dir, k=3)
+    corpus_dir = str(project_root / "corpus")
+    workflow_result = run_workflow(request.message, corpus_dir=corpus_dir)
 
     return {
-        "answer": answer_data["answer"],
-        "citations": answer_data["citations"],
-        "trace": answer_data["trace"],
+        "answer": workflow_result.get("answer", "I could not determine an answer."),
+        "citations": workflow_result.get("citations", []),
+        "trace": workflow_result.get("trace", []),
         "escalation": False,
     }
