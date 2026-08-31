@@ -23,12 +23,15 @@ WORKDIR /app
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
-# the package itself (deps already satisfied)
+# the package itself (deps already satisfied). Editable so hr_agent stays at
+# /app/src/hr_agent/ -- the code locates its data with paths relative to the
+# package (parents[2] == /app), which a copy into site-packages would break.
 COPY pyproject.toml README.md ./
 COPY src/ ./src/
-RUN pip install --no-deps .
+RUN pip install --no-deps -e .
 
-# runtime data: committed vector index + corpus + mock data + built SPA
+# runtime data: committed vector index + corpus + mock data + built SPA,
+# all under /app so parents[2] / "data" | "corpus" | "mock_data" resolve.
 COPY data/ ./data/
 COPY corpus/ ./corpus/
 COPY mock_data/ ./mock_data/
