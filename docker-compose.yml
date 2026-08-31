@@ -6,7 +6,7 @@
 services:
   mcp:
     build: .
-    command: sh -c "python -m hr_agent.mcp_server --http --port 8765"
+    command: sh -c "python -m hr_agent.mcp_server --http"
     environment:
       PORT: "8765"
     # no ports published: the web service reaches it on the compose network

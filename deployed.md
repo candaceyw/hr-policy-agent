@@ -6,7 +6,7 @@ differing only in the start command:
 | Service | Start command | Exposure |
 | --- | --- | --- |
 | `web` | *(Dockerfile default)* `uvicorn hr_agent.web.app:app --host 0.0.0.0 --port $PORT` | Public domain (the app URL) |
-| `mcp` | `python -m hr_agent.mcp_server --http --port $PORT` | **Private network only** |
+| `mcp` | `python -m hr_agent.mcp_server --http` | **Private network only** |
 
 `web` serves the API (`/chat`, `/health`) and the built React SPA. It discovers
 the 9 MCP tools from `mcp` at runtime over **Streamable HTTP** on Railway's
@@ -53,7 +53,7 @@ set in the dashboard.
    - **Source → Branch**: same branch as `web`
    - **Build → Builder**: `Dockerfile` (same root `Dockerfile`)
    - **Deploy → Custom Start Command**:
-     `python -m hr_agent.mcp_server --http --port $PORT`
+     `python -m hr_agent.mcp_server --http`
    - **Networking**: do **not** generate a domain.
 3. **Variables**: `PORT` = `8765` (pin it so `MCP_SERVER_URL` above is stable).
 
