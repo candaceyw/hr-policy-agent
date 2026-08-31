@@ -40,6 +40,9 @@ packages = ["src/hr_agent"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+markers = [
+  "slow: exercises the full agent graph (MCP discovery + stub model); deselect with -m 'not slow'",
+]
 
 [tool.ruff]
 line-length = 100

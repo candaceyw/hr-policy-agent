@@ -5,7 +5,7 @@ import re
 import time
 from typing import TYPE_CHECKING
 
-from hr_agent.config import settings
+from hr_agent.config import GROQ_BASE_URL, settings
 
 if TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
@@ -72,6 +72,56 @@ def _generate_openai_compatible(prompt: str, model: str) -> str:
         temperature=0.2,
     )
     return response.choices[0].message.content or ""
+
+
+# --------------------------------------------------------------------------- eval judge
+
+
+def judge_available() -> bool:
+    """True when the configured evaluation judge provider has an API key."""
+    provider = settings.eval_judge_provider.strip().lower()
+    if provider == "gemini":
+        return bool(settings.gemini_api_key)
+    if provider == "groq":
+        return bool(settings.groq_api_key)
+    return False
+
+
+def judge_complete(
+    prompt: str,
+    *,
+    provider: str | None = None,
+    model: str | None = None,
+    temperature: float = 0.0,
+) -> str:
+    """Plain completion from an explicitly chosen provider/model, for the eval judge.
+
+    Independent of ``LLM_PROVIDER`` so the judge can be a different model family
+    than the system under test (avoids self-preference bias, separate quota).
+    Only ``gemini`` and ``groq`` are wired up. Kept here so ``llm.py`` stays the
+    only file importing a model SDK (see CLAUDE.md).
+    """
+    provider = (provider or settings.eval_judge_provider).strip().lower()
+    model = model or settings.eval_judge_model
+
+    if provider == "gemini":
+        return _generate_gemini(prompt, model)
+    if provider == "groq":
+        from openai import OpenAI
+
+        if not settings.groq_api_key:
+            raise ValueError("GROQ_API_KEY is not configured (required for the Groq judge).")
+        client = OpenAI(api_key=settings.groq_api_key, base_url=GROQ_BASE_URL)
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": _SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=temperature,
+        )
+        return response.choices[0].message.content or ""
+    raise ValueError(f"Unsupported eval judge provider: {provider!r}")
 
 
 # ------------------------------------------------------------------- chat model (tool calling)

@@ -49,6 +49,14 @@ jobs:
       - name: Tests
         run: pytest -q
 
+      # Reduced evaluation smoke: drive the 6-item subset end-to-end through
+      # the harness with a stub model (no provider calls, no tokens). Proves the
+      # eval runner, metrics, and JSON output are not broken. The full 25-item
+      # run with the real LLM + judge is executed locally and its RESULTS.md +
+      # results/ JSON are committed.
+      - name: Evaluation smoke subset
+        run: python -m evaluation.run_eval --smoke --offline --out-dir "$RUNNER_TEMP/eval"
+
   frontend:
     name: frontend build
     runs-on: ubuntu-latest

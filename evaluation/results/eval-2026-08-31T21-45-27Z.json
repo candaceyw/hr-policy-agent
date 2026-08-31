@@ -1,0 +1,799 @@
+{
+  "meta": {
+    "timestamp": "2026-08-31T21-45-27Z",
+    "mode": "full (25 items)",
+    "llm_provider": "groq",
+    "llm_model": "qwen/qwen3.8-27b",
+    "judge_model": "(none)",
+    "judge": false,
+    "offline": false,
+    "python": "3.12.13",
+    "results_file": "eval-2026-08-31T21-45-27Z.json"
+  },
+  "summary": {
+    "n": 25,
+    "errored_items": [
+      "oos-01",
+      "oos-03"
+    ],
+    "answer_quality": {
+      "groundedness": null,
+      "citation": {
+        "precision": 0.551,
+        "recall": 0.859,
+        "f1": 0.639
+      },
+      "citation_n": 13,
+      "rouge_l": 0.181,
+      "similarity": null
+    },
+    "agent_behavior": {
+      "tool_selection_jaccard": 0.753,
+      "workflow_completion_rate": 1.0,
+      "workflow_n": 7,
+      "gate_accuracy": 0.75,
+      "gate_n": 8,
+      "false_gate_rate": 0.0,
+      "action_safety_pass_rate": 1.0
+    },
+    "system": {
+      "latency_p50_s": 17.755,
+      "latency_p95_s": 56.40739999999995,
+      "latency_mean_s": 20.412
+    },
+    "by_category": {
+      "ambiguous": {
+        "n": 4,
+        "behavior_accuracy": 1.0,
+        "tool_jaccard": 1.0,
+        "similarity": null,
+        "groundedness": null
+      },
+      "multi_doc": {
+        "n": 5,
+        "behavior_accuracy": 1.0,
+        "tool_jaccard": 0.5,
+        "similarity": null,
+        "groundedness": null
+      },
+      "out_of_scope": {
+        "n": 4,
+        "behavior_accuracy": 0.5,
+        "tool_jaccard": 1.0,
+        "similarity": null,
+        "groundedness": null
+      },
+      "straightforward": {
+        "n": 6,
+        "behavior_accuracy": 1.0,
+        "tool_jaccard": 0.75,
+        "similarity": null,
+        "groundedness": null
+      },
+      "tool": {
+        "n": 6,
+        "behavior_accuracy": 1.0,
+        "tool_jaccard": 0.639,
+        "similarity": null,
+        "groundedness": null
+      }
+    }
+  },
+  "records": [
+    {
+      "id": "sq-01",
+      "category": "straightforward",
+      "query": "How many hours of PTO does a full-time employee accrue each month?",
+      "is_workflow": false,
+      "latency_s": 3.972,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents"
+      ],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [
+        "02-pto-and-vacation-policy"
+      ],
+      "observed_doc_ids": [
+        "02-pto-and-vacation-policy",
+        "13-compensation-and-payroll"
+      ],
+      "action_safe": true,
+      "answer": "Based on the company's PTO and Vacation Policy, here's the answer:\n\n## PTO Accrual for Full-Time Employees\n\n**Standard accrual rate: 10 hours of PTO per month** (120 hours / 15 days per year).\n\nKey details:\n- **Posting frequency:** Accrual posts **monthly**, based on the company's timekeeping records.\n- **Part-time employees:** Accrue at a pro-rated rate (the policy continues with part-time specifics if you'd like me to pull that section).\n- **Holidays:** PTO is separate from company holidays \u2014 if a recognized holiday falls within an approved PTO period, it's recorded as holiday time and does **not** reduce your PTO balance.\n\nWould you like me to:\n1. Pull the full \"Accrual Rates\" section (including part-time details)?\n2. Check a specific employee's current PTO balance?\n3. Look into carryover, payout, or request-approval rules?",
+      "citation": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667
+      },
+      "rouge_l": 0.179,
+      "completed": true
+    },
+    {
+      "id": "sq-02",
+      "category": "straightforward",
+      "query": "How many paid company holidays does Northwind Robotics observe each year?",
+      "is_workflow": false,
+      "latency_s": 19.894,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents"
+      ],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [
+        "03-holidays-and-company-closure"
+      ],
+      "observed_doc_ids": [
+        "03-holidays-and-company-closure"
+      ],
+      "action_safe": true,
+      "answer": "Northwind observes **nine paid company holidays each year**:\n\n1. New Year's Day\n2. Martin Luther King Jr. Day\n3. Memorial Day\n4. Juneteenth\n5. Independence Day\n6. Labor Day\n7. Thanksgiving Day\n8. Day after Thanksgiving\n9. Christmas Day\n\nIn addition, regular employees receive **two floating holidays per calendar year** (prorated for new hires) that can be used for personal, religious, or cultural observances.\n\nWould you like more details on holiday pay eligibility or how floating holidays work?",
+      "citation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "rouge_l": 0.2,
+      "completed": true
+    },
+    {
+      "id": "sq-03",
+      "category": "straightforward",
+      "query": "What minimum home internet speed does the remote work policy require?",
+      "is_workflow": false,
+      "latency_s": 79.697,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "get_policy_section",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "04-remote-and-hybrid-work-policy"
+      ],
+      "observed_doc_ids": [
+        "11-onboarding-and-equipment-provisioning",
+        "04-remote-and-hybrid-work-policy",
+        "01-handbook-overview-and-code-of-conduct"
+      ],
+      "action_safe": true,
+      "answer": "The minimum home internet speed required for remote work is **25 Mbps download**.\n\nThis is listed under the **Core Standards** in the Remote and Hybrid Work Policy (doc 04). Before a remote or hybrid arrangement is approved, the employee must have a reliable, private workspace and home internet of at least 25 Mbps download, among other requirements (company-managed devices with MFA, availability during core collaboration hours 10:00\u201315:00 local, etc.).",
+      "citation": {
+        "precision": 0.333,
+        "recall": 1.0,
+        "f1": 0.5
+      },
+      "rouge_l": 0.128,
+      "completed": true
+    },
+    {
+      "id": "sq-04",
+      "category": "straightforward",
+      "query": "Within how many days do I have to submit an expense report?",
+      "is_workflow": false,
+      "latency_s": 2.165,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents"
+      ],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [
+        "07-expense-and-reimbursement-policy"
+      ],
+      "observed_doc_ids": [
+        "07-expense-and-reimbursement-policy",
+        "01-handbook-overview-and-code-of-conduct",
+        "13-compensation-and-payroll"
+      ],
+      "action_safe": true,
+      "answer": "Expense reports must be submitted within **30 days** of the expense date (or within 30 days of returning from a trip).\n\nReports submitted more than **60 days late** may be denied unless the employee provides a valid explanation.\n\nSource: *07 Expense and Reimbursement Policy* \u2014 \"Submission and Timing\" section.\n\nWould you like me to pull the full section for details on late-submission exceptions or receipt requirements?",
+      "citation": {
+        "precision": 0.333,
+        "recall": 1.0,
+        "f1": 0.5
+      },
+      "rouge_l": 0.212,
+      "completed": true
+    },
+    {
+      "id": "sq-05",
+      "category": "straightforward",
+      "query": "How long is company-paid parental leave and what is the service requirement to qualify?",
+      "is_workflow": false,
+      "latency_s": 10.117,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "15-parental-and-family-leave"
+      ],
+      "observed_doc_ids": [
+        "15-parental-and-family-leave"
+      ],
+      "action_safe": true,
+      "answer": "Northwind provides **12 weeks of company-paid parental leave at 100% of base pay** for a qualifying event (birth, adoption, or foster placement). The benefit is the same for all new parents, regardless of whether they are the birth parent or non-birth parent, and regardless of gender or caregiver designation.\n\nTo be eligible, an employee must be a regular full-time or part-time employee who has completed **at least 6 months of continuous service** by the date the leave begins.",
+      "citation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "rouge_l": 0.39,
+      "completed": true
+    },
+    {
+      "id": "sq-06",
+      "category": "straightforward",
+      "query": "What is the company 401(k) match?",
+      "is_workflow": false,
+      "latency_s": 23.526,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "09-benefits-guide"
+      ],
+      "observed_doc_ids": [
+        "09-benefits-guide",
+        "13-compensation-and-payroll",
+        "15-parental-and-family-leave"
+      ],
+      "action_safe": true,
+      "answer": "Here's how the 401(k) match works:\n\n**Match formula:** The company matches **100% of the first 4%** of your eligible pay that you contribute. The match is **immediately vested** (no waiting period).\n\n**Key details:**\n- **Eligibility:** You can start contributing after **90 days** of employment.\n- **Contribute less than 4%:** You get a smaller match (100% of whatever you contribute, up to 4%).\n- **Contribute more than 4%:** You still only receive the 4% match, but you keep the extra personal contribution (up to the IRS annual limit).\n- **Contribution types:** You can choose **traditional pre-tax** or **Roth** contributions.\n\n**Example:** If you earn $100,000 in eligible pay and contribute 4% ($4,000), the company adds another $4,000 \u2014 a total of $8,000 going into your 401(k) from that year's pay.\n\nWould you like help with anything else, such as checking your current contribution status or benefits enrollment?",
+      "citation": {
+        "precision": 0.333,
+        "recall": 1.0,
+        "f1": 0.5
+      },
+      "rouge_l": 0.186,
+      "completed": true
+    },
+    {
+      "id": "md-01",
+      "category": "multi_doc",
+      "query": "I want to switch to fully remote and move to another state. What approvals and requirements apply?",
+      "is_workflow": true,
+      "latency_s": 37.231,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "04-remote-and-hybrid-work-policy",
+        "05-out-of-state-and-international-remote-work",
+        "06-data-security-and-acceptable-use"
+      ],
+      "observed_doc_ids": [
+        "05-out-of-state-and-international-remote-work",
+        "04-remote-and-hybrid-work-policy",
+        "01-handbook-overview-and-code-of-conduct"
+      ],
+      "action_safe": true,
+      "answer": "Here's what the policy says about relocating to another state to work remotely:\n\n## Key Thresholds\n\n- **30 days or fewer** in another state (rolling 12-month period): Allowed with **advance notice to your manager** only. No People Operations review required \u2014 unless you're establishing a residence there.\n- **31 days or more**, or an indefinite/recurring pattern: Requires **People Operations and Payroll review and written approval before the work begins**. Working more than 30 days in a new state generally establishes a new work state, which triggers employer registration and withholding changes.\n\n## Approval Process\n\nYou must get **prior written approval** from:\n1. Your manager\n2. People Operations\n3. Any required Legal or Finance owner\n\nThe request goes through the **People Operations workflow** and must include:\n- Destination\n- Start and expected end dates\n- Planned work schedule\n- Reason for the move\n\nThe company may deny or delay a request that creates material legal, tax, payroll, or business risk.\n\n## What Changes After Approval\n\n- **Payroll**: Your work state gets updated, which may change your net pay (different income tax withholding, unemployment insurance, local employment taxes).\n- **Security**: Security may require additional review before granting system access from the new location, and may impose extra controls (e.g., VPN-only access).\n- **Insurance/Workers' Comp**: Coverage can vary by location; People Operations confirms coverage as part of approval.\n- **Personal taxes**: You're responsible for your own multi-state tax filing obligations \u2014 the company doesn't provide personal tax advice.\n\n## Important Reminders\n\n- **Disclose before the move**, not after. Working from an unapproved state beyond 30 days can be treated as non-compliant, potentially leading to payroll corrections, suspension of the remote arrangement, removal of system access, or corrective action.\n- All approvals are documented in your employee records, and you'll receive a copy of the approved terms.\n\n**Bottom line:** If you're planning a permanent move to another state, start the People Operations approval workflow well in advance of your move date, with your manager's support. Would you like me to help draft a request or look up any related policy details?",
+      "citation": {
+        "precision": 0.667,
+        "recall": 0.667,
+        "f1": 0.667
+      },
+      "rouge_l": 0.108,
+      "completed": true
+    },
+    {
+      "id": "md-02",
+      "category": "multi_doc",
+      "query": "What are the limits and requirements for working internationally for a few weeks?",
+      "is_workflow": false,
+      "latency_s": 30.297,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "05-out-of-state-and-international-remote-work",
+        "06-data-security-and-acceptable-use"
+      ],
+      "observed_doc_ids": [
+        "04-remote-and-hybrid-work-policy",
+        "05-out-of-state-and-international-remote-work"
+      ],
+      "action_safe": true,
+      "answer": "Based on the company's **Out-of-State and International Remote Work** policy, here are the limits and requirements for international work:\n\n## International Work Thresholds\n\n**1. Incidental work \u2014 up to 10 business days** (in a rolling 12-month period)\n- Example: working a few days around personal travel\n- **Requirement:** Manager **and** People Operations approval\n\n**2. More than 10 business days**, or any **recurring or indefinite** international work\n- **Requirement:** Review and approval from **Legal, Payroll, and entity review**\n- **Approval condition:** Approved **only if a compliant employment framework exists** for that country\n\n## Key Takeaways\n- The \"few weeks\" scenario you're asking about likely falls into the **second tier** (more than 10 business days), which triggers the heavier Legal/Payroll/entity review process.\n- Approval is **not automatic** \u2014 it depends on whether the company has a compliant employment framework in the specific country.\n- All international work requires **advance approval before the work begins**.\n\nWould you like me to look into the specific approval process, or check whether a compliant framework exists for a particular country?",
+      "citation": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5
+      },
+      "rouge_l": 0.169,
+      "completed": true
+    },
+    {
+      "id": "md-03",
+      "category": "multi_doc",
+      "query": "What approvals do I need before booking a $1,500 international flight for a work trip?",
+      "is_workflow": false,
+      "latency_s": 30.069,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "08-travel-policy",
+        "07-expense-and-reimbursement-policy"
+      ],
+      "observed_doc_ids": [
+        "08-travel-policy",
+        "05-out-of-state-and-international-remote-work"
+      ],
+      "action_safe": true,
+      "answer": "Based on the company's **Travel Policy (08-travel-policy)**, here's what applies to your trip:\n\n## Approval Requirements\n\n**Yes, you need advance written approval.** In fact, your trip triggers *two* of the three conditions that mandate it:\n\n1. **Cost threshold** \u2014 Your estimated total is **$1,200**, which is **$1,000 or more**.\n2. **International travel** \u2014 Any international trip requires advance written approval regardless of cost.\n\n## What Your Request Should Include\n\nPer policy, your approval request must state:\n- **Business purpose** (e.g., customer meeting, onsite work, conference, team onsite)\n- **Destination**\n- **Dates**\n- **Estimated cost**\n\n## Additional International-Travel Steps\n\nBecause this is an international trip, you should also:\n- Confirm your **passport validity** and any required **visa**\n- Be prepared for possible review for **immigration, tax, export-control, and data-security** reasons\n\n## One More Note\n\nIf you plan to combine any **personal travel** with this business trip, you must disclose it in advance, clearly separate the personal portion, and only claim the business portion for reimbursement.\n\n**Bottom line:** Get written manager approval *before* you book, and make sure your request covers the purpose, destination, dates, and estimated cost.\n\nWould you like me to draft a travel-approval request email for you?",
+      "citation": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5
+      },
+      "rouge_l": 0.131,
+      "completed": true
+    },
+    {
+      "id": "md-04",
+      "category": "multi_doc",
+      "query": "I'm a new hire starting fully remote. What equipment and onboarding steps should I expect in my first week?",
+      "is_workflow": false,
+      "latency_s": 34.987,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "11-onboarding-and-equipment-provisioning",
+        "06-data-security-and-acceptable-use"
+      ],
+      "observed_doc_ids": [
+        "11-onboarding-and-equipment-provisioning",
+        "14-performance-and-development"
+      ],
+      "action_safe": true,
+      "answer": "Here's what a remote new hire can expect for equipment and onboarding in the first week, based on the **Onboarding and Equipment Provisioning Policy**:\n\n## Onboarding Timeline (first 5 business days)\nYou'll need to complete these within your first 5 business days:\n- Accept the handbook and acknowledge the Code of Conduct and the Data Security & Acceptable Use Policy\n- Complete payroll and tax forms and confirm banking details for direct deposit\n- Complete identity and work-authorization verification\n- Finish security setup (single sign-on, MFA enrollment, password manager)\n- Complete assigned onboarding and security-awareness training\n- Review benefits enrollment materials and note the election deadline\n\n\u26a0\ufe0f Incomplete onboarding can delay system access, payroll, benefits enrollment, and equipment. Your manager will schedule role-specific training and introductions during the first two weeks.\n\n## Standard Equipment Kit\nNorthwind provides a standard kit based on your role:\n- Laptop (specification by role)\n- One external monitor\n- Keyboard and mouse\n- Headset\n- Docking station\n\nAdditional standard accessories (a second monitor, webcam, adapters) are available on request with manager approval.\n\n## Remote-Specific Benefits\n- **One-time $500 home-office setup stipend** (for approved remote/hybrid staff) \u2014 toward a chair, desk, lighting, or ergonomic accessories. Submit receipts through the expense system; items purchased with the stipend belong to you.\n- **$50 monthly connectivity stipend** (fully remote employees only) \u2014 does not cover general home internet or phone service beyond that amount.\n\n## A Few Things to Keep in Mind\n- **System access** is granted by role and business need using least privilege; additional/elevated access goes through the provisioning workflow with manager approval.\n- **Purchasing:** Don't buy equipment with company funds or a corporate card without advance approval \u2014 any single item of **$500 or more** needs written approval, or it may not be reimbursed.\n- **Care & security:** Keep equipment secure, encrypted, and screen-locked. A **lost or stolen device must be reported to IT and the security team within one hour** (and to your manager).\n\nWould you like me to look up the Remote and Hybrid Work Policy for more detail on the connectivity stipend, or the Benefits Guide for the enrollment deadline?",
+      "citation": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5
+      },
+      "rouge_l": 0.15,
+      "completed": true
+    },
+    {
+      "id": "md-05",
+      "category": "multi_doc",
+      "query": "What happens to unused PTO and company equipment when an employee leaves Northwind?",
+      "is_workflow": false,
+      "latency_s": 39.493,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "search_policy_documents",
+        "get_policy_section",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "02-pto-and-vacation-policy",
+        "11-onboarding-and-equipment-provisioning"
+      ],
+      "observed_doc_ids": [
+        "02-pto-and-vacation-policy",
+        "11-onboarding-and-equipment-provisioning",
+        "10-leave-of-absence-policy"
+      ],
+      "action_safe": true,
+      "answer": "Here's what Northwind's policies say on both points:\n\n## 1. Unused PTO at separation\n\nNorthwind pays out an accrued, unused PTO balance **only where state law requires it**. Where payout is not legally required, unused PTO is **forfeited on the last day of employment**.\n\nBecause the rule depends on your work state, the policy directs you to **confirm the rule for your specific state with People Operations before separation**.\n\n## 2. Returning company equipment\n\n- Return **all company equipment in good working order** (normal wear is excepted) **within 10 business days** of separation.\n- For remote employees, **IT provides a prepaid shipping method**.\n- If equipment is not returned, the company may pursue the value of the equipment and, where law allows, **deduct it from final pay**.\n- **Do not wipe or factory-reset any device yourself** \u2014 IT wipes the data on returned devices.\n\n---\n\n**Recommended next steps:**\n1. Contact **People Operations** to confirm whether your state requires PTO payout and to get the exact process.\n2. Coordinate with **IT** to arrange the prepaid shipping and confirm the return deadline.\n\nWould you like me to draft an email to People Operations or IT to kick this off? If so, I'll need your employee ID.",
+      "citation": {
+        "precision": 0.667,
+        "recall": 1.0,
+        "f1": 0.8
+      },
+      "rouge_l": 0.161,
+      "completed": true
+    },
+    {
+      "id": "tl-01",
+      "category": "tool",
+      "query": "How much PTO does Sophie Martin (E-1007) have available right now?",
+      "is_workflow": true,
+      "latency_s": 14.828,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "check_pto_balance"
+      ],
+      "observed_tools": [
+        "check_pto_balance"
+      ],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "Here's the PTO balance for employee **E-1007**:\n\n| Item | Hours |\n|---|---|\n| Accrued | 110.0 |\n| Used | 58.0 |\n| Pending | 8.0 |\n| Carryover | 14.0 |\n| **Available** | **44.0** |\n\nThe employee accrues **10 hours/month** and currently has **44.0 hours available** (accrued \u2212 used \u2212 pending).\n\nLet me know if you'd like me to look up their profile, benefits status, or draft a PTO-related email.",
+      "rouge_l": 0.222,
+      "completed": true
+    },
+    {
+      "id": "tl-02",
+      "category": "tool",
+      "query": "What medical plan is employee E-1002 enrolled in?",
+      "is_workflow": true,
+      "latency_s": 13.665,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "lookup_benefits_status"
+      ],
+      "observed_tools": [
+        "lookup_benefits_status"
+      ],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "Here's the current benefits status for employee **E-1002**:\n\n| Benefit | Status |\n|---|---|\n| **Medical plan** | HDHP (High-Deductible Health Plan) |\n| **Dental** | Enrolled \u2713 |\n| **Vision** | Enrolled \u2713 |\n| **401(k) contribution** | 7% |\n| **FSA (annual)** | $2,000 |\n| **Eligibility** | Eligible |\n| **Effective date** | 2025-01-01 |\n\nLet me know if you'd like to look into any specific benefit in more detail or make a change request.",
+      "rouge_l": 0.235,
+      "completed": true
+    },
+    {
+      "id": "tl-03",
+      "category": "tool",
+      "query": "I'm E-1007. Who is my manager?",
+      "is_workflow": true,
+      "latency_s": 23.685,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "lookup_employee_profile"
+      ],
+      "observed_tools": [
+        "lookup_employee_profile",
+        "check_pto_balance"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "Here's Sophie Martin's (E-1007) PTO balance:\n\n- **Accrued:** 110.0 hours\n- **Used:** 58.0 hours\n- **Pending:** 8.0 hours\n- **Carryover:** 14.0 hours\n- **Available:** **44.0 hours**\n\nShe's a full-time Data Analyst in the Analytics department (hired Nov 2021, Denver HQ), accruing 10 hours/month.\n\nWould you like me to look into anything else, such as her benefits status or a specific PTO policy question?",
+      "rouge_l": 0.143,
+      "completed": true
+    },
+    {
+      "id": "tl-04",
+      "category": "tool",
+      "query": "Is Daniel Ortiz (E-1006) eligible for benefits, and why or why not?",
+      "is_workflow": true,
+      "latency_s": 17.755,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "lookup_benefits_status",
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "lookup_benefits_status",
+        "search_policy_documents",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.667,
+      "gold_doc_ids": [
+        "09-benefits-guide"
+      ],
+      "observed_doc_ids": [
+        "09-benefits-guide",
+        "15-parental-and-family-leave",
+        "01-handbook-overview-and-code-of-conduct"
+      ],
+      "action_safe": true,
+      "answer": "Here's what I found for **E-1006**:\n\n## Current Benefits Status\n| Item | Status |\n|------|--------|\n| Medical plan | None |\n| Dental | Not enrolled |\n| Vision | Not enrolled |\n| 401(k) contribution | 0% |\n| FSA (annual) | $0 |\n| **Eligibility status** | **Ineligible** |\n| Effective date | \u2014 |\n\n## Why They're Ineligible\nPer the **Benefits Guide (Eligibility section)**, eligibility is driven by employment classification and scheduled hours:\n\n- **Full-time (30+ hrs/week):** eligible for the full benefits package.\n- **Part-time (<30 hrs/week):** generally **not** eligible for medical, dental, and vision (unless state law requires an offer), though they may still qualify for the 401(k) once the service requirement is met.\n- **Contractors, interns, and temporary workers:** not eligible for the standard employee benefits package.\n\nSince E-1006's status is **ineligible**, they most likely fall into one of the non-eligible categories (e.g., part-time under 30 hours, or a contractor/intern/temp classification).\n\n## Suggested Next Steps\n1. **Confirm classification & hours** \u2014 I can pull their employee profile to verify their employment type and scheduled hours, which will pinpoint exactly why they're ineligible.\n2. **If they should be eligible** (e.g., recently moved to full-time), this may be a data issue worth flagging \u2014 I can open a mock HR ticket to investigate.\n3. **If they're part-time**, note that 401(k) eligibility may still apply once the service requirement is met, even without medical/dental/vision.\n\nWould you like me to look up their employee profile to confirm the classification, or open a ticket to review the eligibility determination?",
+      "citation": {
+        "precision": 0.333,
+        "recall": 1.0,
+        "f1": 0.5
+      },
+      "rouge_l": 0.119,
+      "completed": true
+    },
+    {
+      "id": "tl-05",
+      "category": "tool",
+      "query": "I'm E-1007 and I want to request 3 consecutive days of PTO next month. Do I have enough, and what notice is required?",
+      "is_workflow": true,
+      "latency_s": 41.421,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "check_pto_balance",
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "check_pto_balance",
+        "search_policy_documents",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.667,
+      "gold_doc_ids": [
+        "02-pto-and-vacation-policy"
+      ],
+      "observed_doc_ids": [
+        "02-pto-and-vacation-policy",
+        "15-parental-and-family-leave"
+      ],
+      "action_safe": true,
+      "answer": "Here's what I found for **E-1007**:\n\n## PTO Balance\n- **Available hours: 44.0** (110 accrued \u2212 58 used \u2212 8 pending)\n- Accrual rate: 10 hrs/month, with 14 hrs carryover\n\n## Notice Requirement for 5 Consecutive Days\nPer the PTO & Vacation Policy (*Request Process and Notice*):\n\n| Duration | Required Notice |\n|---|---|\n| 1\u20132 days | As much as practical, ideally several days |\n| 3+ consecutive days | At least **2 weeks** |\n| **5+ consecutive days** | **At least 30 days** |\n\nSo a 5-consecutive-day request requires **at least 30 days' advance notice**.\n\n### A few practical notes\n- **Timing:** If today is the request date, the earliest start date would be ~30 days out. Submitting earlier is always safer, especially if the dates fall in a peak period, holiday, or coverage-sensitive window \u2014 the policy asks those to be submitted as early as possible.\n- **Balance check:** 5 consecutive days \u2248 40 hours (assuming 8-hr days). With 44 available hours, the balance is sufficient, but it would leave only ~4 hours remaining \u2014 worth flagging to the manager.\n- **Manager SLA:** Managers aim to approve, deny, or request changes within **3 business days** of submission.\n- **Holidays:** If a company holiday falls within the approved PTO period, that day is recorded as holiday time, not PTO, so it won't draw down the balance.\n\nWould you like me to draft a PTO request email or create an HR ticket for this?",
+      "citation": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667
+      },
+      "rouge_l": 0.165,
+      "completed": true
+    },
+    {
+      "id": "tl-06",
+      "category": "tool",
+      "query": "I'm E-1007. Please file an HR ticket to review my PTO request for next month.",
+      "is_workflow": true,
+      "latency_s": 21.777,
+      "error": null,
+      "expected_behavior": "confirm",
+      "observed_behavior": "confirm",
+      "behavior_match": true,
+      "expected_tools": [
+        "create_mock_hr_ticket"
+      ],
+      "observed_tools": [],
+      "tool_jaccard": 0.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "This would create a mock HR ticket for E-1007. It is a mock action and nothing has run yet \u2014 confirm to proceed or decline to cancel.",
+      "completed": true
+    },
+    {
+      "id": "am-01",
+      "category": "ambiguous",
+      "query": "How much vacation do I have left?",
+      "is_workflow": false,
+      "latency_s": 0.819,
+      "error": null,
+      "expected_behavior": "clarify",
+      "observed_behavior": "clarify",
+      "behavior_match": true,
+      "expected_tools": [],
+      "observed_tools": [],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "Which employee is this for? Share the employee id (for example E-1002) and I'll look up the details.",
+      "completed": true
+    },
+    {
+      "id": "am-02",
+      "category": "ambiguous",
+      "query": "Am I eligible?",
+      "is_workflow": false,
+      "latency_s": 0.726,
+      "error": null,
+      "expected_behavior": "clarify",
+      "observed_behavior": "clarify",
+      "behavior_match": true,
+      "expected_tools": [],
+      "observed_tools": [],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "I want to answer the right thing -- could you say a bit more about what you need (the specific policy, benefit, or expense, and any dates)?",
+      "completed": true
+    },
+    {
+      "id": "am-03",
+      "category": "ambiguous",
+      "query": "Can I get reimbursed for that?",
+      "is_workflow": false,
+      "latency_s": 0.634,
+      "error": null,
+      "expected_behavior": "clarify",
+      "observed_behavior": "clarify",
+      "behavior_match": true,
+      "expected_tools": [],
+      "observed_tools": [],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "I want to answer the right thing -- could you say a bit more about what you need (the specific policy, benefit, or expense, and any dates)?",
+      "completed": true
+    },
+    {
+      "id": "am-04",
+      "category": "ambiguous",
+      "query": "I need to take some time off next week, what do I do?",
+      "is_workflow": false,
+      "latency_s": 0.687,
+      "error": null,
+      "expected_behavior": "clarify",
+      "observed_behavior": "clarify",
+      "behavior_match": true,
+      "expected_tools": [],
+      "observed_tools": [],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "Which employee is this for? Share the employee id (for example E-1002) and I'll look up the details.",
+      "completed": true
+    },
+    {
+      "id": "oos-01",
+      "category": "out_of_scope",
+      "query": "What's the weather in Austin tomorrow?",
+      "is_workflow": false,
+      "latency_s": 1.09,
+      "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m18btw3yey0s55f829f4ryf9` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199186, Requested 2963. Please try again in 15m28.367999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "expected_behavior": "refuse",
+      "observed_behavior": "answer",
+      "behavior_match": false,
+      "expected_tools": [],
+      "observed_tools": [],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "I could not reach the language model to complete this answer. Please try again shortly or contact HR directly.",
+      "completed": false
+    },
+    {
+      "id": "oos-02",
+      "category": "out_of_scope",
+      "query": "Write me a Python function that reverses a linked list.",
+      "is_workflow": false,
+      "latency_s": 0.784,
+      "error": null,
+      "expected_behavior": "refuse",
+      "observed_behavior": "refuse",
+      "behavior_match": true,
+      "expected_tools": [],
+      "observed_tools": [],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "I can only answer questions about Northwind Robotics HR policy -- time off, benefits, remote work, expenses, conduct, leave, pay, safety, and the like. That question looks outside that scope, so please redirect it to the right team (for example IT for account or device issues, or your manager for anything else).",
+      "completed": true
+    },
+    {
+      "id": "oos-03",
+      "category": "out_of_scope",
+      "query": "What's a good recipe for dinner tonight?",
+      "is_workflow": false,
+      "latency_s": 60.154,
+      "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m18btw3yey0s55f829f4ryf9` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199033, Requested 1294. Please try again in 2m21.264s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "expected_behavior": "refuse",
+      "observed_behavior": "answer",
+      "behavior_match": false,
+      "expected_tools": [],
+      "observed_tools": [],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "I could not reach the language model to complete this answer. Please try again shortly or contact HR directly.",
+      "completed": false
+    },
+    {
+      "id": "oos-04",
+      "category": "out_of_scope",
+      "query": "Who is the current CEO of Google?",
+      "is_workflow": false,
+      "latency_s": 0.836,
+      "error": null,
+      "expected_behavior": "refuse",
+      "observed_behavior": "refuse",
+      "behavior_match": true,
+      "expected_tools": [],
+      "observed_tools": [],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "I can only answer questions about Northwind Robotics HR policy -- time off, benefits, remote work, expenses, conduct, leave, pay, safety, and the like. That question looks outside that scope, so please redirect it to the right team (for example IT for account or device issues, or your manager for anything else).",
+      "completed": true
+    }
+  ]
+}

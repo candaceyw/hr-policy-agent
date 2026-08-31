@@ -93,10 +93,29 @@ environment variables, and cold-start notes: [`deployed.md`](deployed.md).
 
 ## Evaluation
 
-The evaluation harness lands in `evaluation/` — the question/gold set, the
-runner, and reported results (groundedness, citation accuracy, tool-selection
-accuracy, workflow completion, safety, latency p50/p95, plus a retrieval
-ablation). Run it with `python -m evaluation.run` once present.
+[`evaluation/`](evaluation/) holds the gold set and harness:
+
+- [`eval_questions.jsonl`](evaluation/eval_questions.jsonl) — 25 items across five
+  categories (straightforward Q&A, multi-document, tool-requiring, ambiguous,
+  out-of-scope), each with gold `doc_id`s, expected tools, and expected behavior.
+- [`metrics.py`](evaluation/metrics.py) — pure, unit-tested: citation
+  precision/recall/F1, tool-selection Jaccard, ROUGE-L, latency percentiles,
+  action-safety.
+- [`judges.py`](evaluation/judges.py) — LLM judge (a separate model from the one
+  under test) for groundedness and answer similarity.
+- [`run_eval.py`](evaluation/run_eval.py) — runs the set, writes
+  `results/eval-*.json`, regenerates [`RESULTS.md`](evaluation/RESULTS.md).
+- [`ablation.py`](evaluation/ablation.py) — retrieval-`k` sweep and
+  tools-enabled vs RAG-only.
+
+```bash
+python -m evaluation.run_eval               # full 25-item run + RESULTS.md
+python -m evaluation.run_eval --smoke --offline   # 6-item plumbing check (CI)
+python -m evaluation.ablation               # k sweep + tools-vs-RAG
+```
+
+CI runs the offline smoke subset on every push; the full run with the real LLM
+and judge is executed locally and its `RESULTS.md` committed.
 
 ## Private notes
 This repository intentionally keeps developer-only notes out of source control. Local notes such as `build-note.md` are ignored and remain private to the creator.

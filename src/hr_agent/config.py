@@ -47,6 +47,13 @@ class Settings(BaseSettings):
     max_tool_iterations: int = Field(default=8, alias="MAX_TOOL_ITERATIONS")
     project_root: str = "."
 
+    # Evaluation LLM judge. Kept separate from the generation provider so the
+    # judge is an independent model (no self-preference bias) on its own quota.
+    eval_judge_provider: str = Field(default="gemini", alias="EVAL_JUDGE_PROVIDER")
+    eval_judge_model: str = Field(default="gemini-3.6-flash", alias="EVAL_JUDGE_MODEL")
+    # Seconds to sleep between judge calls, to stay under free-tier RPM limits.
+    eval_judge_pace_seconds: float = Field(default=4.0, alias="EVAL_JUDGE_PACE_SECONDS")
+
     # Built SPA to serve from FastAPI. Unset => look for frontend/dist next to the
     # repo (dev/local); set in the container image to the copied dist path.
     static_dir: str | None = Field(default=None, alias="STATIC_DIR")
