@@ -31,6 +31,19 @@ def test_session_employee_id_hint_satisfies_a_personal_workflow():
     assert d.employee_id == "E-1002"
 
 
+def test_selected_employee_does_not_make_a_generic_policy_question_personal():
+    # A session employee is selected, but the question is about everyone.
+    d = decide("How much PTO do employees accrue per month?", employee_id_hint="E-1002")
+    assert d.route == "agent"
+    assert d.intent == "policy_qa"
+    assert d.employee_id is None
+
+
+def test_how_much_pto_is_personal_only_in_first_person():
+    assert wants_employee_workflow("how much PTO do I have")
+    assert not wants_employee_workflow("how much PTO do employees accrue per month")
+
+
 def test_bare_first_person_question_is_ambiguous():
     assert looks_ambiguous("Am I eligible?")
     assert looks_ambiguous("Can I get reimbursed?")

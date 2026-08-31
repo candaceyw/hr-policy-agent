@@ -17,6 +17,9 @@ class AgentState(TypedDict, total=False):
     query: str
     corpus_dir: str | None
     employee_id: str | None
+    # prior (user, assistant) turns for this session, oldest first; seeds the
+    # first model call as context and is never mutated by the graph.
+    history: list[AnyMessage]
     messages: Annotated[list[AnyMessage], add_messages]
     # operational trace only -- step/type/name/args_summary/result_summary/sources
     tool_trace: list[dict[str, Any]]

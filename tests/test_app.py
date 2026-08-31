@@ -52,6 +52,34 @@ def test_chat_policy_question_returns_answer(client):
     assert payload["pending_action"] is None
 
 
+def test_chat_follow_up_keeps_conversation_context(client):
+    """A second /chat with the same session_id sees the first turn's messages."""
+    model = ScriptedChatModel(
+        [
+            AIMessage(content="", tool_calls=[tool_call("check_pto_balance", {"employee_id": "E-1002"}, "c1")]),
+            AIMessage(content="Marcus Silva (E-1002) has 68 hours of PTO available."),
+            AIMessage(content="Carryover is capped at 40 hours into the next year."),
+        ]
+    )
+    app.state.chat_model = model
+
+    first = client.post("/chat", json={"message": "How much PTO does E-1002 have?"}).json()
+    sid = first["session_id"]
+    assert sid
+
+    second = client.post(
+        "/chat", json={"message": "And what about carryover?", "session_id": sid}
+    ).json()
+    assert second["session_id"] == sid
+    assert "40 hours" in second["answer"]
+
+    # The model's second invocation was handed the first turn as history.
+    last_call = model.calls[-1]
+    contents = [m.content for m in last_call]
+    assert "How much PTO does E-1002 have?" in contents
+    assert "And what about carryover?" in contents
+
+
 def test_chat_ticket_request_returns_pending_action(client):
     app.state.chat_model = ScriptedChatModel(
         [AIMessage(content="", tool_calls=[tool_call("create_mock_hr_ticket", {"employee_id": "E-1001", "issue": "laptop"}, "c1")])]

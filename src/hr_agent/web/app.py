@@ -14,6 +14,7 @@ from hr_agent.llm import embedding_available
 from hr_agent.mcp_client import discovery
 from hr_agent.orchestration import arun_chat
 from hr_agent.vector_store import DEFAULT_INDEX_PATH, index_exists
+from hr_agent.web.sessions import SessionStore
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,7 @@ async def lifespan(app: FastAPI):
     app.state.tools_discovered = 0
     app.state.mcp_transport = discovery.active_transport()
     app.state.agent_tools = []
+    app.state.sessions = SessionStore()
     # Injectable model seam: tests set this to a scripted fake; None => real provider.
     if not hasattr(app.state, "chat_model"):
         app.state.chat_model = None
@@ -60,6 +62,7 @@ class ChatRequest(BaseModel):
     message: str
     employee_id: str | None = None
     confirm: bool | None = None
+    session_id: str | None = None
 
 
 @app.get("/health")
@@ -95,16 +98,33 @@ async def chat(request: ChatRequest) -> dict:
     corpus_dir = str(project_root / "corpus")
     tools = list(getattr(app.state, "agent_tools", []) or [])
     model = getattr(app.state, "chat_model", None)
+
+    store: SessionStore = getattr(app.state, "sessions", None) or SessionStore()
+    session_id, session = store.get(request.session_id)
+    employee_id = request.employee_id or session.employee_id
+
     workflow_result = await arun_chat(
         request.message,
         tools,
         confirm=request.confirm,
         corpus_dir=corpus_dir,
         model=model,
-        employee_id=request.employee_id,
+        employee_id=employee_id,
+        history=list(session.history),
     )
 
+    # A pending confirmation is not a finished turn -- record it only once it
+    # resolves (on the follow-up request that carries `confirm`).
+    if not workflow_result.get("pending_action"):
+        store.record_turn(
+            session_id,
+            query=request.message,
+            answer=workflow_result.get("answer", ""),
+            employee_id=workflow_result.get("employee_id"),
+        )
+
     return {
+        "session_id": session_id,
         "answer": workflow_result.get("answer", "I could not determine an answer."),
         "citations": workflow_result.get("citations", []),
         "trace": workflow_result.get("trace", []),

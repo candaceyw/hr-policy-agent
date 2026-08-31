@@ -43,15 +43,23 @@ _AGENT_SYSTEM = (
     "search the policy corpus and to look up synthetic employee data. Ground "
     "every policy claim with a policy-search tool. Call an employee-data tool "
     "only when the question is about a specific named employee or employee id. "
-    "When you have enough information, stop calling tools and write a concise, "
-    "cited final answer. If the tools do not answer the question, say so and "
-    "recommend contacting HR."
+    "When you have enough information, stop calling tools and write the final "
+    "answer.\n"
+    "Answer format: at most ~120 words, in short prose or a few bullet points. "
+    "Cite each policy fact inline as [doc-id]. Do NOT write a 'TL;DR', a summary "
+    "heading, an email, a letter, or a sign-off, and do not offer to draft one "
+    "unless the user explicitly asked. If the tools do not answer the question, "
+    "say so plainly and recommend contacting HR."
 )
 
 
-def _employee_hint(query: str) -> str | None:
-    """Pre-resolve a named employee so the model doesn't have to parse it."""
-    employee_id = resolve_employee(query)
+def _employee_hint(query: str, employee_id: str | None = None) -> str | None:
+    """Pre-resolve the employee so the model doesn't have to parse it.
+
+    Prefer a name/id in the query itself; fall back to ``employee_id`` (the
+    gate's resolution, which includes the session's selected employee).
+    """
+    employee_id = resolve_employee(query) or employee_id
     if not employee_id:
         return None
     name = get_employee_name(employee_id)
@@ -194,10 +202,11 @@ def build_agent_graph(
         messages = list(state.get("messages") or [])
         if not messages:
             system = _AGENT_SYSTEM
-            hint = _employee_hint(state["query"])
+            hint = _employee_hint(state["query"], state.get("employee_id"))
             if hint:
                 system = f"{system}\n{hint}"
-            messages = [SystemMessage(system), HumanMessage(state["query"])]
+            history = list(state.get("history") or [])
+            messages = [SystemMessage(system), *history, HumanMessage(state["query"])]
         try:
             response = await _bound_model().ainvoke(messages)
             return {"messages": [response], "llm_error": None}
@@ -269,6 +278,7 @@ def build_agent_graph(
             employee_id_hint=state.get("employee_id"),
             retrieval_results=results,
             retrieval_method=method,
+            has_history=bool(state.get("history")),
         )
         trace = list(state.get("tool_trace") or [])
         trace.append(
@@ -306,6 +316,7 @@ def build_agent_graph(
             "tool_trace": trace,
             "escalation": False,
             "pending_action": None,
+            "intent": "clarify",
         }
 
     def guardrail_scope_node(state: AgentState) -> dict:
@@ -328,6 +339,7 @@ def build_agent_graph(
             "tool_trace": trace,
             "escalation": False,
             "pending_action": None,
+            "intent": "out_of_scope",
         }
 
     def compose_node(state: AgentState) -> dict:
@@ -535,6 +547,7 @@ def _result_dict(final: dict) -> dict:
         "pending_action": final.get("pending_action"),
         "iterations": final.get("iterations", 0),
         "intent": final.get("intent", ""),
+        "employee_id": final.get("employee_id"),
     }
 
 
@@ -546,19 +559,23 @@ async def arun_workflow(
     model: Any | None = None,
     employee_id: str | None = None,
     corpus_dir: str | None = None,
+    history: list[Any] | None = None,
 ) -> dict:
     """Deterministic gate + agent loop + destructive-action confirmation gate.
 
     ``confirm`` gates the mock actions: ``None`` returns ``pending_action`` and
     runs nothing, ``False`` records a decline, ``True`` executes the action.
     ``employee_id`` is the session id from the request; the gate uses it when the
-    query names no one.
+    query names no one. ``history`` is prior (user, assistant) messages for this
+    session; it seeds the first model call and relaxes the scope guardrail (a
+    follow-up in an open HR conversation is almost certainly in scope).
     """
     graph = build_agent_graph(tools, model=model, confirm_gate=True, gate=True)
     final = await graph.ainvoke(
         {
             "query": query,
             "messages": [],
+            "history": history or [],
             "tool_trace": [],
             "citations": [],
             "iterations": 0,

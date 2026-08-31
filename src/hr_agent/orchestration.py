@@ -55,6 +55,7 @@ async def arun_chat(
     corpus_dir: str | None = None,
     model: Any | None = None,
     employee_id: str | None = None,
+    history: list[Any] | None = None,
 ) -> dict:
     """Async entry the web layer awaits. Chooses the agent loop or the fallback."""
     if not tools:
@@ -62,7 +63,8 @@ async def arun_chat(
     if model is None and not llm_available():
         return _rag_only(query, corpus_dir, reason="No LLM credentials; answered from retrieval only.")
     return await arun_workflow(
-        query, tools, confirm=confirm, model=model, employee_id=employee_id, corpus_dir=corpus_dir
+        query, tools, confirm=confirm, model=model, employee_id=employee_id,
+        corpus_dir=corpus_dir, history=history,
     )
 
 
@@ -74,6 +76,7 @@ def run_workflow(
     confirm: bool | None = None,
     model: Any | None = None,
     employee_id: str | None = None,
+    history: list[Any] | None = None,
 ) -> dict:
     """Sync wrapper for scripts and tests. Discovers tools if none are passed.
 
@@ -91,6 +94,6 @@ def run_workflow(
     return asyncio.run(
         arun_chat(
             query, tools, confirm=confirm, corpus_dir=corpus_dir, model=model,
-            employee_id=employee_id,
+            employee_id=employee_id, history=history,
         )
     )

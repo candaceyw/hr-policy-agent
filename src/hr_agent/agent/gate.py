@@ -28,12 +28,14 @@ from hr_agent.routing import EMAIL_PHRASES, TICKET_PHRASES
 
 Route = Literal["agent", "clarify", "scope"]
 
-# First-person possessive about a person-specific HR topic, or a mock action.
+# First-person possessive about a person-specific HR topic, or a bare balance
+# query. "how much PTO do I have" is personal; "how much PTO do employees
+# accrue" is a policy question, so the how-much clause requires a nearby "I"/"my".
 _PERSONAL_TOPIC_RE = re.compile(
     r"\b(my|mine)\b[^.?!]*\b(pto|vacation|leave|balance|benefits?|profile|"
     r"coverage|enroll?ment|401\(?k\)?|paycheck|salary|pay stub)\b"
     r"|\b(pto|vacation|leave)\s+balance\b"
-    r"|\bhow\s+much\s+(pto|vacation|leave|time\s*off)\b",
+    r"|\bhow\s+much\s+(pto|vacation|leave|time\s*off)\b(?=[^.?!]*\b(i|my)\b)",
     re.IGNORECASE,
 )
 
@@ -122,16 +124,25 @@ def decide(
     employee_id_hint: str | None = None,
     retrieval_results: list[dict] | None = None,
     retrieval_method: str | None = None,
+    has_history: bool = False,
 ) -> GateDecision:
     """Route the request. Pure: callers pass any retrieval output in.
 
     ``retrieval_results`` / ``retrieval_method`` come from
     :func:`hr_agent.retrieval.retrieve_passages`; scope is only enforced when
     ``retrieval_method == "vector"`` (keyword scores are not calibrated 0-1).
+    ``has_history`` True means this is a follow-up in an open conversation, so
+    the out-of-scope guardrail is skipped -- a short follow-up ("what about
+    abroad?") scores low on its own but is almost certainly still on topic.
+
+    ``employee_id_hint`` (the session's selected employee) only *fills in* a
+    person when the query itself needs one -- it never makes a generic policy
+    question ("how much PTO do employees accrue?") into a personal workflow.
     """
-    resolved = employee_id_hint or resolve_employee(query)
+    query_employee = resolve_employee(query)
+    personal = wants_employee_workflow(query) or bool(query_employee)
+    resolved = query_employee or (employee_id_hint if personal else None)
     known = bool(resolved and get_employee_name(resolved))
-    personal = wants_employee_workflow(query) or bool(resolved)
     ambiguous = looks_ambiguous(query)
     intent = "agentic_workflow" if personal else ("ambiguous" if ambiguous else "policy_qa")
 
@@ -155,8 +166,14 @@ def decide(
             "clarify", intent, None, _clarify_message(unknown_id=None, ambiguous=False)
         )
 
-    # 4. Plain policy question the corpus does not cover (vector signal only).
-    if not personal and retrieval_method == "vector" and not is_in_scope(retrieval_results or []):
+    # 4. Plain policy question the corpus does not cover (vector signal only,
+    #    and never on a follow-up -- see has_history).
+    if (
+        not personal
+        and not has_history
+        and retrieval_method == "vector"
+        and not is_in_scope(retrieval_results or [])
+    ):
         return GateDecision("scope", "out_of_scope", None, None)
 
     return GateDecision("agent", intent, resolved if known else None, None)
