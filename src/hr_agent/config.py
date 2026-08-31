@@ -47,6 +47,10 @@ class Settings(BaseSettings):
     max_tool_iterations: int = Field(default=8, alias="MAX_TOOL_ITERATIONS")
     project_root: str = "."
 
+    # Built SPA to serve from FastAPI. Unset => look for frontend/dist next to the
+    # repo (dev/local); set in the container image to the copied dist path.
+    static_dir: str | None = Field(default=None, alias="STATIC_DIR")
+
     @property
     def provider(self) -> str:
         return self.llm_provider.strip().lower()

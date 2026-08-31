@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
@@ -157,7 +158,10 @@ def main(argv: list[str] | None = None) -> None:
     """Entrypoint for ``python -m hr_agent.mcp_server``.
 
     No args => stdio (the web app spawns this as a child process).
-    ``--http`` => a standalone Streamable HTTP service on ``MCP_HOST``:``MCP_PORT``.
+    ``--http`` => a standalone Streamable HTTP service. Bind host/port come from
+    ``--host``/``--port``, else ``$PORT`` (Railway/Render inject this), else
+    ``MCP_HOST``/``MCP_PORT``. In HTTP mode the host defaults to ``0.0.0.0`` so
+    the service is reachable inside a container.
     """
     parser = argparse.ArgumentParser(description="Run the HR policy MCP server.")
     parser.add_argument(
@@ -165,12 +169,19 @@ def main(argv: list[str] | None = None) -> None:
         action="store_true",
         help="Serve over Streamable HTTP instead of stdio.",
     )
-    parser.add_argument("--host", default=None, help="Bind host for HTTP (default: MCP_HOST).")
-    parser.add_argument("--port", type=int, default=None, help="Bind port for HTTP (default: MCP_PORT).")
+    parser.add_argument("--host", default=None, help="Bind host for HTTP (default: 0.0.0.0).")
+    parser.add_argument(
+        "--port", type=int, default=None, help="Bind port for HTTP (default: $PORT or MCP_PORT)."
+    )
     args = parser.parse_args(argv)
 
     transport = resolve_transport(args.http)
-    server = build_mcp_server(host=args.host, port=args.port)
+    host = args.host
+    port = args.port or (int(os.environ["PORT"]) if os.environ.get("PORT") else None)
+    if transport == _HTTP_TRANSPORT and host is None:
+        # a container service must bind all interfaces
+        host = "0.0.0.0"
+    server = build_mcp_server(host=host, port=port)
 
     if transport == _HTTP_TRANSPORT:
         # stdio mode must keep stdout clean for the protocol; only log for HTTP.

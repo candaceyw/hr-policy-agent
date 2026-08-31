@@ -62,10 +62,18 @@ async def arun_chat(
         return _rag_only(query, corpus_dir, reason="MCP tools unavailable; answered from retrieval only.")
     if model is None and not llm_available():
         return _rag_only(query, corpus_dir, reason="No LLM credentials; answered from retrieval only.")
-    return await arun_workflow(
-        query, tools, confirm=confirm, model=model, employee_id=employee_id,
-        corpus_dir=corpus_dir, history=history,
-    )
+    try:
+        return await arun_workflow(
+            query, tools, confirm=confirm, model=model, employee_id=employee_id,
+            corpus_dir=corpus_dir, history=history,
+        )
+    except Exception:
+        # e.g. the MCP service went down after startup, so a discovered tool
+        # fails on call. Degrade instead of 500-ing the request.
+        logger.exception("agent workflow failed; degrading to RAG-only")
+        return _rag_only(
+            query, corpus_dir, reason="An MCP tool call failed; answered from retrieval only."
+        )
 
 
 def run_workflow(

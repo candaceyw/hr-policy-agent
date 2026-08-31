@@ -34,3 +34,7 @@ def _offline_llm(monkeypatch):
         "hr_agent.agent.graph.chat_model",
         lambda **_: ScriptedChatModel([AIMessage(content=_OFFLINE_ANSWER)]),
     )
+    # /health caches a live MCP probe; clear it so tests don't see stale state.
+    from hr_agent.web import app as _webapp
+
+    _webapp._mcp_probe.update(at=0.0, value=None)

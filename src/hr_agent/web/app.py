@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import logging
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from hr_agent.config import settings
@@ -65,6 +67,21 @@ class ChatRequest(BaseModel):
     session_id: str | None = None
 
 
+# Live MCP probe, cached briefly so /health polling and each /chat don't re-probe
+# on every hit. A probe re-runs tool discovery, so it reflects the MCP service
+# going down *after* startup (the two-service degradation demo).
+_MCP_PROBE_TTL = 15.0
+_mcp_probe: dict = {"at": 0.0, "value": None}
+
+
+def _mcp_status() -> dict:
+    now = time.monotonic()
+    if _mcp_probe["value"] is None or now - _mcp_probe["at"] > _MCP_PROBE_TTL:
+        _mcp_probe["value"] = discovery.health()
+        _mcp_probe["at"] = now
+    return _mcp_probe["value"]
+
+
 @app.get("/health")
 def health() -> dict:
     has_index = index_exists()
@@ -75,12 +92,13 @@ def health() -> dict:
         except (OSError, ValueError):
             chunks = 0
     active = "vector" if (has_index and embedding_available()) else "keyword"
+    mcp = _mcp_status()
     return {
         "status": "ok",
         "mcp": {
-            "connected": bool(getattr(app.state, "mcp_ready", False)),
-            "tools_discovered": int(getattr(app.state, "tools_discovered", 0)),
-            "transport": getattr(app.state, "mcp_transport", discovery.active_transport()),
+            "connected": bool(mcp.get("connected")),
+            "tools_discovered": int(mcp.get("tools_discovered", 0)),
+            "transport": mcp.get("transport", discovery.active_transport()),
         },
         "vector_store": {
             "index_present": has_index,
@@ -133,3 +151,18 @@ async def chat(request: ChatRequest) -> dict:
         "llm_error": workflow_result.get("llm_error"),
         "intent": workflow_result.get("intent", ""),
     }
+
+
+# Serve the built SPA (production single-container). Mounted last so it only
+# catches paths the API routes above did not. In dev the SPA is served by Vite,
+# so this is skipped when there is no build on disk.
+_static_dir = (
+    Path(settings.static_dir)
+    if settings.static_dir
+    else Path(__file__).resolve().parents[3] / "frontend" / "dist"
+)
+if _static_dir.is_dir():
+    app.mount("/", StaticFiles(directory=str(_static_dir), html=True), name="spa")
+    logger.info("Serving SPA from %s", _static_dir)
+else:
+    logger.info("No SPA build at %s; API-only (Vite serves the UI in dev)", _static_dir)

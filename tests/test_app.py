@@ -109,6 +109,18 @@ def test_chat_confirmed_ticket_executes(client):
     assert any(e["type"] == "tool_call" and e["name"] == "create_mock_hr_ticket" for e in payload["trace"])
 
 
+def test_health_reflects_mcp_down_after_startup(client, monkeypatch):
+    """The /health MCP block is a live probe (cached ~15s), not startup-frozen."""
+    from hr_agent.web import app as webapp
+
+    monkeypatch.setattr(discovery.settings, "mcp_server_url", "http://127.0.0.1:1/mcp")
+    webapp._mcp_probe.update(at=0.0, value=None)  # force a fresh probe
+
+    payload = client.get("/health").json()
+    assert payload["mcp"]["connected"] is False
+    assert payload["mcp"]["tools_discovered"] == 0
+
+
 def test_chat_degrades_to_rag_only_when_mcp_unavailable(monkeypatch):
     async def _boom():
         raise RuntimeError("mcp down")

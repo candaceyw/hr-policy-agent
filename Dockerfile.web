@@ -1,0 +1,37 @@
+# Web service: FastAPI (API + built SPA). Talks to the MCP service over
+# Streamable HTTP (MCP_SERVER_URL). See deployed.md.
+
+# ---------- build the React SPA ----------
+FROM node:20-slim AS spa
+WORKDIR /spa
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
+# ---------- python runtime ----------
+FROM python:3.12-slim AS runtime
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+# deps first (pinned) so this layer caches across code changes
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
+
+# the package itself (deps already satisfied)
+COPY pyproject.toml README.md ./
+COPY src/ ./src/
+RUN pip install --no-deps .
+
+# runtime data: committed vector index + corpus + mock data
+COPY data/ ./data/
+COPY corpus/ ./corpus/
+COPY mock_data/ ./mock_data/
+COPY --from=spa /spa/dist ./frontend/dist
+
+ENV STATIC_DIR=/app/frontend/dist
+EXPOSE 8000
+CMD ["sh", "-c", "uvicorn hr_agent.web.app:app --host 0.0.0.0 --port ${PORT:-8000}"]

@@ -1,0 +1,29 @@
+# Local mirror of the two-service Railway deployment. Not used in production.
+#   docker compose up --build
+#   curl localhost:8000/health        # -> mcp.connected: true, transport: streamable_http
+#   docker compose stop mcp && curl localhost:8000/health   # -> connected: false, RAG-only
+
+services:
+  mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    environment:
+      PORT: "8765"
+    # no ports published: the web service reaches it on the compose network
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: "8000"
+      MCP_SERVER_URL: "http://mcp:8765/mcp"
+      LLM_PROVIDER: "${LLM_PROVIDER:-groq}"
+      LLM_MODEL: "${LLM_MODEL:-qwen/qwen3.8-27b}"
+      GROQ_API_KEY: "${GROQ_API_KEY:-}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+    depends_on:
+      - mcp

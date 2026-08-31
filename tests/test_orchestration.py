@@ -118,3 +118,21 @@ def test_degrades_to_rag_only_when_no_tools():
     assert result["citations"]
     assert result["pending_action"] is None
     assert any(e.get("name") == "rag_only" for e in result["trace"])
+
+
+def test_degrades_to_rag_only_when_a_tool_call_fails(monkeypatch, mcp_tools):
+    """MCP service down after startup: a discovered tool raises -> RAG-only, no crash."""
+
+    async def _boom(*_a, **_k):
+        raise RuntimeError("mcp connection lost")
+
+    monkeypatch.setattr("hr_agent.orchestration.arun_workflow", _boom)
+    result = run_workflow(
+        "How much PTO do employees accrue per month?",
+        mcp_tools,
+        model=ScriptedChatModel([]),
+        corpus_dir="corpus",
+    )
+    assert result["answer"]
+    assert result["pending_action"] is None
+    assert any(e.get("name") == "rag_only" for e in result["trace"])
