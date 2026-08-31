@@ -67,6 +67,17 @@ set in the dashboard.
 Deploy both. Railway Hobby services are always-on (no cold start). Private
 networking is on by default for new projects.
 
+### 4. Gate deploys on CI
+
+On **each** service → **Settings → Deploy → Wait for CI**: enable it. Railway
+then holds a triggered deploy until the GitHub check suite for that commit
+succeeds, and skips the deploy if CI fails. This is what satisfies the rubric's
+"deployment must only occur if tests pass" — the workflow is
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) (lint, import/start check,
+index verify, full pytest incl. MCP discovery + a tool call, and the SPA build).
+
+Railway Hobby services are always-on, so there is no cold start to document.
+
 ## Verify
 
 ```

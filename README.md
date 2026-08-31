@@ -1,6 +1,10 @@
 # HR Policy Agent
 
+[![CI](https://github.com/candaceyw/hr-policy-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/candaceyw/hr-policy-agent/actions/workflows/ci.yml)
+
 A grounded HR policy assistant that answers employee questions using a curated policy corpus and a layered retrieval-and-answer workflow.
+
+**Live:** https://web-production-1fa45.up.railway.app — deployment details in [`deployed.md`](deployed.md).
 
 ## What this project does
 - reads HR policy content from the `corpus/` directory
@@ -56,12 +60,43 @@ npm run dev -- --host 0.0.0.0
 
 Then open the frontend at `http://localhost:5173`.
 
-## Validation
+## Tests
+
 ```bash
 cd /Users/candacewilson/projects/hr-policy-agent
 . .venv312/bin/activate
-PYTHONPATH=. python -m pytest -q
+PYTHONPATH=. python -m pytest -q          # full suite, offline by default
+ruff check .                             # lint
+python scripts/build_index.py --verify   # vector index matches the corpus
 ```
+
+## CI/CD
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push and
+pull request:
+
+- **test** job — installs the pinned `requirements.txt` (the same set the Docker
+  image ships), runs an import/start check on the FastAPI app, `ruff check`, the
+  index-determinism verify, then the full `pytest` suite. The suite starts the
+  app via `TestClient` + lifespan and exercises MCP tool discovery and an MCP
+  tool call ([`tests/test_app.py`](tests/test_app.py),
+  [`tests/test_mcp.py`](tests/test_mcp.py)).
+- **frontend** job — `npm ci && npm run build` for the Vite SPA.
+
+Both Railway services are set to **Wait for CI**, so a red run blocks the
+deploy. See [`deployed.md`](deployed.md).
+
+## Deployment
+
+Two Railway services (`web`, `mcp`) built from one `Dockerfile`. Full setup,
+environment variables, and cold-start notes: [`deployed.md`](deployed.md).
+
+## Evaluation
+
+The evaluation harness lands in `evaluation/` — the question/gold set, the
+runner, and reported results (groundedness, citation accuracy, tool-selection
+accuracy, workflow completion, safety, latency p50/p95, plus a retrieval
+ablation). Run it with `python -m evaluation.run` once present.
 
 ## Private notes
 This repository intentionally keeps developer-only notes out of source control. Local notes such as `build-note.md` are ignored and remain private to the creator.

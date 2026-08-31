@@ -1,0 +1,68 @@
+name: CI
+
+# Runs on every push and pull request. Railway is configured to "Wait for CI"
+# on both services, so a red run here blocks the deploy (see deployed.md).
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: lint + tests + index verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      # Same dependency set the Docker image ships: pinned requirements first,
+      # then the package itself with deps already satisfied.
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install --no-deps -e .
+
+      # Build/start/import check: the FastAPI app module must import cleanly.
+      - name: Import check (app starts)
+        run: python -c "import hr_agent.web.app; print('import ok')"
+
+      - name: Lint
+        run: ruff check .
+
+      # Index determinism: re-chunk the corpus and confirm it matches the
+      # committed manifest.json. Offline (no embedding calls).
+      - name: Verify vector index
+        run: python scripts/build_index.py --verify
+
+      # Full suite. Offline by default (tests/conftest.py). Covers the app
+      # starting via TestClient + lifespan, MCP tool discovery, and an MCP
+      # tool call (tests/test_app.py, tests/test_mcp.py).
+      - name: Tests
+        run: pytest -q
+
+  frontend:
+    name: frontend build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install and build
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
