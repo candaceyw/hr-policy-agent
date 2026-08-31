@@ -1,5 +1,7 @@
-# Web service: FastAPI (API + built SPA). Talks to the MCP service over
-# Streamable HTTP (MCP_SERVER_URL). See deployed.md.
+# One image, two Railway services. They differ only in the start command:
+#   web  (default):  uvicorn hr_agent.web.app:app --host 0.0.0.0 --port $PORT
+#   mcp  (override):  python -m hr_agent.mcp_server --http --port $PORT
+# See deployed.md.
 
 # ---------- build the React SPA ----------
 FROM node:20-slim AS spa
@@ -26,7 +28,7 @@ COPY pyproject.toml README.md ./
 COPY src/ ./src/
 RUN pip install --no-deps .
 
-# runtime data: committed vector index + corpus + mock data
+# runtime data: committed vector index + corpus + mock data + built SPA
 COPY data/ ./data/
 COPY corpus/ ./corpus/
 COPY mock_data/ ./mock_data/
