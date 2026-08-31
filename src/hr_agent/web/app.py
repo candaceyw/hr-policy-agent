@@ -101,6 +101,7 @@ async def chat(request: ChatRequest) -> dict:
         confirm=request.confirm,
         corpus_dir=corpus_dir,
         model=model,
+        employee_id=request.employee_id,
     )
 
     return {
@@ -110,4 +111,5 @@ async def chat(request: ChatRequest) -> dict:
         "escalation": bool(workflow_result.get("escalation", False)),
         "pending_action": workflow_result.get("pending_action"),
         "llm_error": workflow_result.get("llm_error"),
+        "intent": workflow_result.get("intent", ""),
     }

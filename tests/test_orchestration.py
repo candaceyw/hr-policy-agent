@@ -34,7 +34,7 @@ def test_agent_answers_policy_question_with_citations(mcp_tools):
     assert "10 hours" in result["answer"]
     assert result["pending_action"] is None
     assert any(c["doc_id"].startswith("02-pto") for c in result["citations"])
-    assert [e["type"] for e in result["trace"]] == ["tool_call", "compose"]
+    assert [e["type"] for e in result["trace"]] == ["classify", "tool_call", "compose"]
 
 
 def test_agent_looks_up_employee_data(mcp_tools):

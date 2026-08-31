@@ -21,10 +21,13 @@ from langchain_core.tools import BaseTool
 from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import ToolNode
 
+from hr_agent.agent.gate import decide as gate_decide
 from hr_agent.agent.state import AgentState
 from hr_agent.config import settings
 from hr_agent.directory import get_employee_name, resolve_employee
+from hr_agent.guardrails import SCOPE_REFUSAL, top_score
 from hr_agent.llm import chat_model
+from hr_agent.retrieval import retrieve_passages
 
 logger = logging.getLogger(__name__)
 
@@ -165,6 +168,7 @@ def build_agent_graph(
     model: Any | None = None,
     *,
     confirm_gate: bool = False,
+    gate: bool = False,
 ):
     """Compile the agent loop over ``tools``.
 
@@ -173,6 +177,9 @@ def build_agent_graph(
     ``confirm_gate=True`` adds a human-in-the-loop pause before any tool in
     :data:`DESTRUCTIVE_TOOLS`: the run stops with ``pending_action`` unless
     ``state["confirm"]`` is ``True``; ``False`` records a decline.
+    ``gate=True`` puts a deterministic ``classify_intent`` node in front of the
+    loop that can short-circuit to ``clarify`` (missing/unknown employee, or an
+    ambiguous request) or ``guardrail_scope`` (out-of-corpus policy question).
     """
     tool_node = ToolNode(tools)
     _model_box: dict[str, Any] = {"model": model}
@@ -246,6 +253,83 @@ def build_agent_graph(
             "iterations": state.get("iterations", 0) + 1,
         }
 
+    def classify_node(state: AgentState) -> dict:
+        """Deterministic pre-agent gate. No LLM call; may short-circuit the run."""
+        query = state["query"]
+        results: list[dict] = []
+        method: str | None = None
+        try:
+            results, meta = retrieve_passages(query, corpus_dir=state.get("corpus_dir"))
+            method = meta.get("method")
+        except Exception as exc:  # noqa: BLE001 - the gate must never crash the request
+            logger.warning("classify_node retrieval failed: %s", exc)
+
+        decision = gate_decide(
+            query,
+            employee_id_hint=state.get("employee_id"),
+            retrieval_results=results,
+            retrieval_method=method,
+        )
+        trace = list(state.get("tool_trace") or [])
+        trace.append(
+            {
+                "step": len(trace) + 1,
+                "type": "classify",
+                "name": "classify_intent",
+                "args_summary": _summarize_args({"query": query}),
+                "result_summary": f"intent={decision.intent}; route={decision.route}",
+            }
+        )
+        return {
+            "intent": decision.intent,
+            "gate_route": decision.route,
+            "gate_message": decision.message,
+            "employee_id": decision.employee_id,
+            "scope_score": top_score(results),
+            "tool_trace": trace,
+        }
+
+    def clarify_node(state: AgentState) -> dict:
+        """Ask exactly one clarifying question and stop; nothing else runs."""
+        trace = list(state.get("tool_trace") or [])
+        trace.append(
+            {
+                "step": len(trace) + 1,
+                "type": "clarify",
+                "name": "request_clarification",
+                "result_summary": "Asked one clarifying question; no tools called.",
+            }
+        )
+        return {
+            "answer": state.get("gate_message") or "Could you give me a bit more detail?",
+            "citations": [],
+            "tool_trace": trace,
+            "escalation": False,
+            "pending_action": None,
+        }
+
+    def guardrail_scope_node(state: AgentState) -> dict:
+        """Out-of-corpus policy question: fixed redirect, no LLM call."""
+        score = float(state.get("scope_score", 0.0))
+        trace = list(state.get("tool_trace") or [])
+        trace.append(
+            {
+                "step": len(trace) + 1,
+                "type": "guardrail",
+                "name": "scope_refusal",
+                "result_summary": (
+                    f"out of scope: top similarity {score:.3f} < {settings.scope_threshold}"
+                ),
+            }
+        )
+        return {
+            "answer": SCOPE_REFUSAL,
+            "citations": [],
+            "tool_trace": trace,
+            "escalation": False,
+            "pending_action": None,
+        }
+
     def compose_node(state: AgentState) -> dict:
         messages = state.get("messages") or []
         last_ai = next((m for m in reversed(messages) if isinstance(m, AIMessage)), None)
@@ -267,12 +351,13 @@ def build_agent_graph(
                 )
 
         trace = list(state.get("tool_trace") or [])
+        tool_calls = sum(1 for e in trace if e.get("type") == "tool_call")
         trace.append(
             {
                 "step": len(trace) + 1,
                 "type": "compose",
                 "name": "compose_answer",
-                "result_summary": f"Final answer composed from {len(trace)} tool call(s).",
+                "result_summary": f"Final answer composed from {tool_calls} tool call(s).",
             }
         )
         return {
@@ -387,7 +472,21 @@ def build_agent_graph(
         graph.add_node("declined", declined_node)
         targets |= {"confirm_gate": "confirm_gate", "declined": "declined"}
 
-    graph.add_edge(START, "agent")
+    if gate:
+        graph.add_node("classify", classify_node)
+        graph.add_node("clarify", clarify_node)
+        graph.add_node("guardrail_scope", guardrail_scope_node)
+        graph.add_edge(START, "classify")
+        graph.add_conditional_edges(
+            "classify",
+            lambda s: s.get("gate_route", "agent"),
+            {"agent": "agent", "clarify": "clarify", "scope": "guardrail_scope"},
+        )
+        graph.add_edge("clarify", END)
+        graph.add_edge("guardrail_scope", END)
+    else:
+        graph.add_edge(START, "agent")
+
     graph.add_conditional_edges("agent", route, targets)
     graph.add_edge("tools", "agent")
     graph.add_edge("nudge", "agent")
@@ -435,6 +534,7 @@ def _result_dict(final: dict) -> dict:
         "escalation": bool(final.get("escalation", False)),
         "pending_action": final.get("pending_action"),
         "iterations": final.get("iterations", 0),
+        "intent": final.get("intent", ""),
     }
 
 
@@ -444,13 +544,17 @@ async def arun_workflow(
     *,
     confirm: bool | None = None,
     model: Any | None = None,
+    employee_id: str | None = None,
+    corpus_dir: str | None = None,
 ) -> dict:
-    """Agent loop with the destructive-action confirmation gate (Q16).
+    """Deterministic gate + agent loop + destructive-action confirmation gate.
 
     ``confirm`` gates the mock actions: ``None`` returns ``pending_action`` and
     runs nothing, ``False`` records a decline, ``True`` executes the action.
+    ``employee_id`` is the session id from the request; the gate uses it when the
+    query names no one.
     """
-    graph = build_agent_graph(tools, model=model, confirm_gate=True)
+    graph = build_agent_graph(tools, model=model, confirm_gate=True, gate=True)
     final = await graph.ainvoke(
         {
             "query": query,
@@ -460,6 +564,8 @@ async def arun_workflow(
             "iterations": 0,
             "confirm": confirm,
             "pending_action": None,
+            "employee_id": employee_id,
+            "corpus_dir": corpus_dir,
         }
     )
     return _result_dict(final)

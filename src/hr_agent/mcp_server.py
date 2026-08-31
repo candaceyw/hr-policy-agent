@@ -93,11 +93,20 @@ def build_mcp_server(host: str | None = None, port: int | None = None) -> FastMC
 
     @server.tool()
     def check_pto_balance(employee_id: str) -> dict:
-        """Return synthetic PTO accrual and remaining balance data for an employee."""
+        """Return synthetic PTO accrual and remaining balance data for an employee.
+
+        Includes a derived ``available_hours`` (accrued - used - pending) so the
+        agent never has to do the arithmetic itself.
+        """
         balances = _load_json(_mock_data_dir() / "pto_balances.json")
         for item in balances:
             if item["employee_id"] == employee_id:
-                return item
+                available = (
+                    item.get("accrued_hours", 0.0)
+                    - item.get("used_hours", 0.0)
+                    - item.get("pending_hours", 0.0)
+                )
+                return {**item, "available_hours": round(available, 2)}
         return {"error": "not_found", "message": f"No PTO record exists for {employee_id}."}
 
     @server.tool()

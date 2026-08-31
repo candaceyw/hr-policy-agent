@@ -44,6 +44,22 @@ def test_mcp_tool_lookup_employee_profile():
     assert payload["name"] == "Alicia Chen"
 
 
+def test_check_pto_balance_derives_available_hours():
+    server = build_mcp_server()
+    result = asyncio.run(server.call_tool("check_pto_balance", {"employee_id": "E-1007"}))
+    payload = __import__("json").loads(result[0].text)
+    # E-1007: 110 accrued - 58 used - 8 pending = 44
+    assert payload["available_hours"] == 44.0
+    assert isinstance(payload["available_hours"], (int, float))
+
+
+def test_check_pto_balance_unknown_employee_errors():
+    server = build_mcp_server()
+    result = asyncio.run(server.call_tool("check_pto_balance", {"employee_id": "E-9999"}))
+    payload = __import__("json").loads(result[0].text)
+    assert payload["error"] == "not_found"
+
+
 def test_resolve_transport_defaults_to_stdio():
     assert resolve_transport(http_flag=False, configured="stdio") == "stdio"
     assert resolve_transport(http_flag=False, configured="") == "stdio"

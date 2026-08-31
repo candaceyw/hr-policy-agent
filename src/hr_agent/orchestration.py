@@ -54,13 +54,16 @@ async def arun_chat(
     confirm: bool | None = None,
     corpus_dir: str | None = None,
     model: Any | None = None,
+    employee_id: str | None = None,
 ) -> dict:
     """Async entry the web layer awaits. Chooses the agent loop or the fallback."""
     if not tools:
         return _rag_only(query, corpus_dir, reason="MCP tools unavailable; answered from retrieval only.")
     if model is None and not llm_available():
         return _rag_only(query, corpus_dir, reason="No LLM credentials; answered from retrieval only.")
-    return await arun_workflow(query, tools, confirm=confirm, model=model)
+    return await arun_workflow(
+        query, tools, confirm=confirm, model=model, employee_id=employee_id, corpus_dir=corpus_dir
+    )
 
 
 def run_workflow(
@@ -70,6 +73,7 @@ def run_workflow(
     corpus_dir: str | None = None,
     confirm: bool | None = None,
     model: Any | None = None,
+    employee_id: str | None = None,
 ) -> dict:
     """Sync wrapper for scripts and tests. Discovers tools if none are passed.
 
@@ -85,5 +89,8 @@ def run_workflow(
     if corpus_dir is None:
         corpus_dir = str(Path(__file__).resolve().parents[2] / "corpus")
     return asyncio.run(
-        arun_chat(query, tools, confirm=confirm, corpus_dir=corpus_dir, model=model)
+        arun_chat(
+            query, tools, confirm=confirm, corpus_dir=corpus_dir, model=model,
+            employee_id=employee_id,
+        )
     )

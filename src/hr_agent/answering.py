@@ -132,7 +132,7 @@ def synthesize_final_answer(
                 used = tool_result.get("used_hours", 0)
                 pending = tool_result.get("pending_hours", 0)
                 rate = tool_result.get("accrual_rate_hours_per_month", 0)
-                available = accrued - used - pending
+                available = tool_result.get("available_hours", accrued - used - pending)
                 merged_answer = (
                     f"{who} has {available:g} hours of PTO available "
                     f"({accrued:g} accrued − {used:g} used − {pending:g} pending), "

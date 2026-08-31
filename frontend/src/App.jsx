@@ -1,10 +1,15 @@
 import { useState } from 'react';
 
 const demoQuestions = [
+  // The two graded demo workflows first.
+  'Is Marcus Silva (E-1002) allowed to work remotely from another state for six weeks? What approvals and data-security rules apply?',
+  'Can I take three days of PTO next week? My employee id is E-1002.',
+  // Supporting demos: plain policy Q&A, expense compliance, multi-doc, out-of-scope, clarify.
   'How much PTO do employees accrue per month?',
   'Can I expense a company laptop and a home office chair?',
   'I want to work from Ireland for six weeks. What approvals do I need and what applies to my laptop and data access?',
   'What time does the pizza place close?',
+  'How much PTO do I have left?',
 ];
 
 export default function App() {

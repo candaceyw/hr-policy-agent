@@ -16,6 +16,7 @@ class AgentState(TypedDict, total=False):
 
     query: str
     corpus_dir: str | None
+    employee_id: str | None
     messages: Annotated[list[AnyMessage], add_messages]
     # operational trace only -- step/type/name/args_summary/result_summary/sources
     tool_trace: list[dict[str, Any]]
@@ -25,6 +26,11 @@ class AgentState(TypedDict, total=False):
     answer: str
     llm_error: str | None
     escalation: bool
+    # pre-agent gate (classify_intent -> clarify | scope | agent)
+    intent: str
+    gate_route: str
+    gate_message: str | None
+    scope_score: float
     # confirmation gate (only used when the graph is built with confirm_gate=True)
     confirm: bool | None
     pending_action: dict[str, Any] | None
