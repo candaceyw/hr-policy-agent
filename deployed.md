@@ -1,5 +1,8 @@
 # Deployment
 
+**Live:** https://web-production-1fa45.up.railway.app
+(`/health` → `mcp.connected: true`, `transport: streamable_http`, `retrieval.active_method: vector`)
+
 Two Railway services from this one repo, built from **the same `Dockerfile`**,
 differing only in the start command:
 
@@ -75,6 +78,16 @@ Open the app URL, pick an employee, run the two demo prompts. To show the
 degradation path: stop the `mcp` service in Railway, wait ~15 s (health is
 probed on a short TTL), reload `/health` — `connected` flips to `false` and the
 app answers from retrieval only with a caveat in the trace.
+
+## Issues hit on the first deploy (and the fixes)
+
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| `/` → "Application failed to respond" | `Dockerfile` `EXPOSE 8000`, but Railway injects `PORT=8080`; the domain was bound to 8000 | pin `PORT=8000` on `web` so uvicorn binds the port the domain targets |
+| `mcp` deploy "healthcheck failed" | healthcheck path was `/health`; the MCP server only serves `/mcp` | clear the healthcheck path on `mcp` |
+| `mcp`: `invalid int value: '$PORT'` | Railway's Custom Start Command isn't shell-expanded | drop `--port` from the command; `main()` reads `$PORT` from the env |
+| `retrieval.active_method: keyword` despite the key being set | `pip install .` copied the package to `site-packages`, so `Path(__file__).parents[2]/"data"` resolved outside `/app` | `pip install -e .` in the image so the package stays at `/app/src/hr_agent` |
+| `transport: stdio`, `embedding_key_configured: false` | the env vars were set on `mcp`, not `web` | `web` gets the LLM keys + `MCP_SERVER_URL`; `mcp` only needs `PORT` |
 
 ## Local mirror
 
