@@ -18,6 +18,7 @@ frontend/dist/
 
 # Personal/private developer notes
 build-note.md
+HANDOFF.md
 
 # OS/editor
 .DS_Store
