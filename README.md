@@ -86,6 +86,13 @@ pull request:
 Both Railway services are set to **Wait for CI**, so a red run blocks the
 deploy. See [`deployed.md`](deployed.md).
 
+## Design docs
+
+- [`design-and-evaluation.md`](design-and-evaluation.md) — architecture, data,
+  API, implementation, testing, deployment, and the full evaluation write-up.
+- [`deployed.md`](deployed.md) — Railway two-service setup and gotchas.
+- [`ai-tooling.md`](ai-tooling.md) — how AI tooling was used to build this.
+
 ## Deployment
 
 Two Railway services (`web`, `mcp`) built from one `Dockerfile`. Full setup,
