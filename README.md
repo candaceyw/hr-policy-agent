@@ -2,127 +2,146 @@
 
 [![CI](https://github.com/candaceyw/hr-policy-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/candaceyw/hr-policy-agent/actions/workflows/ci.yml)
 
-A grounded HR policy assistant that answers employee questions using a curated policy corpus and a layered retrieval-and-answer workflow.
+A grounded HR policy assistant for the fictional **Northwind Robotics**. It
+answers employee questions from a curated policy corpus (RAG), runs multi-step
+workflows through an agent that calls **MCP tools** for employee data, stops for
+confirmation before any action, and returns citations plus an operational trace
+with every answer.
 
-**Live:** https://web-production-1fa45.up.railway.app — deployment details in [`deployed.md`](deployed.md).
+**Live:** https://web-production-1fa45.up.railway.app  ·  `/health`:
+[`…/health`](https://web-production-1fa45.up.railway.app/health)
 
-## What this project does
-- reads HR policy content from the `corpus/` directory
-- retrieves the most relevant passages for a user question
-- builds a grounded answer with citations
-- routes policy questions through a lightweight orchestration layer
-- exposes the backend through a FastAPI API
-- presents the experience in a React frontend
+## What it does
 
-## Architecture
-- Backend: Python 3.12 + FastAPI
-- Retrieval layer: keyword-based policy retrieval over markdown corpus files
-- Orchestration: routing and workflow logic for grounded responses
-- Frontend: React + Vite dashboard-style interface
+- Retrieves the most relevant policy sections for a question (vector search over
+  a committed `sqlite-vec` index, keyword TF-IDF fallback).
+- Composes a short, **cited** answer grounded in those sections.
+- Runs an agent loop that decides when to call a tool — PTO balance, benefits
+  status, employee profile — and when RAG alone is enough.
+- **Asks before acting:** filing a mock HR ticket or drafting an email stops at
+  a confirmation gate.
+- Routes ambiguous requests to one clarifying question and out-of-scope requests
+  to a redirect, before any model call.
+- Degrades to RAG-only (with a caveat in the trace) if the MCP service or the
+  LLM is unavailable.
 
-## Project structure
-- `src/hr_agent/` — backend logic for retrieval, routing, answering, and orchestration
-- `src/hr_agent/web/` — FastAPI application and API endpoints
-- `corpus/` — HR policy source documents (17 documents, ~40 pages) for the
-  fictional Northwind Robotics, in four formats: Markdown (13), PDF (2), HTML (1),
-  and plain text (1)
-- `corpus-facts.md` — internal reference listing every concrete figure used across
-  the corpus, kept consistent with `mock_data/`
-- `scripts/build_corpus_formats.py` — regenerates the PDF/HTML renditions from
-  their Markdown sources
-- `mock_data/` — synthetic employee, PTO, benefits, office, and ticket data
-- `frontend/` — React app
-- `tests/` — validation for ingestion, retrieval, routing, and API behavior
+Two demo workflows run end-to-end from the UI presets: **remote-work
+eligibility** (spans three policies + `lookup_employee_profile`) and **PTO
+request** (`check_pto_balance` + policy + a confirmation-gated ticket).
+
+## Architecture (short version)
+
+```
+React SPA ──POST /chat──► FastAPI (service "web")
+                             │  in-memory session history
+                             ▼
+                          LangGraph agent
+                          classify → [clarify | scope | agent ⇄ tools] → compose
+                             │  MCP Streamable HTTP (private network)
+                             ▼
+                          FastMCP server (service "mcp") — 9 tools
+                          ├─ sqlite-vec index  (read-only, committed)
+                          └─ mock_data/*.json  (read-only)
+```
+
+- Python 3.12 + FastAPI; LangGraph orchestration; FastMCP tool server.
+- Multi-provider LLM behind one file (`llm.py`); production runs Groq
+  `qwen/qwen3.8-27b`. Embeddings on Gemini.
+- React + Vite SPA, served by the backend in production.
+- Full design write-up (data model, API, agent graph, tests, deployment,
+  evaluation): [`design-and-evaluation.md`](design-and-evaluation.md).
+
+## Repository layout
+
+| Path | Contents |
+| --- | --- |
+| `src/hr_agent/` | backend: `retrieval`, `answering`, `agent/` (graph + gate), `mcp_client/`, `mcp_server.py`, `ingest/`, `web/` |
+| `corpus/` | 17 HR policy documents (~40 pages) in 4 formats: 13 Markdown, 2 PDF, 1 HTML, 1 text |
+| `corpus-facts.md` | internal reference — every figure in the corpus, kept consistent with `mock_data/` |
+| `mock_data/` | synthetic employees, PTO balances, benefits, offices, tickets |
+| `data/index/` | committed `sqlite-vec` index + `manifest.json` (hash-verified in CI) |
+| `evaluation/` | 25-item gold set, metrics, LLM judge, runner, ablation, `RESULTS.md` |
+| `frontend/` | React + Vite SPA |
+| `tests/` | 116 tests — ingestion, retrieval, gate, agent loop, MCP, app, evaluation |
+| `scripts/` | `build_index.py` (`--verify`), `build_corpus_formats.py` |
 
 ## Local setup
 
-### 1) Create the Python environment
+Python 3.12. From the repo root:
+
 ```bash
-cd /Users/candacewilson/projects/hr-policy-agent
-python3.12 -m venv .venv312
-. .venv312/bin/activate
-pip install .
+python3.12 -m venv .venv && . .venv/bin/activate
+pip install -e .
+
+cp .env.example .env      # then set GEMINI_API_KEY (embeddings) and GROQ_API_KEY (generation)
 ```
 
-### 2) Run the backend
+Run the backend (spawns the MCP server over stdio when `MCP_SERVER_URL` is unset):
+
 ```bash
-cd /Users/candacewilson/projects/hr-policy-agent
-. .venv312/bin/activate
-PYTHONPATH=src python -m uvicorn hr_agent.web.app:app --host 0.0.0.0 --port 8000
+python -m uvicorn hr_agent.web.app:app --host 0.0.0.0 --port 8000
 ```
 
-### 3) Run the frontend
+Run the frontend (dev):
+
 ```bash
-cd /Users/candacewilson/projects/hr-policy-agent/frontend
-npm install
-npm run dev -- --host 0.0.0.0
+cd frontend && npm install && npm run dev -- --host 0.0.0.0   # http://localhost:5173
 ```
 
-Then open the frontend at `http://localhost:5173`.
+The committed index is already valid — rebuild only after changing the corpus or
+chunking config: `python scripts/build_index.py`.
 
-## Tests
+For the production-shaped two-process / two-container setup, see
+[`deployed.md`](deployed.md).
+
+## Tests & checks
 
 ```bash
-cd /Users/candacewilson/projects/hr-policy-agent
-. .venv312/bin/activate
-PYTHONPATH=. python -m pytest -q          # full suite, offline by default
-ruff check .                             # lint
-python scripts/build_index.py --verify   # vector index matches the corpus
+python -m pytest -q                       # 116 tests, offline by default
+ruff check .                              # lint (line length 100)
+python scripts/build_index.py --verify    # index is deterministic vs the manifest
+python -m evaluation.run_eval --smoke --offline   # eval harness plumbing, no tokens
 ```
 
 ## CI/CD
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push and
-pull request:
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push and PR:
 
-- **test** job — installs the pinned `requirements.txt` (the same set the Docker
-  image ships), runs an import/start check on the FastAPI app, `ruff check`, the
-  index-determinism verify, then the full `pytest` suite. The suite starts the
-  app via `TestClient` + lifespan and exercises MCP tool discovery and an MCP
-  tool call ([`tests/test_app.py`](tests/test_app.py),
-  [`tests/test_mcp.py`](tests/test_mcp.py)).
-- **frontend** job — `npm ci && npm run build` for the Vite SPA.
+- **test** — install pinned `requirements.txt` (the set the Docker image ships)
+  → import/start check → `ruff check` → index-determinism verify → full `pytest`
+  (incl. MCP discovery + a tool call, app start via `TestClient` + lifespan) →
+  offline evaluation smoke subset.
+- **frontend** — `npm ci && npm run build`.
 
-Both Railway services are set to **Wait for CI**, so a red run blocks the
-deploy. See [`deployed.md`](deployed.md).
-
-## Design docs
-
-- [`design-and-evaluation.md`](design-and-evaluation.md) — architecture, data,
-  API, implementation, testing, deployment, and the full evaluation write-up.
-- [`deployed.md`](deployed.md) — Railway two-service setup and gotchas.
-- [`ai-tooling.md`](ai-tooling.md) — how AI tooling was used to build this.
-
-## Deployment
-
-Two Railway services (`web`, `mcp`) built from one `Dockerfile`. Full setup,
-environment variables, and cold-start notes: [`deployed.md`](deployed.md).
+Both Railway services are set to **Wait for CI**, so a red run cannot deploy.
 
 ## Evaluation
 
-[`evaluation/`](evaluation/) holds the gold set and harness:
-
-- [`eval_questions.jsonl`](evaluation/eval_questions.jsonl) — 25 items across five
-  categories (straightforward Q&A, multi-document, tool-requiring, ambiguous,
-  out-of-scope), each with gold `doc_id`s, expected tools, and expected behavior.
-- [`metrics.py`](evaluation/metrics.py) — pure, unit-tested: citation
-  precision/recall/F1, tool-selection Jaccard, ROUGE-L, latency percentiles,
-  action-safety.
-- [`judges.py`](evaluation/judges.py) — LLM judge (a separate model from the one
-  under test) for groundedness and answer similarity.
-- [`run_eval.py`](evaluation/run_eval.py) — runs the set, writes
-  `results/eval-*.json`, regenerates [`RESULTS.md`](evaluation/RESULTS.md).
-- [`ablation.py`](evaluation/ablation.py) — retrieval-`k` sweep and
-  tools-enabled vs RAG-only.
+25 items across five categories (straightforward, multi-doc, tool-requiring,
+ambiguous, out-of-scope), each with gold `doc_id`s, expected tools, and expected
+behavior. Metrics: groundedness (LLM judge), citation P/R/F1, tool-selection
+Jaccard, workflow completion, escalation/clarification accuracy, action-safety,
+latency p50/p95, plus a retrieval-`k` ablation.
 
 ```bash
-python -m evaluation.run_eval               # full 25-item run + RESULTS.md
-python -m evaluation.run_eval --smoke --offline   # 6-item plumbing check (CI)
-python -m evaluation.ablation               # k sweep + tools-vs-RAG
+python -m evaluation.run_eval                          # full judged run + RESULTS.md
+python -m evaluation.run_eval --rejudge results/<f>.json   # re-score saved answers only
+python -m evaluation.ablation --no-judge               # k sweep + tools-vs-RAG
 ```
 
-CI runs the offline smoke subset on every push; the full run with the real LLM
-and judge is executed locally and its `RESULTS.md` committed.
+Latest results and analysis: [`evaluation/RESULTS.md`](evaluation/RESULTS.md)
+and [`design-and-evaluation.md`](design-and-evaluation.md) §7. CI runs the
+offline smoke subset; the full judged run is executed locally and committed.
+
+## Documentation
+
+| Doc | Purpose |
+| --- | --- |
+| [`design-and-evaluation.md`](design-and-evaluation.md) | architecture, data, API, implementation, testing, deployment, evaluation |
+| [`deployed.md`](deployed.md) | Railway two-service setup + first-deploy gotchas |
+| [`ai-tooling.md`](ai-tooling.md) | how AI tooling was used to build this, and the checks against AI error |
 
 ## Private notes
-This repository intentionally keeps developer-only notes out of source control. Local notes such as `build-note.md` are ignored and remain private to the creator.
+
+`build-note.md` is a git-ignored developer learning log and is not part of the
+repository.
