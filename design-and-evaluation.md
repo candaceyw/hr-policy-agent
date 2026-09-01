@@ -199,7 +199,7 @@ errors are never raised across the MCP boundary.
 
 ## 5. Testing
 
-**130 tests, `ruff` clean, offline by default** (an autouse fixture forces the
+**131 tests, `ruff` clean, offline by default** (an autouse fixture forces the
 no-LLM path; tests that need tool-calling inject a `ScriptedChatModel`).
 
 | Area | Files | Count |
@@ -256,7 +256,10 @@ The harness (`run_eval.py`) drives the system **in-process** via `run_workflow`
 not HTTP framing). The **LLM judge** (`judges.py`) is a *different* model family
 from the one under test (`openai/gpt-oss-20b` vs the `qwen` generator) to avoid
 self-preference bias; it scores groundedness and answer-similarity in one call.
-`--rejudge` re-scores saved answers without re-running generation.
+`--rejudge` re-scores saved answers without re-running generation; `--only
+<ids/categories>` runs a subset (e.g. `--only straightforward,multi_doc` for the
+11 citation-bearing items) to validate a change on one token-budget day before a
+full confirmation run.
 
 ### Results (`evaluation/results/eval-2026-09-01T13-04-11Z*`, 0 provider errors)
 
@@ -298,9 +301,11 @@ RAG-only path, 16 answer items, `RETRIEVAL_K` swept:
 Citation F1 falls monotonically as `k` grows: recall is already saturated at
 k=2 (the gold document is nearly always in the top 2), so every extra retrieved
 section only adds citations the gold set does not credit, dragging precision
-down. This mirrors the main run (default k=5: recall 0.86 ≫ precision 0.55) and
-indicates a lower default `k` (≈3) would raise citation F1 at no measurable
-recall cost on this corpus.
+down. This mirrored the baseline run (then-default k=5: recall 0.86 ≫ precision
+0.55). **Acted on:** `RETRIEVAL_K` default is now **3** (and
+`MAX_TOOL_ITERATIONS` 8 → 5, which also trims tokens per agent turn); the
+judged full re-run to confirm the F1 gain is scheduled for its own token-budget
+day.
 
 *(The tools-enabled vs RAG-only ablation on the 7 workflow items is pending a
 free-tier token-budget reset; RAG-only cannot call the data tools, so PTO /
@@ -337,6 +342,7 @@ benefits / profile items cannot complete — the expected near-total collapse.)*
 
 ```bash
 python -m evaluation.run_eval                        # full 25-item judged run + RESULTS.md
+python -m evaluation.run_eval --only straightforward,multi_doc   # 11-item citation subset
 python -m evaluation.run_eval --rejudge results/<f>.json   # re-score saved answers only
 python -m evaluation.ablation --no-judge             # k sweep + tools-vs-RAG
 python -m evaluation.run_eval --smoke --offline      # CI plumbing check, no tokens

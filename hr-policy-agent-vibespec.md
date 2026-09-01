@@ -28,7 +28,7 @@ This is a vibespec. It describes an agentic AI assistant that helps employees of
   gate (4th `guardrail_scope` signal); `check_policy_compliance` made
   retrieval-backed; `create_mock_hr_ticket` / `draft_hr_email` /
   `list_policy_documents` returns fleshed out; dead `ingest/builder.py` deleted;
-  CI actions bumped to v5. Tests 116 → 130. See Issues → Phase 8.
+  CI actions bumped to v5. Tests 116 → 131. See Issues → Phase 8.
 
 ## Specifications
 - type: full-stack web app with a React frontend and a Python FastAPI backend, plus a companion MCP service
@@ -82,7 +82,7 @@ an editable install. No `uv.lock` — see Issues.
 Functional:
 - Ingest a corpus of policy documents in at least two source formats (this project uses **17 documents in four formats**: 13 Markdown, 2 PDF, 1 HTML, 1 plain text), clean them, and chunk them with a deterministic heading-aware strategy.
 - Embed chunks with a free-tier embedding model and store them with metadata sufficient for citation (document id, title, section path, source snippet, source format, chunk index).
-- Provide top-k retrieval (default k = 5) with optional document filtering and optional LLM query rewriting.
+- Provide top-k retrieval (default k = 3; was 5 through Phase 7) with optional document filtering and optional LLM query rewriting.
 - Inject retrieved chunks plus source metadata into the LLM prompt; generate answers that cite document ids/titles/sections and include supporting snippets.
 - Include at least one question that requires retrieval from multiple documents (remote-work eligibility spans Remote & Hybrid Work, Out-of-State & International Remote Work, and Data Security policies).
 - Provide an agent orchestrator (LangGraph custom graph) that classifies intent, routes to clarification / scope-refusal / agent execution, loops over tool calls, gates destructive actions, and composes a grounded final answer.
@@ -150,7 +150,7 @@ Primary flow (`/chat` request):
 4. `agent` node (bound to the discovered MCP tools) decides whether RAG alone is sufficient or tools are needed, and emits tool calls.
 5. `tools` node executes each MCP tool call, appends a `tool_call` trace entry (`ok` or `error: <code>`), and captures citations from policy tools.
 6. If a destructive tool (`create_mock_hr_ticket` or `draft_hr_email`) is pending, the graph stops with `pending_action` set (a two-call handshake, not a LangGraph interrupt — see Issues): the UI shows the proposed action with Confirm/Deny controls. The client re-POSTs `/chat` with the same `session_id` and `confirm: true` (executes) or `confirm: false` (drops it, adds a `confirmation` trace entry).
-7. The `agent` <-> `tools` loop repeats until no tool calls remain or the iteration cap (`MAX_TOOL_ITERATIONS`, default 8) is hit. A `nudge` node fires once if the model stalls with filler instead of an answer, pushing it back into the loop.
+7. The `agent` <-> `tools` loop repeats until no tool calls remain or the iteration cap (`MAX_TOOL_ITERATIONS`, default 5; was 8 through Phase 7) is hit. A `nudge` node fires once if the model stalls with filler instead of an answer, pushing it back into the loop.
 8. `compose` takes the last model message as the answer, attaches deduped citations, and appends a `compose` trace entry. If the model call itself failed, a fixed "could not reach the language model" message is used instead of fabricating an answer.
 9. The web layer (`orchestration.arun_chat` / `web/app.py`) assembles the `/chat` response: `session_id`, `answer`, `citations`, `trace`, `escalation`, `intent`, optional `pending_action`, optional `llm_error`.
 10. The UI renders the answer, the Citations panel, and the Tool Trace panel.
@@ -463,9 +463,9 @@ Environment variables (see `.env.example` — this is a representative subset, n
 - `GEMINI_API_KEY`, `GROQ_API_KEY`, `LLM_API_KEY` (per-provider keys)
 - `EMBEDDING_MODEL` (default `gemini-embedding-001`) / `EMBEDDING_DIM` (default `768`)
 - `MCP_SERVER_URL` (optional; when set, web app uses Streamable HTTP instead of stdio) / `MCP_TRANSPORT` / `MCP_HOST` / `MCP_PORT` (default `8765`)
-- `RETRIEVAL_K` (default `5`) / `SCOPE_THRESHOLD` (default `0.55`) / `ESCALATION_THRESHOLD` (default `0.60`)
+- `RETRIEVAL_K` (default `3`) / `SCOPE_THRESHOLD` (default `0.55`) / `ESCALATION_THRESHOLD` (default `0.60`)
 - `CHUNK_SIZE` (default `800` tokens) / `CHUNK_OVERLAP` (default `120` tokens)
-- `SEED` (default `42`) / `MAX_TOOL_ITERATIONS` (default `8`)
+- `SEED` (default `42`) / `MAX_TOOL_ITERATIONS` (default `5`)
 - `EVAL_JUDGE_PROVIDER` (default `groq`) / `EVAL_JUDGE_MODEL` (default `openai/gpt-oss-20b`) / `EVAL_JUDGE_PACE_SECONDS`
 - `STATIC_DIR` (production: where the built SPA is copied in the image)
 
@@ -789,8 +789,18 @@ behind after Phase 2 for several phases; the 2026-09-01 entry closes that gap.
   `chunk_corpus` → `indexer.build_index` pipeline.
 - **CI action bumps** — `actions/checkout@v5`, `actions/setup-node@v5` (clears the
   Node 20 deprecation annotation).
-- Test count 116 → 130. Judged-eval re-run to quantify the out-of-scope gain is
-  deferred to Tier 2 (needs a fresh free-tier token budget).
+- **`RETRIEVAL_K` 5 → 3** (config default + `.env.example`). Pulled forward from
+  Tier 2 #8: the k-ablation shows citation F1 rises as k shrinks, and fewer
+  passages means fewer tokens in every agent turn and in the gate scope check.
+  The MCP `search_policy_documents` tool keeps its own `k=3` default.
+- **`MAX_TOOL_ITERATIONS` 8 → 5.** The two demo workflows need ≤4 tool calls; 5
+  leaves one turn of slack while capping what a wandering model can spend of the
+  free-tier budget.
+- **`run_eval --only <ids/categories>`** — run a gold-set subset (e.g. `--only
+  straightforward,multi_doc` for the 11 citation-bearing items) to validate a
+  change on one token-budget day; `RESULTS.md` is only regenerated on a full run.
+- Test count 116 → 131. Judged-eval re-run to quantify the out-of-scope gain and
+  confirm the k=3 citation-F1 improvement is deferred to its own token-budget day.
 
 ### Known risks — status
 1. **Free-tier LLM rate limits during the full 25-item eval.** *Materialized

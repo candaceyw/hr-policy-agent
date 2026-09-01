@@ -28,5 +28,6 @@ HANDOFF.md
 # Logs
 *.log
 
-# Local eval smoke output (full judged runs are committed deliberately)
+# Local eval smoke / subset output (full judged runs are committed deliberately)
 evaluation/results/eval-smoke-*.json
+evaluation/results/eval-subset-*.json

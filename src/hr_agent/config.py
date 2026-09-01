@@ -29,7 +29,11 @@ class Settings(BaseSettings):
     embedding_model: str = Field(default="gemini-embedding-001", alias="EMBEDDING_MODEL")
     embedding_dim: int = Field(default=768, alias="EMBEDDING_DIM")
 
-    retrieval_k: int = Field(default=5, alias="RETRIEVAL_K")
+    # Passages fed to the RAG-only compose path, the gate's scope check, and
+    # retrieve_passages. Kept at 3: the k-ablation shows citation F1 falls as k
+    # grows (0.86 @ k=2 -> 0.59 @ k=8), and fewer passages means fewer tokens
+    # per agent turn. The MCP search_policy_documents tool has its own k default.
+    retrieval_k: int = Field(default=3, alias="RETRIEVAL_K")
     # Top-hit similarity below SCOPE_THRESHOLD -> out-of-corpus redirect (no LLM call).
     # Below ESCALATION_THRESHOLD but in scope -> answer, but flag "confirm with HR".
     scope_threshold: float = Field(default=0.55, alias="SCOPE_THRESHOLD")
@@ -44,7 +48,10 @@ class Settings(BaseSettings):
     mcp_transport: str = Field(default="stdio", alias="MCP_TRANSPORT")
     mcp_host: str = Field(default="127.0.0.1", alias="MCP_HOST")
     mcp_port: int = Field(default=8765, alias="MCP_PORT")
-    max_tool_iterations: int = Field(default=8, alias="MAX_TOOL_ITERATIONS")
+    # Hard cap on agent<->tools loop turns. The two demo workflows need <=4
+    # tool calls; 5 leaves one turn of slack without letting a wandering model
+    # burn the free-tier token budget on redundant calls.
+    max_tool_iterations: int = Field(default=5, alias="MAX_TOOL_ITERATIONS")
     project_root: str = "."
 
     # Evaluation LLM judge. Use a different model family than llm_model so the
