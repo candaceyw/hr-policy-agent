@@ -25,6 +25,7 @@ from evaluation.schema import EvalItem, load_items, load_smoke_items
 from hr_agent.config import settings
 from hr_agent.llm import judge_available, llm_available
 from hr_agent.orchestration import run_workflow
+from hr_agent.retrieval import DEFAULT_CORPUS_DIR, load_corpus_documents, load_sections
 
 # Each item runs its own asyncio.run(); the MCP client's httpx cleanup tasks are
 # then orphaned and log a harmless "Event loop is closed". Silence that noise so
@@ -38,15 +39,31 @@ RESULTS_MD = Path(__file__).with_name("RESULTS.md")
 _SIMILARITY_PASS = 0.5
 
 
-def _context_for_judge(result: dict[str, Any]) -> str:
-    """Evidence the answer should be grounded in: the cited snippets."""
-    rows = []
-    for cite in result.get("citations") or []:
-        doc_id = cite.get("doc_id", "")
-        snippet = cite.get("snippet") or cite.get("section") or ""
-        if snippet:
-            rows.append(f"[{doc_id}] {snippet}")
-    return "\n".join(rows)
+_CORPUS_DOCS = {p.stem: p for p in load_corpus_documents(DEFAULT_CORPUS_DIR)}
+_MAX_CONTEXT_CHARS = 8000
+
+
+def _context_for_judge(item: EvalItem) -> str:
+    """Grounding evidence for the groundedness judge: the full text of the gold
+    policy documents.
+
+    The post-run result only carries 220-char citation snippets, which is far too
+    thin for a fair groundedness judgement. Empty for items with no
+    ``gold_doc_ids`` (pure data-tool lookups) -- similarity vs the gold answer,
+    which encodes the correct figures, covers those.
+    """
+    if not item.gold_doc_ids:
+        return ""
+    parts: list[str] = []
+    for doc_id in item.gold_doc_ids:
+        path = _CORPUS_DOCS.get(doc_id)
+        if not path:
+            continue
+        for title, body in load_sections(path):
+            body = body.strip()
+            if body:
+                parts.append(f"## [{doc_id}] {title}\n{body}")
+    return "\n\n".join(parts)[:_MAX_CONTEXT_CHARS]
 
 
 _DISCOVER = object()  # sentinel: let run_workflow discover MCP tools
@@ -110,14 +127,17 @@ def run_item(
         record["rouge_l"] = round(metrics.rouge_l(item.gold_answer, answer), 3)
 
     if judge and is_answer_item and answer.strip():
-        ctx = _context_for_judge(result)
+        ctx = _context_for_judge(item)
         try:
-            g = judges.judge_groundedness(item.query, answer, ctx, complete_fn=complete_fn)
-            s = judges.judge_similarity(item.query, item.gold_answer, answer, complete_fn=complete_fn)
-            record["groundedness"] = round(g["score"], 3)
-            record["groundedness_rationale"] = g["rationale"]
-            record["similarity"] = round(s["score"], 3)
-            record["similarity_rationale"] = s["rationale"]
+            verdict = judges.judge_combined(
+                item.query, item.gold_answer, answer, ctx, complete_fn=complete_fn
+            )
+            record["similarity"] = round(verdict["similarity"]["score"], 3)
+            record["similarity_rationale"] = verdict["similarity"]["rationale"]
+            # Groundedness only where there is corpus evidence to ground against.
+            if ctx:
+                record["groundedness"] = round(verdict["groundedness"]["score"], 3)
+                record["groundedness_rationale"] = verdict["groundedness"]["rationale"]
         except judges.JudgeUnavailable as exc:
             record["judge_error"] = str(exc)
             print(f"    ! judge unavailable for {item.id}: {exc}")
@@ -166,10 +186,12 @@ def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
         "errored_items": [r["id"] for r in records if r["error"]],
         "answer_quality": {
             "groundedness": _mean("groundedness", answer_items),
+            "groundedness_n": sum(1 for r in answer_items if r.get("groundedness") is not None),
             "citation": citation,
             "citation_n": len(cited_items),
             "rouge_l": _mean("rouge_l", answer_items),
             "similarity": _mean("similarity", answer_items),
+            "similarity_n": sum(1 for r in answer_items if r.get("similarity") is not None),
         },
         "agent_behavior": {
             "tool_selection_jaccard": round(
@@ -226,6 +248,14 @@ def render_results_md(summary: dict[str, Any], meta: dict[str, Any]) -> str:
         "_In-process timing (`run_workflow`); excludes HTTP framing. The deployed "
         "path adds only transport overhead, negligible against the tool-calling loop._"
     )
+    grounded_row = (
+        f"| Groundedness (LLM-judge 0-1, vs gold docs) | {_fmt(aq['groundedness'])} | "
+        f"{aq.get('groundedness_n', '-')} |"
+    )
+    similarity_row = (
+        f"| Partial match (LLM-judge similarity 0-1) | {_fmt(aq['similarity'])} | "
+        f"{aq.get('similarity_n', '-')} |"
+    )
     lines = [
         "# Evaluation results",
         "",
@@ -245,12 +275,12 @@ def render_results_md(summary: dict[str, Any], meta: dict[str, Any]) -> str:
         "",
         "| Metric | Value | n |",
         "| --- | --- | --- |",
-        f"| Groundedness (LLM-judge 0-1) | {_fmt(aq['groundedness'])} | {summary['n'] - ab['gate_n']} |",
+        grounded_row,
         f"| Citation precision | {_fmt(cit.get('precision'))} | {aq['citation_n']} |",
         f"| Citation recall | {_fmt(cit.get('recall'))} | {aq['citation_n']} |",
         f"| Citation F1 | {_fmt(cit.get('f1'))} | {aq['citation_n']} |",
         f"| Partial match ROUGE-L | {_fmt(aq['rouge_l'])} | - |",
-        f"| Partial match (LLM-judge similarity 0-1) | {_fmt(aq['similarity'])} | - |",
+        similarity_row,
         "",
         "## Agent behavior",
         "",
@@ -319,6 +349,52 @@ def _build_offline_model() -> Any:
     return _Stub()
 
 
+def _rejudge(src: Path, out_dir: Path) -> int:
+    """Re-run only the LLM judge over a saved results file's answers.
+
+    Generation is the expensive, rate-limited half; when the judge model or the
+    grounding context changes, re-score the existing answers instead of paying
+    for the whole run again.
+    """
+    payload = json.loads(src.read_text())
+    by_id = {it.id: it for it in load_items()}
+    print(f"re-judging {src.name} with judge `{settings.eval_judge_model}`")
+    for rec in payload["records"]:
+        item = by_id.get(rec["id"])
+        answer = rec.get("answer") or ""
+        for key in ("groundedness", "groundedness_rationale", "similarity", "similarity_rationale"):
+            rec.pop(key, None)
+        if item is None or item.expected_behavior != "answer" or not answer.strip():
+            continue
+        ctx = _context_for_judge(item)
+        try:
+            verdict = judges.judge_combined(item.query, item.gold_answer, answer, ctx)
+        except judges.JudgeUnavailable as exc:
+            rec["judge_error"] = str(exc)
+            print(f"  ! {rec['id']}: {exc}")
+            continue
+        rec["similarity"] = round(verdict["similarity"]["score"], 3)
+        rec["similarity_rationale"] = verdict["similarity"]["rationale"]
+        if ctx:
+            rec["groundedness"] = round(verdict["groundedness"]["score"], 3)
+            rec["groundedness_rationale"] = verdict["groundedness"]["rationale"]
+        print(f"  {rec['id']:<7} groundedness={rec.get('groundedness')} similarity={rec['similarity']}")
+
+    summary = aggregate(payload["records"])
+    payload["summary"] = summary
+    meta = {**payload["meta"], "judge_model": settings.eval_judge_model, "judge": True}
+    meta["timestamp"] = f"{meta.get('timestamp', '?')} (re-judged {datetime.now(UTC):%Y-%m-%dT%H-%M-%SZ})"
+    payload["meta"] = meta
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    dst = out_dir / src.name.replace(".json", "-rejudged.json")
+    dst.write_text(json.dumps(payload, indent=2) + "\n")
+    RESULTS_MD.write_text(render_results_md(summary, {**meta, "results_file": str(dst)}))
+    print(f"\nwrote {dst}\nwrote {RESULTS_MD}")
+    print(json.dumps(summary["answer_quality"], indent=2))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--smoke", action="store_true", help="run the 6-item subset")
@@ -329,7 +405,16 @@ def main(argv: list[str] | None = None) -> int:
         help="seconds to sleep between items (smooths Groq free-tier TPM throttling)",
     )
     parser.add_argument("--out-dir", default=str(RESULTS_DIR), help="where to write the results JSON")
+    parser.add_argument(
+        "--rejudge",
+        metavar="RESULTS_JSON",
+        help="re-score the answers in an existing results file with the current "
+        "judge + context logic; no workflows are re-run (no generation cost)",
+    )
     args = parser.parse_args(argv)
+
+    if args.rejudge:
+        return _rejudge(Path(args.rejudge), Path(args.out_dir))
 
     items = load_smoke_items() if args.smoke else load_items()
     model = _build_offline_model() if args.offline else None

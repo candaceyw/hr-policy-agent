@@ -65,6 +65,37 @@ Reply with JSON only: {{"score": <float>, "rationale": "<one sentence>"}}
 """
 
 
+_COMBINED_PROMPT = """\
+You are grading an HR assistant's ANSWER on two axes. Use only what is given.
+
+1. GROUNDEDNESS -- is every factual claim in the answer supported by the CONTEXT?
+   (Only the context counts as evidence; outside knowledge does not.)
+2. SIMILARITY -- does the answer match the REFERENCE answer on substance (the
+   facts and figures), ignoring wording, length, and citation style?
+
+Each score is 0.0 to 1.0:
+- 1.0  fully supported / same key facts and numbers
+- 0.5  one unsupported-or-overreaching claim / partially correct or missing a key fact
+- 0.0  key claims unsupported or fabricated / wrong or non-responsive
+
+QUESTION:
+{query}
+
+CONTEXT:
+{context}
+
+REFERENCE:
+{reference}
+
+ANSWER:
+{answer}
+
+Reply with JSON only:
+{{"groundedness": {{"score": <float>, "rationale": "<one sentence>"}}, \
+"similarity": {{"score": <float>, "rationale": "<one sentence>"}}}}
+"""
+
+
 def _parse(text: str) -> dict:
     match = _JSON_RE.search(text or "")
     if not match:
@@ -135,3 +166,41 @@ def judge_similarity(
     fn = complete_fn or _default_complete
     prompt = _SIMILARITY_PROMPT.format(query=query, reference=reference, answer=answer)
     return _parse(fn(prompt))
+
+
+def _sub(data: dict, key: str) -> dict:
+    node = data.get(key) if isinstance(data, dict) else None
+    if not isinstance(node, dict):
+        return {"score": 0.0, "rationale": f"missing {key} in judge reply"}
+    try:
+        score = float(node.get("score"))
+    except (TypeError, ValueError):
+        score = 0.0
+    return {"score": max(0.0, min(1.0, score)), "rationale": str(node.get("rationale", ""))}
+
+
+def judge_combined(
+    query: str,
+    reference: str,
+    answer: str,
+    context: str,
+    *,
+    complete_fn: CompleteFn | None = None,
+) -> dict:
+    """Groundedness + similarity in **one** call -- halves judge requests so a
+    25-item run fits a 20-req/day free tier. Returns
+    ``{"groundedness": {...}, "similarity": {...}}``.
+    """
+    if not answer.strip():
+        empty = {"score": 0.0, "rationale": "empty answer"}
+        return {"groundedness": empty, "similarity": empty}
+    fn = complete_fn or _default_complete
+    prompt = _COMBINED_PROMPT.format(
+        query=query, context=context or "(none)", reference=reference, answer=answer
+    )
+    match = _JSON_RE.search(fn(prompt) or "")
+    try:
+        data = json.loads(match.group(0)) if match else {}
+    except json.JSONDecodeError:
+        data = {}
+    return {"groundedness": _sub(data, "groundedness"), "similarity": _sub(data, "similarity")}

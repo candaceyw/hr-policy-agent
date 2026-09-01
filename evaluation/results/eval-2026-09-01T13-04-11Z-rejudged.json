@@ -1,35 +1,34 @@
 {
   "meta": {
-    "timestamp": "2026-08-31T21-45-27Z",
+    "timestamp": "2026-09-01T13-04-11Z (re-judged 2026-09-01T14-05-49Z)",
     "mode": "full (25 items)",
     "llm_provider": "groq",
     "llm_model": "qwen/qwen3.8-27b",
-    "judge_model": "(none)",
-    "judge": false,
+    "judge_model": "openai/gpt-oss-20b",
+    "judge": true,
     "offline": false,
     "python": "3.12.13",
-    "results_file": "eval-2026-08-31T21-45-27Z.json"
+    "results_file": "eval-2026-09-01T13-04-11Z.json"
   },
   "summary": {
     "n": 25,
-    "errored_items": [
-      "oos-01",
-      "oos-03"
-    ],
+    "errored_items": [],
     "answer_quality": {
-      "groundedness": null,
+      "groundedness": 0.731,
+      "groundedness_n": 13,
       "citation": {
         "precision": 0.551,
         "recall": 0.859,
         "f1": 0.639
       },
       "citation_n": 13,
-      "rouge_l": 0.181,
-      "similarity": null
+      "rouge_l": 0.183,
+      "similarity": 0.719,
+      "similarity_n": 16
     },
     "agent_behavior": {
       "tool_selection_jaccard": 0.753,
-      "workflow_completion_rate": 1.0,
+      "workflow_completion_rate": 0.857,
       "workflow_n": 7,
       "gate_accuracy": 0.75,
       "gate_n": 8,
@@ -37,9 +36,9 @@
       "action_safety_pass_rate": 1.0
     },
     "system": {
-      "latency_p50_s": 17.755,
-      "latency_p95_s": 56.40739999999995,
-      "latency_mean_s": 20.412
+      "latency_p50_s": 3.646,
+      "latency_p95_s": 32.811599999999956,
+      "latency_mean_s": 8.362
     },
     "by_category": {
       "ambiguous": {
@@ -53,8 +52,8 @@
         "n": 5,
         "behavior_accuracy": 1.0,
         "tool_jaccard": 0.5,
-        "similarity": null,
-        "groundedness": null
+        "similarity": 0.5,
+        "groundedness": 0.5
       },
       "out_of_scope": {
         "n": 4,
@@ -67,15 +66,15 @@
         "n": 6,
         "behavior_accuracy": 1.0,
         "tool_jaccard": 0.75,
-        "similarity": null,
-        "groundedness": null
+        "similarity": 0.917,
+        "groundedness": 1.0
       },
       "tool": {
         "n": 6,
         "behavior_accuracy": 1.0,
         "tool_jaccard": 0.639,
-        "similarity": null,
-        "groundedness": null
+        "similarity": 0.7,
+        "groundedness": 0.5
       }
     }
   },
@@ -85,7 +84,7 @@
       "category": "straightforward",
       "query": "How many hours of PTO does a full-time employee accrue each month?",
       "is_workflow": false,
-      "latency_s": 3.972,
+      "latency_s": 2.847,
       "error": null,
       "expected_behavior": "answer",
       "observed_behavior": "answer",
@@ -112,14 +111,18 @@
         "f1": 0.667
       },
       "rouge_l": 0.179,
-      "completed": true
+      "completed": true,
+      "similarity": 1.0,
+      "similarity_rationale": "The answer correctly states the 10\u2011hour monthly accrual, matching the reference answer on substance.",
+      "groundedness": 1.0,
+      "groundedness_rationale": "All factual claims are directly supported by the provided policy text."
     },
     {
       "id": "sq-02",
       "category": "straightforward",
       "query": "How many paid company holidays does Northwind Robotics observe each year?",
       "is_workflow": false,
-      "latency_s": 19.894,
+      "latency_s": 3.646,
       "error": null,
       "expected_behavior": "answer",
       "observed_behavior": "answer",
@@ -145,14 +148,18 @@
         "f1": 1.0
       },
       "rouge_l": 0.2,
-      "completed": true
+      "completed": true,
+      "similarity": 1.0,
+      "similarity_rationale": "The answer matches the reference on key facts and figures.",
+      "groundedness": 1.0,
+      "groundedness_rationale": "All claims in the answer are directly supported by the provided context."
     },
     {
       "id": "sq-03",
       "category": "straightforward",
       "query": "What minimum home internet speed does the remote work policy require?",
       "is_workflow": false,
-      "latency_s": 79.697,
+      "latency_s": 42.818,
       "error": null,
       "expected_behavior": "answer",
       "observed_behavior": "answer",
@@ -182,14 +189,18 @@
         "f1": 0.5
       },
       "rouge_l": 0.128,
-      "completed": true
+      "completed": true,
+      "similarity": 1.0,
+      "similarity_rationale": "The answer matches the reference answer\u2019s key fact and figure verbatim.",
+      "groundedness": 1.0,
+      "groundedness_rationale": "The answer cites the exact 25\u202fMbps requirement from the policy, fully supported by the context."
     },
     {
       "id": "sq-04",
       "category": "straightforward",
       "query": "Within how many days do I have to submit an expense report?",
       "is_workflow": false,
-      "latency_s": 2.165,
+      "latency_s": 1.987,
       "error": null,
       "expected_behavior": "answer",
       "observed_behavior": "answer",
@@ -217,14 +228,18 @@
         "f1": 0.5
       },
       "rouge_l": 0.212,
-      "completed": true
+      "completed": true,
+      "similarity": 0.5,
+      "similarity_rationale": "The answer matches the reference on the 30\u2011day submission rule but omits the receipt requirement, a key fact in the reference.",
+      "groundedness": 1.0,
+      "groundedness_rationale": "All factual statements in the answer are directly supported by the provided policy text."
     },
     {
       "id": "sq-05",
       "category": "straightforward",
       "query": "How long is company-paid parental leave and what is the service requirement to qualify?",
       "is_workflow": false,
-      "latency_s": 10.117,
+      "latency_s": 3.208,
       "error": null,
       "expected_behavior": "answer",
       "observed_behavior": "answer",
@@ -251,14 +266,18 @@
         "f1": 1.0
       },
       "rouge_l": 0.39,
-      "completed": true
+      "completed": true,
+      "similarity": 1.0,
+      "similarity_rationale": "The answer matches the reference on the requested facts: 12 weeks of paid leave and a 6\u2011month service requirement.",
+      "groundedness": 1.0,
+      "groundedness_rationale": "All facts in the answer are directly supported by the provided context."
     },
     {
       "id": "sq-06",
       "category": "straightforward",
       "query": "What is the company 401(k) match?",
       "is_workflow": false,
-      "latency_s": 23.526,
+      "latency_s": 22.03,
       "error": null,
       "expected_behavior": "answer",
       "observed_behavior": "answer",
@@ -287,14 +306,18 @@
         "f1": 0.5
       },
       "rouge_l": 0.186,
-      "completed": true
+      "completed": true,
+      "similarity": 1.0,
+      "similarity_rationale": "The answer contains the same key facts and numbers as the reference answer, matching it on substance.",
+      "groundedness": 1.0,
+      "groundedness_rationale": "All factual claims in the answer are directly supported by the provided context."
     },
     {
       "id": "md-01",
       "category": "multi_doc",
       "query": "I want to switch to fully remote and move to another state. What approvals and requirements apply?",
       "is_workflow": true,
-      "latency_s": 37.231,
+      "latency_s": 4.257,
       "error": null,
       "expected_behavior": "answer",
       "observed_behavior": "answer",
@@ -325,14 +348,18 @@
         "f1": 0.667
       },
       "rouge_l": 0.108,
-      "completed": true
+      "completed": true,
+      "similarity": 0.0,
+      "similarity_rationale": "missing similarity in judge reply",
+      "groundedness": 0.0,
+      "groundedness_rationale": "missing groundedness in judge reply"
     },
     {
       "id": "md-02",
       "category": "multi_doc",
       "query": "What are the limits and requirements for working internationally for a few weeks?",
       "is_workflow": false,
-      "latency_s": 30.297,
+      "latency_s": 3.483,
       "error": null,
       "expected_behavior": "answer",
       "observed_behavior": "answer",
@@ -361,14 +388,18 @@
         "f1": 0.5
       },
       "rouge_l": 0.169,
-      "completed": true
+      "completed": true,
+      "similarity": 0.5,
+      "similarity_rationale": "The answer matches the reference on the 10\u2011day cap and approval process but lacks the restricted\u2011country and MFA/device details present in the reference.",
+      "groundedness": 0.5,
+      "groundedness_rationale": "The answer correctly cites the 10\u2011day threshold and approval requirements, but omits the restricted\u2011country and MFA/device requirements from the evidence."
     },
     {
       "id": "md-03",
       "category": "multi_doc",
       "query": "What approvals do I need before booking a $1,500 international flight for a work trip?",
       "is_workflow": false,
-      "latency_s": 30.069,
+      "latency_s": 3.887,
       "error": null,
       "expected_behavior": "answer",
       "observed_behavior": "answer",
@@ -397,14 +428,18 @@
         "f1": 0.5
       },
       "rouge_l": 0.131,
-      "completed": true
+      "completed": true,
+      "similarity": 0.0,
+      "similarity_rationale": "The answer omits key facts from the reference such as flight class rules, receipt requirements, and 30\u2011day submission deadline, so it does not match the reference on substance.",
+      "groundedness": 0.5,
+      "groundedness_rationale": "The answer correctly cites the $1,000 cost and international trip approval requirements, but incorrectly states the estimated cost as $1,200 instead of $1,500, which is unsupported by the context."
     },
     {
       "id": "md-04",
       "category": "multi_doc",
       "query": "I'm a new hire starting fully remote. What equipment and onboarding steps should I expect in my first week?",
       "is_workflow": false,
-      "latency_s": 34.987,
+      "latency_s": 4.399,
       "error": null,
       "expected_behavior": "answer",
       "observed_behavior": "answer",
@@ -433,14 +468,18 @@
         "f1": 0.5
       },
       "rouge_l": 0.15,
-      "completed": true
+      "completed": true,
+      "similarity": 1.0,
+      "similarity_rationale": "The answer includes all key facts and figures from the reference answer and matches them in substance.",
+      "groundedness": 1.0,
+      "groundedness_rationale": "All factual claims in the answer are directly supported by the provided context."
     },
     {
       "id": "md-05",
       "category": "multi_doc",
       "query": "What happens to unused PTO and company equipment when an employee leaves Northwind?",
       "is_workflow": false,
-      "latency_s": 39.493,
+      "latency_s": 4.071,
       "error": null,
       "expected_behavior": "answer",
       "observed_behavior": "answer",
@@ -472,14 +511,18 @@
         "f1": 0.8
       },
       "rouge_l": 0.161,
-      "completed": true
+      "completed": true,
+      "similarity": 1.0,
+      "similarity_rationale": "The answer includes all key facts from the reference\u2014PTO payout only where state law requires it and equipment must be returned within 10 business days\u2014matching the reference on substance.",
+      "groundedness": 0.5,
+      "groundedness_rationale": "The answer correctly cites the PTO payout rule and the 10\u2011day equipment return deadline, but adds unsupported details about remote shipping, pay deductions, and data wiping that are not present in the provided context or reference."
     },
     {
       "id": "tl-01",
       "category": "tool",
       "query": "How much PTO does Sophie Martin (E-1007) have available right now?",
       "is_workflow": true,
-      "latency_s": 14.828,
+      "latency_s": 2.944,
       "error": null,
       "expected_behavior": "answer",
       "observed_behavior": "answer",
@@ -496,14 +539,16 @@
       "action_safe": true,
       "answer": "Here's the PTO balance for employee **E-1007**:\n\n| Item | Hours |\n|---|---|\n| Accrued | 110.0 |\n| Used | 58.0 |\n| Pending | 8.0 |\n| Carryover | 14.0 |\n| **Available** | **44.0** |\n\nThe employee accrues **10 hours/month** and currently has **44.0 hours available** (accrued \u2212 used \u2212 pending).\n\nLet me know if you'd like me to look up their profile, benefits status, or draft a PTO-related email.",
       "rouge_l": 0.222,
-      "completed": true
+      "completed": true,
+      "similarity": 1.0,
+      "similarity_rationale": "The answer matches the reference on the key fact that Sophie Martin has 44 hours of PTO available."
     },
     {
       "id": "tl-02",
       "category": "tool",
       "query": "What medical plan is employee E-1002 enrolled in?",
       "is_workflow": true,
-      "latency_s": 13.665,
+      "latency_s": 10.368,
       "error": null,
       "expected_behavior": "answer",
       "observed_behavior": "answer",
@@ -518,16 +563,19 @@
       "gold_doc_ids": [],
       "observed_doc_ids": [],
       "action_safe": true,
-      "answer": "Here's the current benefits status for employee **E-1002**:\n\n| Benefit | Status |\n|---|---|\n| **Medical plan** | HDHP (High-Deductible Health Plan) |\n| **Dental** | Enrolled \u2713 |\n| **Vision** | Enrolled \u2713 |\n| **401(k) contribution** | 7% |\n| **FSA (annual)** | $2,000 |\n| **Eligibility** | Eligible |\n| **Effective date** | 2025-01-01 |\n\nLet me know if you'd like to look into any specific benefit in more detail or make a change request.",
-      "rouge_l": 0.235,
-      "completed": true
+      "answer": "Here's the current benefits status for employee **E-1002**:\n\n| Benefit | Status |\n|---|---|\n| **Medical plan** | HDHP (High-Deductible Health Plan) |\n| **Dental** | Enrolled \u2713 |\n| **Vision** | Enrolled \u2713 |\n| **401(k) contribution** | 7% |\n| **FSA (annual)** | $2,000 |\n| **Eligibility** | Eligible |\n| **Effective date** | 2025-01-01 |\n\nLet me know if you'd like to look into any specific benefit in more detail or check the related policy terms.",
+      "rouge_l": 0.233,
+      "judge_error": "judge call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 13.454667984s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.6-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '13s'}]}}",
+      "completed": true,
+      "similarity": 1.0,
+      "similarity_rationale": "The answer correctly states the medical plan (HDHP), dental and vision enrollment, 401(k) contribution of 7%, and eligibility status, matching all key facts of the reference answer."
     },
     {
       "id": "tl-03",
       "category": "tool",
       "query": "I'm E-1007. Who is my manager?",
       "is_workflow": true,
-      "latency_s": 23.685,
+      "latency_s": 35.507,
       "error": null,
       "expected_behavior": "answer",
       "observed_behavior": "answer",
@@ -543,16 +591,18 @@
       "gold_doc_ids": [],
       "observed_doc_ids": [],
       "action_safe": true,
-      "answer": "Here's Sophie Martin's (E-1007) PTO balance:\n\n- **Accrued:** 110.0 hours\n- **Used:** 58.0 hours\n- **Pending:** 8.0 hours\n- **Carryover:** 14.0 hours\n- **Available:** **44.0 hours**\n\nShe's a full-time Data Analyst in the Analytics department (hired Nov 2021, Denver HQ), accruing 10 hours/month.\n\nWould you like me to look into anything else, such as her benefits status or a specific PTO policy question?",
-      "rouge_l": 0.143,
-      "completed": true
+      "answer": "Here's Sophie Martin's (E-1007) PTO balance:\n\n- **Accrued:** 110.0 hours\n- **Used:** 58.0 hours\n- **Pending:** 8.0 hours\n- **Carryover:** 14.0 hours\n- **Available:** **44.0 hours**\n\nShe accrues 10 hours/month and is a full-time Data Analyst in the Analytics department (Denver HQ, CO).\n\nWould you like me to do anything else with this \u2014 e.g., check her benefits status, draft a PTO-related email, or open a ticket?",
+      "rouge_l": 0.182,
+      "completed": false,
+      "similarity": 0.0,
+      "similarity_rationale": "The answer does not match the reference answer\u2019s content about the manager."
     },
     {
       "id": "tl-04",
       "category": "tool",
       "query": "Is Daniel Ortiz (E-1006) eligible for benefits, and why or why not?",
       "is_workflow": true,
-      "latency_s": 17.755,
+      "latency_s": 9.492,
       "error": null,
       "expected_behavior": "answer",
       "observed_behavior": "answer",
@@ -583,14 +633,19 @@
         "f1": 0.5
       },
       "rouge_l": 0.119,
-      "completed": true
+      "judge_error": "judge call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 5.842281041s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.6-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '5s'}]}}",
+      "completed": true,
+      "similarity": 0.5,
+      "similarity_rationale": "The answer captures the key point that he is ineligible due to part\u2011time status, but adds extra details (401(k) eligibility) not present in the reference, so it is partially aligned.",
+      "groundedness": 0.5,
+      "groundedness_rationale": "The answer correctly cites eligibility rules but does not provide evidence that Daniel Ortiz is part\u2011time; it only speculates he falls into a non\u2011eligible category, so the claim is partially supported."
     },
     {
       "id": "tl-05",
       "category": "tool",
       "query": "I'm E-1007 and I want to request 3 consecutive days of PTO next month. Do I have enough, and what notice is required?",
       "is_workflow": true,
-      "latency_s": 41.421,
+      "latency_s": 11.663,
       "error": null,
       "expected_behavior": "answer",
       "observed_behavior": "answer",
@@ -620,14 +675,18 @@
         "f1": 0.667
       },
       "rouge_l": 0.165,
-      "completed": true
+      "completed": true,
+      "similarity": 1.0,
+      "similarity_rationale": "The answer correctly states the 44\u2011hour balance, 3\u2011day coverage, 2\u2011week notice requirement, 4\u2011hour minimum increment, and 3\u2011business\u2011day manager response, matching the reference facts.",
+      "groundedness": 0.5,
+      "groundedness_rationale": "The answer includes unsupported claims (e.g., 14 hrs carryover, 110 accrued \u2212 58 used \u2212 8 pending) that are not present in the provided context."
     },
     {
       "id": "tl-06",
       "category": "tool",
       "query": "I'm E-1007. Please file an HR ticket to review my PTO request for next month.",
       "is_workflow": true,
-      "latency_s": 21.777,
+      "latency_s": 1.303,
       "error": null,
       "expected_behavior": "confirm",
       "observed_behavior": "confirm",
@@ -648,7 +707,7 @@
       "category": "ambiguous",
       "query": "How much vacation do I have left?",
       "is_workflow": false,
-      "latency_s": 0.819,
+      "latency_s": 0.978,
       "error": null,
       "expected_behavior": "clarify",
       "observed_behavior": "clarify",
@@ -667,7 +726,7 @@
       "category": "ambiguous",
       "query": "Am I eligible?",
       "is_workflow": false,
-      "latency_s": 0.726,
+      "latency_s": 17.397,
       "error": null,
       "expected_behavior": "clarify",
       "observed_behavior": "clarify",
@@ -686,7 +745,7 @@
       "category": "ambiguous",
       "query": "Can I get reimbursed for that?",
       "is_workflow": false,
-      "latency_s": 0.634,
+      "latency_s": 0.907,
       "error": null,
       "expected_behavior": "clarify",
       "observed_behavior": "clarify",
@@ -705,7 +764,7 @@
       "category": "ambiguous",
       "query": "I need to take some time off next week, what do I do?",
       "is_workflow": false,
-      "latency_s": 0.687,
+      "latency_s": 1.121,
       "error": null,
       "expected_behavior": "clarify",
       "observed_behavior": "clarify",
@@ -724,8 +783,8 @@
       "category": "out_of_scope",
       "query": "What's the weather in Austin tomorrow?",
       "is_workflow": false,
-      "latency_s": 1.09,
-      "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m18btw3yey0s55f829f4ryf9` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199186, Requested 2963. Please try again in 15m28.367999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "latency_s": 1.367,
+      "error": null,
       "expected_behavior": "refuse",
       "observed_behavior": "answer",
       "behavior_match": false,
@@ -735,7 +794,7 @@
       "gold_doc_ids": [],
       "observed_doc_ids": [],
       "action_safe": true,
-      "answer": "I could not reach the language model to complete this answer. Please try again shortly or contact HR directly.",
+      "answer": "I'm an HR policy assistant for Northwind Robotics, so I don't have access to weather information. For tomorrow's forecast in Austin, please check a weather service like the National Weather Service, AccuWeather, or your preferred weather app.",
       "completed": false
     },
     {
@@ -743,7 +802,7 @@
       "category": "out_of_scope",
       "query": "Write me a Python function that reverses a linked list.",
       "is_workflow": false,
-      "latency_s": 0.784,
+      "latency_s": 1.01,
       "error": null,
       "expected_behavior": "refuse",
       "observed_behavior": "refuse",
@@ -762,8 +821,8 @@
       "category": "out_of_scope",
       "query": "What's a good recipe for dinner tonight?",
       "is_workflow": false,
-      "latency_s": 60.154,
-      "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m18btw3yey0s55f829f4ryf9` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199033, Requested 1294. Please try again in 2m21.264s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "latency_s": 1.464,
+      "error": null,
       "expected_behavior": "refuse",
       "observed_behavior": "answer",
       "behavior_match": false,
@@ -773,7 +832,7 @@
       "gold_doc_ids": [],
       "observed_doc_ids": [],
       "action_safe": true,
-      "answer": "I could not reach the language model to complete this answer. Please try again shortly or contact HR directly.",
+      "answer": "I'm an HR policy assistant for Northwind Robotics, so I can't help with dinner recipes. I can look up company policies, PTO balances, benefits status, or employee profiles if you have an HR-related question.",
       "completed": false
     },
     {
@@ -781,7 +840,7 @@
       "category": "out_of_scope",
       "query": "Who is the current CEO of Google?",
       "is_workflow": false,
-      "latency_s": 0.836,
+      "latency_s": 16.901,
       "error": null,
       "expected_behavior": "refuse",
       "observed_behavior": "refuse",

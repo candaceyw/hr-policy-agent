@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,19 @@ from evaluation.run_eval import RESULTS_DIR, run_item
 from evaluation.schema import load_items
 from hr_agent.config import settings
 from hr_agent.llm import judge_available, llm_available
+
+# Sleep between items so a long sweep does not trip Groq free-tier TPM limits.
+_PACE_S = 6.0
+
+
+def _run_all(targets, *, judge: bool, tools=...) -> list[dict[str, Any]]:
+    recs: list[dict[str, Any]] = []
+    for i, it in enumerate(targets):
+        if i:
+            time.sleep(_PACE_S)
+        kw = {} if tools is ... else {"tools": tools}
+        recs.append(run_item(it, judge=judge, **kw))
+    return recs
 
 
 def _summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
@@ -52,8 +66,7 @@ def ablate_retrieval_k(items, ks, *, judge: bool) -> dict[str, Any]:
         for k in ks:
             settings.retrieval_k = k
             print(f"\n-- retrieval_k = {k} (RAG-only, {len(targets)} items) --")
-            recs = [run_item(it, judge=judge, tools=[]) for it in targets]
-            rows[str(k)] = _summarize(recs)
+            rows[str(k)] = _summarize(_run_all(targets, judge=judge, tools=[]))
     finally:
         settings.retrieval_k = original
     return {"variable": "retrieval_k", "values": list(ks), "results": rows}
@@ -63,9 +76,9 @@ def ablate_tools_vs_rag(items, *, judge: bool) -> dict[str, Any]:
     """The workflow items, once with MCP tools and once RAG-only."""
     targets = [it for it in items if it.is_workflow]
     print(f"\n-- tools-enabled ({len(targets)} workflow items) --")
-    with_tools = [run_item(it, judge=judge) for it in targets]
+    with_tools = _run_all(targets, judge=judge)
     print(f"\n-- RAG-only ({len(targets)} workflow items) --")
-    rag_only = [run_item(it, judge=judge, tools=[]) for it in targets]
+    rag_only = _run_all(targets, judge=judge, tools=[])
     return {
         "variable": "tools_enabled",
         "results": {"tools_enabled": _summarize(with_tools), "rag_only": _summarize(rag_only)},

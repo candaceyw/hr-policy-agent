@@ -156,6 +156,28 @@ def test_judge_parse_tolerates_prose_and_garbage():
     assert junk["score"] == 0.0
 
 
+def test_judge_combined_one_call_two_scores():
+    calls: list[str] = []
+
+    def fake(prompt: str) -> str:
+        calls.append(prompt)
+        return (
+            'sure: {"groundedness": {"score": 0.9, "rationale": "supported"}, '
+            '"similarity": {"score": 0.4, "rationale": "missing a fact"}}'
+        )
+
+    v = judges.judge_combined("q", "ref", "an answer", "ctx", complete_fn=fake)
+    assert len(calls) == 1  # halves judge requests vs two separate calls
+    assert v["groundedness"]["score"] == 0.9
+    assert v["similarity"]["score"] == 0.4
+    # empty answer short-circuits without a model call
+    v2 = judges.judge_combined("q", "ref", "  ", "ctx", complete_fn=fake)
+    assert v2["groundedness"]["score"] == 0.0 and len(calls) == 1
+    # unparseable reply -> zeros, not a crash
+    v3 = judges.judge_combined("q", "ref", "a", "ctx", complete_fn=lambda _p: "nope")
+    assert v3["groundedness"]["score"] == 0.0 and v3["similarity"]["score"] == 0.0
+
+
 def test_judge_functions_use_injected_complete_fn():
     calls: list[str] = []
 
