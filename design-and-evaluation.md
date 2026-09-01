@@ -62,11 +62,13 @@ a caveat in the trace).
 
 ### The agent graph
 
-`classify_intent` is **deterministic — no LLM call**. Three cheap signals:
+`classify_intent` is **deterministic — no LLM call**. Four cheap signals:
 employee resolution (a person-specific request that names nobody → `clarify`),
-an ambiguity regex (`"Am I eligible?"` → `clarify`), and the vector-retrieval
-scope score (a policy question the corpus does not cover → `guardrail_scope`).
-Everything else enters the `agent` ↔ `tools` loop, which is an LLM binding the
+an ambiguity regex (`"Am I eligible?"` → `clarify`), an off-topic keyword
+deny-list (a non-personal query that explicitly asks for weather / sports /
+recipes / code / trivia / news → `guardrail_scope`, regardless of retrieval
+score), and the vector-retrieval scope score (a policy question the corpus does
+not cover → `guardrail_scope`). Everything else enters the `agent` ↔ `tools` loop, which is an LLM binding the
 MCP tools and choosing calls, bounded by `MAX_TOOL_ITERATIONS`. A `nudge` node
 recovers a model that stops early with filler instead of an answer. `compose`
 takes the last model message as the answer and attaches deduped citations.
@@ -107,8 +109,9 @@ content hash; CI runs it on every push.
 
 `employees.json` (14 people, E-1001…E-1014), `pto_balances.json`,
 `benefits_elections.json`, `office_locations.json`, `hr_tickets.json`.
-`create_mock_hr_ticket` appends only to an in-process list — the committed
-`hr_tickets.json` is never mutated.
+`create_mock_hr_ticket` only returns a response object (deterministic
+`HR-<hash>` id, `hr_tickets.json` row shape) — nothing is written, and the
+committed `hr_tickets.json` is never mutated.
 
 ### Sessions
 
@@ -161,13 +164,13 @@ is a visible degradation demo within ~15 s.
 | --- | --- | --- |
 | `search_policy_documents(query, k=3)` | top-k policy passages (keyword TF-IDF) | primary grounding path |
 | `get_policy_section(doc_id, section?)` | full section text | exact section match |
-| `list_policy_documents()` | doc catalogue | |
-| `check_policy_compliance(question)` | keyword heuristic → `ok` / `requires_review` / `not_applicable` | lightweight hint, not authoritative |
+| `list_policy_documents()` | doc catalogue → `[{doc_id, title}]` | |
+| `check_policy_compliance(question)` | retrieves top-3 policy sections → `relevant_sections` evidence + heuristic `status` (`ok` / `requires_review` / `not_applicable`) | advisory hint; the cited sections are the substance |
 | `lookup_employee_profile(employee_id)` | Employee record | typed `not_found` |
 | `check_pto_balance(employee_id)` | PTO record + derived `available_hours` | |
 | `lookup_benefits_status(employee_id)` | BenefitsElection record | |
-| `create_mock_hr_ticket(employee_id, issue)` | **gated** mock ticket | confirmation required |
-| `draft_hr_email(employee_id, topic)` | **gated** mock email draft | never sends |
+| `create_mock_hr_ticket(employee_id, issue)` | **gated** mock ticket → deterministic `HR-<hash>` id, `hr_tickets.json` shape | confirmation required |
+| `draft_hr_email(employee_id, topic)` | **gated** mock email draft, templated on topic + employee | never sends |
 
 Every tool returns a typed object or `{ "error": "<code>", "message": "…" }` —
 errors are never raised across the MCP boundary.
@@ -196,7 +199,7 @@ errors are never raised across the MCP boundary.
 
 ## 5. Testing
 
-**116 tests, `ruff` clean, offline by default** (an autouse fixture forces the
+**130 tests, `ruff` clean, offline by default** (an autouse fixture forces the
 no-LLM path; tests that need tool-calling inject a `ScriptedChatModel`).
 
 | Area | Files | Count |
@@ -305,12 +308,15 @@ benefits / profile items cannot complete — the expected near-total collapse.)*
 
 ### Findings
 
-1. **Out-of-scope routing is the weak point (0.50).** "What's the weather in
+1. **Out-of-scope routing was the weak point (0.50).** "What's the weather in
    Austin tomorrow?" retrieves the *weather / company-closure* policy section
-   above the similarity threshold, so the deterministic scope gate passes it
-   through. The agent then declines on its own, but that registers as `answer`,
-   not a hard `refuse`. A keyword stop-list or an LLM intent check on borderline
-   items would close the gap.
+   above the similarity threshold, so the score-based scope gate passed it
+   through; the agent then declined on its own, which registered as `answer`,
+   not a hard `refuse`. **Fixed:** `gate.py` now carries an off-topic keyword
+   deny-list (weather, sports, recipes, code, trivia, news) that routes a
+   non-personal match to `guardrail_scope` regardless of retrieval score. It
+   catches all 4 gold out-of-scope items with 0 false positives on the other
+   21; the judged metric re-run is pending a free-tier token-budget reset.
 2. **Citation precision (0.55) lags recall (0.86)** — the agent over-cites
    sections pulled via `get_policy_section`. The `k` ablation shows the cheapest
    lever is a lower default `k`.

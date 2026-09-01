@@ -24,6 +24,11 @@ This is a vibespec. It describes an agentic AI assistant that helps employees of
   Implementation, Testing, Deployment) against the shipped code, completed the
   Issues log for all phases, checked off met Acceptance Criteria, fixed the
   Glossary's confirmation-gate contradiction.
+- 2026-09-01 (Phase 8 — Tier 1 hardening): off-topic keyword deny-list in the
+  gate (4th `guardrail_scope` signal); `check_policy_compliance` made
+  retrieval-backed; `create_mock_hr_ticket` / `draft_hr_email` /
+  `list_policy_documents` returns fleshed out; dead `ingest/builder.py` deleted;
+  CI actions bumped to v5. Tests 116 → 130. See Issues → Phase 8.
 
 ## Specifications
 - type: full-stack web app with a React frontend and a Python FastAPI backend, plus a companion MCP service
@@ -84,7 +89,7 @@ Functional:
 - Support at least two multi-step workflows end-to-end (met — see Features); the "build and evaluate five" stretch goal is not met.
 - Emit a structured operational trace for every `/chat` request and return it in the response and render it in the UI.
 - Handle failures gracefully: unavailable MCP tool/server (degrade to RAG-only with a caveat), unknown employee id (ask the user to confirm), insufficient policy evidence (state uncertainty, recommend HR, set escalation flag), ambiguous request (ask one clarifying question), tool-loop cap (stop and answer with what was gathered).
-- Expose an MCP server with nine tools: `search_policy_documents`, `get_policy_section`, `list_policy_documents`, `check_policy_compliance`, `lookup_employee_profile`, `check_pto_balance`, `lookup_benefits_status`, `create_mock_hr_ticket`, `draft_hr_email`. At least one tool uses the RAG index (four do); at least one uses mock structured data or performs a mock operation (five do).
+- Expose an MCP server with nine tools: `search_policy_documents`, `get_policy_section`, `list_policy_documents`, `check_policy_compliance`, `lookup_employee_profile`, `check_pto_balance`, `lookup_benefits_status`, `create_mock_hr_ticket`, `draft_hr_email`. At least one tool reads the policy corpus (`search_policy_documents`, `get_policy_section`, `list_policy_documents`, and — as of Phase 8 — `check_policy_compliance`); at least one uses mock structured data or performs a mock operation (five do).
 - The agent must discover MCP tools at runtime and invoke them through the MCP layer.
 - Provide a `/chat` endpoint returning final answer, citations, snippets, and a concise tool-call trace; a `/health` endpoint returning JSON status including MCP connectivity; and a way for a grader to reproduce the two demo tasks from the UI.
 - Provide an evaluation set of 25 items covering straightforward policy Q&A, multi-document questions, tool-requiring tasks, ambiguous requests, and out-of-scope requests, each with gold answers / expected behavior. Report groundedness, citation accuracy, optional partial match, tool-selection accuracy, workflow-completion rate, escalation/clarification accuracy, action-safety pass rate, and latency p50/p95. Include at least one ablation — **shipped: a retrieval-k sweep** ({2, 4, 8}, real result: citation F1 falls 0.86→0.79→0.59 as k grows); tools-enabled vs RAG-only is built and run manually (`evaluation/ablation.py --only tools`) but not yet re-run after a free-tier token reset; chunk-size ablation is out of scope (only one ablation is required).
@@ -154,7 +159,7 @@ Primary flow (`/chat` request):
 - [x] A plain policy question returns an answer with at least one correct citation to the source document and section. *(verified: eval `straightforward` category, behavior accuracy 1.00.)*
 - [x] The remote-work eligibility task retrieves from at least two distinct policy documents and calls `lookup_employee_profile` and `check_policy_compliance` before answering. *(verified trace, Phase 3: citations from 4 docs, both tools called in order — `build-note.md` §9d.)*
 - [x] The PTO request task calls `check_pto_balance`, retrieves the PTO policy, and does not create a ticket or draft an email until the user confirms. *(verified trace, Phase 3, and `evaluation` item `tl-06` — `pending_action` set, no ticket created without `confirm: true`.)*
-- [ ] An out-of-scope question is refused/redirected without fabricating a policy answer. **Partially met.** The deterministic `guardrail_scope` gate catches 2/4 eval items; "weather in Austin" and "recipe for dinner" retrieve a real policy chunk (weather/closure policy; meal per diem) above `SCOPE_THRESHOLD`, so the gate passes them to the agent — which still declines, but that is not a hard, deterministic redirect. See `design-and-evaluation.md` §7 finding 1.
+- [x] An out-of-scope question is refused/redirected without fabricating a policy answer. **Met (Tier 1).** `gate.py`'s `looks_off_topic()` deny-list (weather / sports / recipes / code / trivia / news) routes a non-personal match to `guardrail_scope` regardless of the retrieval score, so "weather in Austin" and "recipe for dinner" now get a hard deterministic redirect rather than slipping through on a real policy-chunk match. Catches all 4 eval out-of-scope items with 0 false positives on the other 21; the judged-metric re-run is pending a free-tier token-budget reset. See `design-and-evaluation.md` §7 finding 1.
 - [x] An ambiguous question yields exactly one clarifying question rather than a guess. *(verified: eval `ambiguous` category, 4/4 correct; verified trace, Phase 3.)*
 - [x] Every `/chat` response includes a non-empty `trace` array whose entries name the tools called, their argument summaries, and result summaries.
 - [x] `/health` returns JSON with `status`, `mcp.connected`, `mcp.tools_discovered` (>= 5, actually 9), and a vector-store-loaded signal — implemented as `vector_store.index_present` (not `.loaded`; see API).
@@ -288,12 +293,12 @@ Patterns:
 - status: string (always `created_mock`)
 - created_at: string (ISO 8601)
 
-  **Deviation:** this is the shape of the committed sample rows in
-  `mock_data/hr_tickets.json`. The live `create_mock_hr_ticket(employee_id, issue)`
-  MCP tool returns a simpler, hardcoded-id shape (`{ticket_id: "HR-1001",
-  employee_id, issue, status: "created", note}`) and never touches the file —
-  see API. Reconciling the two is a follow-up, not required by the acceptance
-  criteria (no ticket is ever created without confirmation either way).
+  **Reconciled (Tier 1).** The live `create_mock_hr_ticket(employee_id, issue)`
+  MCP tool now returns this shape: a deterministic `ticket_id` of `HR-<sha1[:6]>`
+  over `(employee_id, issue)`, plus `category`, `summary`, `details`,
+  `status: "created_mock"`, `created_at`, and a `note`. It still never touches
+  `mock_data/hr_tickets.json` (no ticket is created without confirmation, and
+  nothing is persisted) — see API.
 
 ### Relationships
 - PolicyDocument has a one-to-many relationship with PolicyChunk.
@@ -385,8 +390,7 @@ hr-policy-agent/
 │       ├── mcp_server.py           # FastMCP server, all 9 tools inline
 │       ├── ingest/
 │       │   ├── chunker.py          # deterministic heading-aware multi-format chunking
-│       │   ├── indexer.py          # build/verify the sqlite-vec index + manifest
-│       │   └── builder.py          # legacy single-format helper -- superseded by chunker+indexer, kept only for one old test (see Issues)
+│       │   └── indexer.py          # build/verify the sqlite-vec index + manifest
 │       ├── agent/
 │       │   ├── graph.py            # the LangGraph StateGraph (classify/agent/tools/confirm_gate/compose/nudge)
 │       │   ├── gate.py             # deterministic classify_intent (no LLM)
@@ -543,13 +547,13 @@ Discovered via MCP `list_tools`. Each tool has a Pydantic input schema and retur
 
 - `search_policy_documents(query: str, k: int = 3)` -> `{ "results": [ { "doc_id", "title", "section", "snippet", "source_format", "score" } ] }` — **keyword TF-IDF**, not the vector index (the gate/RAG-only path uses vector separately; see Architecture)
 - `get_policy_section(doc_id: str, section: str | None = None)` -> `{ "doc_id", "section", "content" }` (all sections joined if `section` omitted) or `{ "error": "not_found" }`
-- `list_policy_documents()` -> `{ "documents": [ <filename>, ... ] }` — filenames, not `{doc_id, title, summary}` objects
-- `check_policy_compliance(question: str)` -> `{ "status": "ok" | "requires_review" | "not_applicable", "message": string }` — a **keyword heuristic** (expense/reimbursement → review, PTO/vacation → ok, else n/a), not an LLM-backed structured decision
+- `list_policy_documents()` -> `{ "documents": [ { "doc_id", "title" }, ... ] }` (title = doc-id stem, de-hyphenated + title-cased)
+- `check_policy_compliance(question: str)` -> `{ "question", "status": "ok" | "requires_review" | "not_applicable", "message": string, "relevant_sections": [ { "doc_id", "section", "snippet" } ] }` — **retrieval-backed**: runs `retrieve()` for the top 3 policy sections and returns them as evidence; `status` is a keyword-derived hint (relocation / out-of-state / international remote / expense / leave / termination / grievance → `requires_review`; PTO / vacation / holiday → `ok`; empty retrieval → `not_applicable`). Advisory, not an LLM call and not authoritative — the cited sections are the substance.
 - `lookup_employee_profile(employee_id: str)` -> Employee object or `{ "error": "not_found", "message" }`
 - `check_pto_balance(employee_id: str)` -> PtoBalance object + derived `available_hours` (accrued − used − pending) or `{ "error": "not_found", "message" }`
 - `lookup_benefits_status(employee_id: str)` -> BenefitsElection object or `{ "error": "not_found", "message" }`
-- `create_mock_hr_ticket(employee_id: str, issue: str)` -> `{ "ticket_id": "HR-1001", "employee_id", "issue", "status": "created", "note" }` (confirmation-gated by the orchestrator; `ticket_id` is currently a fixed placeholder, not generated — see Issues)
-- `draft_hr_email(employee_id: str, topic: str)` -> `{ "employee_id", "topic", "draft" }` (one combined subject+body string; confirmation-gated; never sends)
+- `create_mock_hr_ticket(employee_id: str, issue: str)` -> `{ "ticket_id": "HR-<sha1[:6]>", "employee_id", "category", "summary", "details", "status": "created_mock", "created_at", "note" }` — deterministic id over `(employee_id, issue)`; shape matches the `mock_data/hr_tickets.json` sample rows; confirmation-gated by the orchestrator; never persisted
+- `draft_hr_email(employee_id: str, topic: str)` -> `{ "employee_id", "topic", "draft" }` — `draft` is one subject+body string templated on the topic and the employee's resolved first name; confirmation-gated; never sends
 
 ## Database
 No relational database. Storage is:
@@ -573,8 +577,7 @@ that way; see Folder Structure for why.
 
 ### Ingestion (`src/hr_agent/ingest/`)
 - `chunker.py`: `load_corpus_documents` + `load_sections` handle all four corpus formats (Markdown via `markdown-it-py`, HTML via `beautifulsoup4`, PDF via `pypdf`, plain text) in one module rather than per-format loader files. `chunk_corpus(corpus_dir, chunk_size, chunk_overlap)` walks each document's sections and packs whole sentences into token windows (tokens approximated as `len(text)/4`, a deterministic offline proxy), never splitting a sentence, carrying a `section_path` breadcrumb. Output: ordered `PolicyChunk` records (`chunk_id`, `doc_id`, `doc_title`, `section_path`, `chunk_index`, `source_format`, `text`). Identical input + config yields byte-identical chunks (`chunks_content_hash`).
-- `indexer.py`: `build_index(chunks, vectors, index_path)` creates `index.sqlite` (the `chunks` table + `vec_chunks` virtual table) and `manifest.json`; `verify_index()` re-chunks and compares the content hash to the committed manifest (the `--verify` path, run in CI).
-- `builder.py`: **legacy** — an earlier `build_index(corpus_dir, index_path)` that only globs `.md`/`.txt` and is not called by `scripts/build_index.py`. Kept only because `tests/test_ingestion.py` still imports it; a cleanup candidate (see Issues).
+- `indexer.py`: `build_index(chunks, vectors, index_path)` creates `index.sqlite` (the `chunks` table + `vec_chunks` virtual table) and `manifest.json`; `verify_index()` re-chunks and compares the content hash to the committed manifest (the `--verify` path, run in CI). `tests/test_ingestion.py` exercises this end to end (`chunk_corpus` → `build_index` → read the sqlite rows back).
 - Embedding is not a separate module: `scripts/build_index.py` calls `llm.embed()` directly between chunking and indexing.
 
 ### Retrieval, answering, guardrails (top-level modules, not a `rag/` subpackage)
@@ -586,7 +589,7 @@ that way; see Folder Structure for why.
 
 ### Agent (`src/hr_agent/agent/`)
 - `state.py`: `AgentState` (`TypedDict`, not the originally planned field set) — `query`, `corpus_dir`, `employee_id`, `history`, `messages` (LangGraph `add_messages`-annotated), `tool_trace`, `citations`, `iterations`, `nudges`, `answer`, `llm_error`, `escalation`, `intent`, `gate_route`, `gate_message`, `scope_score`, `confirm`, `pending_action`.
-- `gate.py`: `decide(query, employee_id_hint, retrieval_results, retrieval_method, has_history)` — **deterministic, no LLM.** Routes `clarify` (unknown/missing employee id, or a narrow first-person-yes/no ambiguity regex), `scope` (vector-only retrieval score below `SCOPE_THRESHOLD`, skipped on a follow-up in an open session), or `agent`.
+- `gate.py`: `decide(query, employee_id_hint, retrieval_results, retrieval_method, has_history)` — **deterministic, no LLM.** Routes `clarify` (unknown/missing employee id, or a narrow first-person-yes/no ambiguity regex), `scope` (an off-topic keyword deny-list — `looks_off_topic()`, weather / sports / recipes / code / trivia / news on a non-personal query, method-independent — **or** a vector-only retrieval score below `SCOPE_THRESHOLD` skipped on a follow-up), or `agent`.
 - `graph.py`: `build_agent_graph(tools, model, confirm_gate, gate)` — no separate `nodes.py`/`trace.py` modules; every node is a closure inside this one function. Nodes: `classify` (calls `gate.decide`), `clarify`, `guardrail_scope`, `agent` (LLM bound to the MCP tools), `tools` (`ToolNode`, appends trace entries, collects citations), `confirm_gate` / `declined` (the two-call handshake — see Issues, not `interrupt_before`), `nudge` (recovers a model that stalls with filler once), `compose` (takes the last AI message as the answer, dedupes citations). `arun_workflow()` / `run_workflow()` are the entry points; `orchestration.py` wraps them with the RAG-only degradation.
 
 ### MCP client (`src/hr_agent/mcp_client/`)
@@ -596,8 +599,10 @@ that way; see Folder Structure for why.
 All nine tools are `@server.tool()`-decorated closures inside `build_mcp_server()`,
 using inline dict returns rather than separate Pydantic schema/policy/compliance/
 employees/pto/benefits/actions modules. Exact signatures and return shapes: API
-section. `check_policy_compliance` is a keyword heuristic, not an LLM call.
-`create_mock_hr_ticket` / `draft_hr_email` never persist anything.
+section. `check_policy_compliance` retrieves the top 3 policy sections as
+evidence and derives `status` from a keyword hint — no LLM call.
+`create_mock_hr_ticket` (deterministic `HR-<hash>` id) / `draft_hr_email`
+(templated on topic + employee) never persist anything.
 
 ### Web (`src/hr_agent/web/`)
 - `app.py`: FastAPI routes and lifespan wiring described under Services.
@@ -617,17 +622,20 @@ fixture forces the no-LLM path; tests that need tool-calling inject a
 the original plan; grouped by what they actually cover:
 
 ### Unit tests
-- `test_chunker.py`, `test_ingestion.py`: chunking determinism (identical chunk
-  count + content hash across two runs), heading-aware `section_path`
-  breadcrumbs, never splitting a sentence, multi-format loading (md/html/pdf/txt).
+- `test_chunker.py`: chunking determinism (identical chunk count + content hash
+  across two runs), heading-aware `section_path` breadcrumbs, never splitting a
+  sentence, multi-format loading (md/html/pdf/txt). `test_ingestion.py`: the
+  full `chunk_corpus` → `indexer.build_index` → sqlite read-back path, plus the
+  chunk/vector length-mismatch guard.
 - `test_retrieval.py`, `test_guardrails.py`: retrieval relevance (a PTO query's
   top chunk is `doc_id="02-pto-and-vacation-policy"`), `is_in_scope` /
   `needs_escalation` threshold behavior, keyword-vs-vector fallback.
 - `test_routing.py`, `test_directory.py`, `test_gate.py`: mock-action phrase
   detection, employee id/name resolution, and the full deterministic
-  `classify_intent` decision table (clarify / scope / agent), including the
-  gold-set audit that caught first-person phrasing false-positives (see
-  `ai-tooling.md`).
+  `classify_intent` decision table (clarify / scope / agent) — including the
+  off-topic deny-list (fires regardless of retrieval method, exempts personal
+  workflows) and the gold-set audit that caught first-person phrasing
+  false-positives (see `ai-tooling.md`).
 - `test_answering.py`, `test_llm.py`, `test_embeddings.py`: RAG-only synthesis
   + template fallback, provider selection (`LLM_PROVIDER` switch), embeddings
   (live, skipped without a key).
@@ -727,10 +735,10 @@ behind after Phase 2 for several phases; the 2026-09-01 entry closes that gap.
 - **`llm.py` surface.** The spec lists `complete(messages, tools=None)` / `classify(schema)` on a hand-rolled `google-genai` wrapper. Since orchestration uses a LangGraph `ToolNode`, `llm.py` instead exposes `chat_model()` returning a provider `BaseChatModel` (`ChatGroq` / `ChatGoogleGenerativeAI` / `ChatOpenAI`), so `bind_tools` / `AIMessage.tool_calls` / `tool_call_id` threading come normalized. The provider chat SDKs are imported only in `llm.py`, so the "provider is one config switch" rule still holds. `generate_answer()` (the string path) stays for the RAG-only fallback.
 - **Confirmation gate.** Implemented as a two-call `pending_action` handshake (`confirm_gate` / `declined` nodes keyed off the emitted tool call), not `interrupt_before` + a checkpointer. **Resolved, not revisited:** sessions landed in Phase 3.5 and the handshake was kept as-is — it gives the same guarantee (no mock action runs without explicit `confirm: true`) with no checkpointer to configure or resume-wiring to get right. See Known risk (4), now closed.
 - **MCP server module path.** The Folder Structure / Implementation sections specify `mcp/server.py` at the repo root, launched as `python -m mcp.server`. This shadows the installed `mcp` PyPI SDK — `sys.path` puts the repo root first (pytest's `pythonpath = ["."]` guarantees it), so `from mcp.server.fastmcp import FastMCP` resolves into the local folder and fails. Implemented instead as `src/hr_agent/mcp_server.py`, launched as `python -m hr_agent.mcp_server` (with `--http` for Streamable HTTP), all nine tools inline in one module rather than a `mcp/tools/` package. Railway start commands updated accordingly.
-- **MCP tool signatures and behavior are simpler than planned throughout** — no `doc_filter` on search, `check_policy_compliance` is a keyword heuristic rather than an LLM-backed structured decision, `create_mock_hr_ticket`/`draft_hr_email` take fewer, flatter arguments. Full signatures: API section.
+- **MCP tool signatures and behavior are simpler than planned throughout** — no `doc_filter` on search, `create_mock_hr_ticket`/`draft_hr_email` take fewer, flatter arguments. Full signatures: API section. *(Partly closed in Phase 8: `check_policy_compliance` is now retrieval-backed; the three thin tool returns were fleshed out.)*
 
 ### Phase 3 — deterministic gate + two demo workflows
-- **`classify_intent` is deterministic, not an LLM node.** The agent node is already an LLM making a schema-constrained routing decision; a standalone classify call would mostly re-decide that, at the cost of one extra call into the same rate-limited budget on every `/chat`, a nondeterministic path every test must mock, and latency. The gate (`agent/gate.py`) instead uses signals already computed: employee-id resolution for `clarify`, a narrow ambiguity regex, and the vector-retrieval scope score for `guardrail_scope`. Deliberate; see `ai-tooling.md` and `build-note.md` §9d.
+- **`classify_intent` is deterministic, not an LLM node.** The agent node is already an LLM making a schema-constrained routing decision; a standalone classify call would mostly re-decide that, at the cost of one extra call into the same rate-limited budget on every `/chat`, a nondeterministic path every test must mock, and latency. The gate (`agent/gate.py`) instead uses signals already computed: employee-id resolution for `clarify`, a narrow ambiguity regex, and the vector-retrieval scope score for `guardrail_scope`. Deliberate; see `ai-tooling.md` and `build-note.md` §9d. *(Phase 8 added a fourth signal: an off-topic keyword deny-list for `guardrail_scope`.)*
 
 ### Phase 3.5 — UX pass, sessions
 - **Frontend is plain JavaScript (`.jsx`), not TypeScript.** The Specifications and Folder Structure sections originally called for TypeScript/React with a multi-component tree (`ChatWindow.tsx`, `MessageList.tsx`, etc.); shipped as a single `App.jsx` in plain JS.
@@ -748,8 +756,8 @@ behind after Phase 2 for several phases; the 2026-09-01 entry closes that gap.
 - **The harness drives the system in-process (`run_workflow`), not against a locally running pair of services.** The rubric requires reporting latency p50/p95, not a particular measurement method; this system's latency is dominated by the LLM tool-calling loop (3–56s observed), so HTTP/MCP-transport overhead is noise by comparison. In-process also keeps the suite deterministic and lets CI run a 6-item smoke subset with a stub model and zero tokens.
 - **Groundedness judge context bug, found and fixed.** The judge was originally given only the post-run 220-char citation snippets (nothing at all for pure data-tool items), so it scored well-grounded answers "unsupported" — groundedness came back 0.29. Fixed by building the judge's context from the full text of the gold policy documents, and scoring groundedness only on items that have `gold_doc_ids`. Re-scored: 0.73. See `evaluation/run_eval.py:_context_for_judge`.
 - **Judge-provider budget contention, found and fixed.** Gemini's judge-model free tier is 20 requests/day — too little for a 25-item run needing ~30 judge calls at two calls/item. Fix 1: `judge_combined()` scores groundedness and similarity in one call (~15 calls/run). Putting that one call on Groq instead shares Groq's daily token budget with the generator and starved it (12/25 items errored on one run); fix 2: `--rejudge <results.json>` re-scores a saved run's answers with no workflow re-run, so generation (the expensive, rate-limited half) is paid for once.
-- **`ingest/builder.py` is legacy/dead code.** An earlier `build_index(corpus_dir, index_path)` that only globs `.md`/`.txt`; `scripts/build_index.py` calls `ingest.indexer.build_index(chunks, vectors, path)` instead. Only `tests/test_ingestion.py` still imports the old one. Cleanup candidate, not yet removed.
-- **`HrTicket` mock-data shape vs. the live tool.** `mock_data/hr_tickets.json`'s committed sample rows match the originally planned `HrTicket` entity; the live `create_mock_hr_ticket` tool returns a simpler, hardcoded-`ticket_id` shape and writes nothing to disk. See Data.
+- **`ingest/builder.py` is legacy/dead code.** An earlier `build_index(corpus_dir, index_path)` that only globs `.md`/`.txt`; `scripts/build_index.py` calls `ingest.indexer.build_index(chunks, vectors, path)` instead. **Resolved (Phase 8):** deleted; `tests/test_ingestion.py` repointed at the real `chunk_corpus` → `indexer.build_index` path.
+- **`HrTicket` mock-data shape vs. the live tool.** `mock_data/hr_tickets.json`'s committed sample rows match the originally planned `HrTicket` entity; the live `create_mock_hr_ticket` tool returned a simpler, hardcoded-`ticket_id` shape. **Resolved (Phase 8):** the tool now returns the sample-row shape with a deterministic `HR-<hash>` id; it still writes nothing to disk. See Data.
 
 ### Phase 7 — docs (this reconciliation)
 - **This pass.** Every reference section above (Specifications, Architecture,
@@ -758,6 +766,31 @@ behind after Phase 2 for several phases; the 2026-09-01 entry closes that gap.
   History, this Issues log, the Acceptance Criteria checkboxes, and the
   Glossary's confirmation-gate definition (it described a LangGraph interrupt
   that was never built) are now current as of 2026-09-01.
+
+### Phase 8 — Tier 1 hardening (post-reconciliation)
+- **Off-topic keyword pre-filter in the gate.** `gate.py` gains `looks_off_topic()`
+  — a narrow deny-list (weather, sports scores, recipes, code-writing, general
+  trivia, current events). A non-personal match routes to `guardrail_scope`
+  regardless of retrieval score or method, closing the gap where an off-topic
+  query pulled a real policy chunk above `SCOPE_THRESHOLD` and slipped through.
+  Additive (explicit-match only), personal workflows exempt. Catches all 4 eval
+  out-of-scope items, 0 false positives on the other 21.
+- **`check_policy_compliance` is retrieval-backed.** Was a 3-branch keyword stub
+  returning a bare `{status, message}`; now runs `retrieve()` for the top 3
+  policy sections and returns them as `relevant_sections` evidence. The `status`
+  stays a keyword-derived hint (widened to cover relocation / out-of-state /
+  international remote / leave / termination / grievance), downgrading to
+  `not_applicable` on empty retrieval. Still no LLM call.
+- **Three thin tool returns fleshed out.** `create_mock_hr_ticket` → deterministic
+  `HR-<sha1[:6]>` id + the `hr_tickets.json` sample-row shape; `draft_hr_email` →
+  templated on topic + the employee's resolved first name; `list_policy_documents`
+  → `[{doc_id, title}]` pairs. All still gated / read-only.
+- **`ingest/builder.py` deleted**, `tests/test_ingestion.py` repointed at the real
+  `chunk_corpus` → `indexer.build_index` pipeline.
+- **CI action bumps** — `actions/checkout@v5`, `actions/setup-node@v5` (clears the
+  Node 20 deprecation annotation).
+- Test count 116 → 130. Judged-eval re-run to quantify the out-of-scope gain is
+  deferred to Tier 2 (needs a fresh free-tier token budget).
 
 ### Known risks — status
 1. **Free-tier LLM rate limits during the full 25-item eval.** *Materialized
