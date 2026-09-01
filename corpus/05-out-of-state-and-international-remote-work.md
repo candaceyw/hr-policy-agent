@@ -1,56 +1,49 @@
 # Out-of-State and International Remote Work Policy
 
 ## Purpose
-This policy applies to employees who request to work from a different state, territory, or country than their assigned office location or tax/home jurisdiction. These arrangements require additional review because they may affect payroll, tax withholding, labor law, immigration status, insurance coverage, and data-access controls.
+This policy applies when an employee wants to work from a different US state, a US territory, or another country than their assigned office or work-state on file with payroll. These arrangements need extra review because they can change payroll tax withholding, trigger new state or country employer registrations, and raise labor-law, immigration, insurance, and data-access obligations.
 
 ## Scope
-This policy applies to all employees, including full-time staff, part-time employees, and remote-hybrid employees, when the employee will perform work outside the company's normal policy footprint. This includes temporary travel, extended remote assignments, recurring remote work outside the normal work-state, and international remote arrangements.
+This policy covers all employees — full-time, part-time, onsite, hybrid, and fully remote — whenever work will be performed outside the company's normal footprint for that person. It includes temporary travel with work, extended remote stays, recurring work from a second location, a permanent move, and any international remote work.
+
+## Key Thresholds
+- **US, 30 days or fewer** in another state in a rolling 12-month period: allowed with advance notice to the manager. No People Operations review required unless the employee is establishing a residence.
+- **US, 31 days or more** in another state, or an indefinite/recurring pattern: requires **People Operations and Payroll review and written approval before the work begins**. A new work state is generally established once an employee works **more than 30 days** in that state, which requires the company to register and adjust withholding.
+- **International, incidental work up to 10 business days** in a rolling 12-month period (for example, working a few days around personal travel): allowed with manager and People Operations approval.
+- **International, more than 10 business days**, or any recurring or indefinite international work: requires **Legal, Payroll, and entity review**, and is approved only if a compliant employment framework exists for that country.
 
 ## Approval Requirements
-Employees may not work in another state or country without prior written approval from their manager, HR, and any required business or compliance owner. The company may deny or delay a request when the arrangement creates substantial legal, payroll, tax, or business risk.
-
-Any request must be reviewed before the employee begins work from the new location. Employees may not assume that a brief trip or temporary stay outside the approved state is automatically permitted.
+An employee may not begin working from a new state (beyond the 30-day allowance) or from another country without prior written approval from the manager, People Operations, and any required Legal or Finance owner. Approval is requested through the People Operations workflow and must include the destination, the start and expected end dates, the planned work schedule, and the reason. The company may deny or delay a request that creates material legal, tax, payroll, or business risk.
 
 ## Tax and Payroll Considerations
-Working in another jurisdiction may affect payroll tax withholding, local employment tax, worker classification, and compliance reporting. Northwind may ask the employee to provide information about the remote location, expected duration, and work schedule before approving the arrangement.
+Working in another jurisdiction can change income tax withholding, unemployment insurance, local employment taxes, and worker classification, and can create employer registration and reporting duties. For extended or recurring arrangements, Payroll updates the employee's work state, which may change net pay. Employees are responsible for their personal tax filing obligations and should seek their own tax advice for a multi-state or international situation; the company does not provide personal tax advice.
 
-The company may require legal, payroll, or finance review before final approval for extended or recurring stays outside the employee's standard work state.
+## Immigration and Right to Work
+For any international arrangement, the employee must have the legal right to work in that country. Northwind will not approve international remote work that depends on the employee performing company work in a country where they lack work authorization, and it may require documentation confirming status.
 
-## Time Limits and Temporary Assignments
-Short-duration assignments may be approved for limited periods, often up to 30 or 60 days, depending on the business case and legal risk. Longer-duration remote assignments may require additional review, documentation, and formal approval.
+## Security and System Access
+An employee working from another state or country remains fully subject to the Data Security and Acceptable Use Policy and the Information Classification Standard. Security may require an additional review before granting access to internal systems or customer data from a new location, may require additional controls (for example, VPN-only access or restricted data scopes), and may restrict or suspend access if the location appears on the restricted-country list or the arrangement is not approved.
 
-Employees must notify the company if they plan to work from a different jurisdiction for more than a brief business trip. If the employee does not get approval, the company may treat the work arrangement as non-compliant.
+## Insurance and Workers' Compensation
+Workers' compensation and company insurance coverage can vary by location. Work-related injuries are covered regardless of where the employee works, but the applicable program and claims process may differ. People Operations confirms coverage as part of approving an extended or international arrangement.
 
-## International Remote Work
-International remote work is subject to additional legal review because of immigration, tax, social insurance, and employment obligations. Northwind may not approve remote work in another country unless the company can confirm a compliant framework for payroll, legal compliance, employment classification, and data access.
+## Disclosure and Accountability
+Employees must disclose planned changes to work location, extended travel, or a move **before** the change, not after. If an employee works from an unapproved state beyond the 30-day allowance or from another country without approval, the company may treat the arrangement as non-compliant, which can lead to correction of payroll records, suspension of the remote arrangement, removal of system access, or corrective action.
 
-Employees should not relocate internationally or begin working internationally without approval. The company may also restrict access to internal systems when the jurisdiction raises legal or security risk.
+## Documentation
+Every approval is documented and retained in the employee's records, including the approved location, start and end dates, manager approval, People Operations review, tax or compliance notes, and any required security controls. The employee receives a copy of the approved terms.
 
-## Security and Access
-Employees working from another state or country remain subject to the company's security and confidentiality requirements. The company may require additional security review before granting access to internal systems or customer data from a new jurisdiction.
-
-The company may restrict or suspend access when a remote-work arrangement fails to meet security, compliance, or business requirements.
-
-## Communication and Accountability
-Employees must proactively disclose changes to work location, travel plans, or remote schedule expectations. The company may require the employee to confirm the intended location, expected duration, and whether they will maintain normal work hours.
-
-Failure to disclose a work location change may result in corrective action, suspension of remote work approval, or removal of access if the arrangement is non-compliant.
-
-## Documentation Requirements
-Any remote work approval should be documented and retained as part of the employee's personnel records. The documentation may include:
-
-- approved remote location,
-- start and end dates,
-- manager approval,
-- HR review,
-- tax or compliance notes,
-- required security controls.
+## Responsibilities
+- Employees: request approval before working from a new state beyond 30 days or from any other country; disclose moves and extended travel in advance; follow all security controls.
+- Managers: confirm the business case, ensure notice or approval is in place before the work starts, and route extended or international requests to People Operations.
+- People Operations, Payroll, and Legal: assess tax, registration, immigration, insurance, and security risk and set the conditions of any approval.
 
 ## Related Policies
 - Remote and Hybrid Work Policy
 - Data Security and Acceptable Use Policy
+- Information Classification Standard
 - Travel Policy
-- Leave of Absence Policy
+- Compensation and Payroll Policy
 
 ## Summary
-Working outside the assigned office location may create legal and operational obligations. The company requires advance review and approval for out-of-state and international remote work to protect compliance, payroll integrity, and business continuity.
+A domestic trip of 30 days or fewer in another state needs only manager notice. Thirty-one or more days, or a recurring pattern, needs People Operations and Payroll approval before the work starts because it can establish a new work state. Incidental international work of up to 10 business days a year needs manager and People Operations approval; anything more needs Legal and entity review and is only approved where a compliant framework exists. Security controls and the restricted-country list apply throughout.

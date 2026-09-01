@@ -1,68 +1,67 @@
 # PTO and Vacation Policy
 
 ## Purpose
-This policy explains how Northwind Robotics provides paid time off (PTO) and how employees request, schedule, and use it. The policy is intended to support employee wellbeing while maintaining staffing needs and business continuity.
+This policy explains how Northwind Robotics provides paid time off (PTO) and how employees request, schedule, and use it. It is intended to support employee wellbeing and work-life balance while maintaining staffing levels and business continuity.
 
 ## Eligibility
-All regular full-time employees are eligible to accrue PTO beginning on their first day of employment. Part-time employees accrue PTO on a prorated basis according to scheduled hours. Contractors, interns, and temporary workers are not normally eligible for standard company PTO unless specifically stated in their engagement terms.
+All regular full-time employees are eligible to accrue PTO beginning on their first day of employment. Regular part-time employees accrue PTO on a prorated basis according to their scheduled hours. Contractors, interns, and temporary workers are not eligible for standard company PTO unless their engagement terms specifically say so.
 
-Employees in a leave of absence or unpaid status may have different accrual rules depending on local law and the company leave policy. Employees should consult HR if they are unsure whether they remain eligible to accrue PTO during a leave.
+Employees on an unpaid leave of absence generally do not accrue PTO for the unpaid portion of the leave, subject to local law and the Leave of Absence Policy. Employees who are unsure whether they continue to accrue during a leave should contact People Operations.
 
 ## Accrual Rates
-The standard accrual rate for regular full-time employees is 10 hours of PTO per month. Part-time employees accrue PTO based on the percentage of a full-time schedule. The specific amount is calculated from the employee's scheduled hours and the company's timekeeping records.
+The standard accrual rate for a regular full-time employee is **10 hours of PTO per month**, which is 120 hours (15 days) per year. Accrual posts monthly based on the company's timekeeping records.
 
-Employees may carry forward unused PTO up to the annual cap set by the company. Carryover balance and annual cap limits are reviewed by payroll and HR. If an employee's balance exceeds the cap, excess time may be forfeited according to policy unless local law or a company-approved exception applies.
+Part-time employees accrue in proportion to a full-time schedule. An employee scheduled at roughly half of full time accrues about **5 hours per month**. The exact figure is calculated from the employee's scheduled hours on file with payroll.
+
+Accrual is not advanced. Employees may only use PTO they have already accrued, unless a manager and People Operations approve a limited negative balance in an unusual circumstance (for example, a pre-planned trip early in employment). Any approved negative balance must be repaid through future accrual and is recovered from final pay if the employee leaves before it is repaid, where permitted by law.
+
+## Carryover and Annual Cap
+Employees may carry unused PTO from one calendar year into the next up to a cap of **40 hours for full-time employees** and **20 hours for part-time employees**. Any balance above the cap on December 31 is forfeited unless local law requires payout or a higher cap. People Operations reviews balances in the fourth quarter and notifies employees who are approaching the cap so they can schedule time off.
+
+## Payout on Separation
+Northwind pays out an accrued, unused PTO balance when employment ends only where state law requires it. Where payout is not legally required, unused PTO is forfeited on the last day of employment. Employees should confirm the rule for their work state with People Operations before separation.
+
+## Sick Time
+Where an employee works in a state or city with a mandatory paid sick leave law, sick time is tracked separately from PTO and used according to that law. Everywhere else, time away for the employee's own illness or to care for a family member is taken from the PTO balance. Employees do not need to disclose a diagnosis to use sick time; they should tell their manager they are unwell and unable to work.
 
 ## Use of PTO
-PTO may be used for vacation, personal time, family needs, or short-term personal matters, subject to manager approval. PTO is intended to be used as time away from work and should not be treated as a guarantee of any specific dates or duration.
+PTO may be used for vacation, personal time, family needs, illness (see above), or other short-term personal matters, subject to manager approval. PTO is time away from work and is not a guarantee of any specific dates. A request is not approved until the manager or the time-off system confirms it. Employees should not begin travel or make non-refundable arrangements based on an unconfirmed request.
 
-Employees should avoid taking PTO without prior approval. If a request is denied or delayed, the employee may reschedule their time off or work with the manager to find another suitable arrangement. PTO is not considered approved until the manager or system confirms the request.
+## Request Process and Notice
+Employees submit PTO requests through the time-off system or the manager workflow. A request should include the requested dates, the total hours, the reason if relevant, and any coverage considerations. Required advance notice:
 
-## Request Process
-Employees should submit PTO requests through the designated time-off system or manager workflow as early as possible. Requests should include:
+- **1 to 2 days** of PTO: as much notice as practical, ideally several days.
+- **3 or more consecutive days**: at least **2 weeks** notice.
+- **5 or more consecutive days**: at least **30 days** notice.
 
-- requested dates,
-- total hours requested,
-- reason for the absence if relevant,
-- any staffing coverage considerations.
+Managers aim to approve, deny, or ask for changes within **3 business days** of the request. Requests during peak periods, holidays, or known coverage-sensitive windows should be submitted as early as possible.
 
-Employees are encouraged to request time off early for peak periods, holidays, or extended travel.
+## Minimum Increment and Scheduling
+PTO is requested in a minimum increment of **4 hours (a half day)** unless the manager authorizes a smaller block. Extended requests, such as multi-week absences, may require earlier planning and a written coverage plan agreed with the manager.
 
 ## Manager Approval and Coverage
-Managers review PTO requests based on business needs, staffing requirements, and team coverage. Managers may approve, deny, or defer requests based on workload, customer commitments, seasonal demands, or required staffing for specific projects.
+Managers review requests against business needs, staffing, customer commitments, and team coverage. A manager may approve, deny, or ask to reschedule a request based on those factors. Denials must be based on business needs or other neutral policy criteria and must never be based on an employee's protected characteristics or on retaliation. Managers should apply the policy consistently across their team and communicate any denial promptly and respectfully, offering alternative dates where possible.
 
-Managers must make reasonable efforts to apply this policy consistently and should communicate any denial in a respectful and timely manner. Denials must be based on business needs or other policy criteria, not on unlawful discrimination or retaliation.
+## Holidays During a PTO Period
+PTO is separate from company holidays. If a recognized company holiday falls inside an approved PTO period, that day is recorded as holiday time, not PTO, so the employee's PTO balance is not charged for the holiday. See the Holidays and Company Closure Policy.
 
-## Minimums and Scheduling
-Employees may request PTO in minimum increments of one half-day unless the manager authorizes a different schedule. Extended requests, such as multi-week leave or requests during busy seasons, may require earlier scheduling and additional planning.
+## Unscheduled Absence and Attendance
+If an employee cannot work as scheduled, they must notify their manager as soon as possible, normally before the start of the scheduled shift or workday. Unscheduled absences are charged to available PTO, to protected leave if applicable, or to unpaid time. Repeated unexcused, unscheduled absences may lead to an attendance conversation and, if the pattern continues, corrective action, unless the absence is protected under law or another company policy.
 
-Employees should keep their manager informed if they expect schedule changes, travel, or competing obligations that could affect the approved PTO period.
-
-## Vacation, Paid Holidays, and Company Closures
-PTO is separate from company holidays. Company holidays and closure days are paid according to the holiday policy and may be scheduled separately from PTO. Employees may use vacation or personal time as part of their PTO balance, but holiday pay is not automatically equivalent to PTO use.
-
-If a company holiday falls during an approved PTO period, the holiday may be counted separately according to policy and the employee's schedule.
-
-## Unscheduled Absence and Attendance Expectations
-If an employee is unable to work as scheduled, they must notify their manager as soon as possible. Unscheduled absences may be charged to PTO, unpaid time away, or another approved leave category depending on the situation and local requirements.
-
-Employees who are absent without approval may be subject to attendance follow-up and corrective action, unless the absence is protected under applicable law or company policy.
-
-## Exceptions and Special Situations
-Requests involving medical leave, family responsibilities, or a protected absence may need to be routed through HR under the leave of absence rules. Employees should not use regular PTO in place of a required protected leave without first consulting HR.
-
-If a manager or employee needs special accommodation, timesheet or work schedule adjustments, or a direct exception to the standard schedule, HR should be consulted.
+## Interaction with Protected Leave
+PTO is not a substitute for a protected leave of absence. If an absence may qualify for medical, family, parental, military, or another protected leave, the employee should contact People Operations so the correct process is used. Employees should not be required to exhaust PTO before starting a protected leave except where a specific policy or law provides for that.
 
 ## Responsibilities
-- Employees are responsible for submitting requests on time and tracking remaining PTO.
-- Managers are responsible for reviewing and approving time-off requests fairly and consistently.
-- HR is responsible for clarifying policy, handling leave questions, and ensuring compliance with local laws and benefits rules.
+- Employees: submit requests with the required notice, track their remaining balance, and follow the call-in procedure for unscheduled absences.
+- Managers: review requests fairly and consistently, respond within three business days, and plan coverage for approved time off.
+- People Operations: interpret this policy, monitor balances against the annual cap, and handle questions about payout, protected leave, and local law.
 
 ## Related Policies
-- Holiday and Company Closure Policy
+- Holidays and Company Closure Policy
 - Leave of Absence Policy
+- Parental and Family Leave Policy
+- Compensation and Payroll Policy
 - Remote and Hybrid Work Policy
-- Code of Conduct
 
 ## Summary
-PTO is a benefit that supports employee wellbeing and work-life balance. Employees should request time off in advance when possible, managers should apply the policy consistently, and HR should be involved when the request may affect leave rights, protected status, or operational exceptions.
+Full-time employees accrue 10 hours of PTO per month; part-time employees accrue a prorated amount. Up to 40 hours (20 for part-time) carries into the next year and the rest is forfeited unless law requires otherwise. Give 2 weeks notice for 3 or more days off and 30 days for 5 or more, request in half-day increments, and use the protected-leave process instead of PTO when an absence may be legally protected.

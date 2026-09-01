@@ -1,55 +1,60 @@
 # Onboarding and Equipment Provisioning Policy
 
 ## Purpose
-This policy describes the onboarding process for new employees and the company's standards for providing, using, and returning equipment. The policy is intended to ensure that employees receive what they need to work successfully while maintaining safety, accountability, and security.
+This policy describes how new employees are onboarded and the company's standards for providing, using, and returning equipment. It helps employees start work effectively and securely while keeping company assets accountable.
 
-## Onboarding Process
-New hires complete onboarding before or shortly after beginning work. The onboarding process may include orientation, policy acknowledgment, IT setup, manager introductions, and role-specific training. Managers and HR coordinate key onboarding steps so the employee has the information and access needed to begin work effectively.
+## Onboarding Timeline
+Onboarding activities must be completed within the employee's **first 5 business days**:
 
-Employees should complete required trainings, forms, and security setup before they begin using work systems broadly. Incomplete onboarding may delay system access, payroll setup, benefits enrollment, or equipment distribution.
+- accept the handbook and acknowledge the Code of Conduct and the Data Security and Acceptable Use Policy,
+- complete payroll and tax forms and confirm banking details for direct deposit,
+- complete identity and work-authorization verification,
+- finish required security setup (single sign-on, MFA enrollment, password manager),
+- complete assigned onboarding and security-awareness training,
+- review benefits enrollment materials and note the election deadline (see the Benefits Guide).
 
-## Employee Access and System Setup
-Northwind provides access to internal systems based on the employee's role and business need. Examples of common setup tasks include:
+Incomplete onboarding can delay system access, payroll, benefits enrollment, and equipment. Managers schedule role-specific training and introductions during the first two weeks.
 
-- user account creation,
-- software installation,
-- required security configuration,
-- access approval for specific systems,
-- manager approval for role-based tools.
+## System Access
+Access to internal systems is granted by role and business need using least privilege (see the Data Security and Acceptable Use Policy). Typical setup includes account creation, standard software, security configuration, and manager-approved access to role-specific tools. Additional or elevated access is requested through the provisioning workflow with manager approval and, for Restricted systems, data-owner approval.
 
-Employees are expected to use systems only for their assigned role and should never attempt to bypass security or access private data unrelated to their job duties.
+## Standard Equipment Kit
+Northwind provides a standard kit based on role:
 
-## Equipment Provisioning
-Northwind may provide equipment needed for the role, such as a laptop, monitor, headset, webcam, keyboard, docking station, or required accessories. The company provides equipment based on role requirements, business needs, and budget approval.
+- laptop (specification by role),
+- one external monitor,
+- keyboard and mouse,
+- headset,
+- docking station.
 
-Employees are expected to use company-provided equipment responsibly and only for approved work activity. Personal use is limited to the extent permitted by company policy and local law.
+Additional standard accessories (a second monitor, webcam, adapters) are available on request with manager approval. Company equipment is for approved work use; incidental personal use is allowed only to the extent the Data Security and Acceptable Use Policy permits.
 
-## Requests and Approval
-Employees who need additional equipment or expanded access should request it through the approved provisioning workflow. Requests may require manager approval and budget review, especially for higher-cost items or role-specific devices.
+## Home-Office Setup for Remote and Hybrid Staff
+Employees with an approved remote or hybrid arrangement are eligible for a **one-time $500 home-office setup stipend** toward a chair, desk, lighting, or ergonomic accessories. Receipts are submitted through the expense system. Items purchased with the stipend belong to the employee. Fully remote employees also receive the **$50 monthly connectivity stipend** described in the Remote and Hybrid Work Policy. The stipend does not cover general home internet or phone service beyond that amount.
 
-Employees should not purchase equipment using company funds without prior approval unless a process clearly allows it. The company may deny reimbursement for unapproved purchases or equipment not in line with role needs.
+## Requests and Purchasing
+Employees request additional equipment through the provisioning workflow. Manager approval and budget review are required for higher-cost items and role-specific devices. Employees must not buy equipment with company funds or a corporate card without the advance approval required by the Expense and Reimbursement Policy (any single item of **$500 or more** needs written approval). Unapproved purchases may not be reimbursed.
 
-## Remote and Hybrid Equipment Setup
-Employees approved for remote or hybrid work may receive or need equipment that supports home-based productivity, security, and ergonomics. Requests may include docking stations, monitors, keyboards, chairs, or accessories approved under the company's remote-work or equipment process.
+## Equipment Refresh
+Laptops are refreshed on a **3-year cycle**, or sooner if a device fails or no longer meets role requirements. The old device is returned to IT for secure wipe and disposal or redeployment. Employees must not keep, sell, or give away a returned company device.
 
-Employees in remote arrangements are expected to maintain a safe, compliant, and distraction-free workspace. If a remote employee changes location or needs a new setup, they should communicate the change through the approved process.
-
-## Equipment Care and Security
-Employees are responsible for protecting company-provided equipment against damage, loss, or theft. Company devices should be kept in a secure environment and used in accordance with the Data Security and Acceptable Use Policy.
-
-Employees must report lost, stolen, or damaged equipment immediately. If the issue affects data security or system access, IT or security should be notified without delay.
+## Care, Security, and Loss
+Employees protect company equipment from damage, loss, and theft, keep it in a secure location, and use it under the Data Security and Acceptable Use Policy (encryption, screen lock, approved software only). A **lost or stolen device must be reported to IT and the security team within one hour**, and to the manager. Damage from normal wear is expected; damage from negligence (leaving a laptop in a car, liquid spills from unsafe use) may lead to a repair charge where allowed by law.
 
 ## Return of Equipment
-When employment ends or an employee changes roles, the company may require return of company equipment. Employees must return equipment in good working condition, except for normal wear and tear. If equipment is not returned, the company may withhold final pay or take other corrective action as allowed by policy and law.
+On separation or a role change that no longer needs the equipment, the employee returns all company equipment in good working order (normal wear excepted) **within 10 business days**. IT provides a prepaid shipping method for remote employees. If equipment is not returned, the company may pursue the value of the equipment and, where law allows, deduct it from final pay. Data on returned devices is wiped by IT; employees must not wipe or factory-reset a device themselves.
 
-## Training and Support
-Managers and HR coordinate onboarding activities to ensure employees understand how to use company systems, where to request support, and how to handle security concerns. Employees should ask for help when they are unsure how to use a device, access a tool, or complete a required step.
+## Responsibilities
+- Employees: finish onboarding in the first 5 business days, use and protect equipment properly, report loss within one hour, and return equipment within 10 business days of separation.
+- Managers: approve role-appropriate access and equipment, schedule training, and confirm returns.
+- IT and People Operations: provision accounts and devices, run the refresh cycle, and manage secure return and disposal.
 
 ## Related Policies
-- Remote and Hybrid Work Policy
 - Data Security and Acceptable Use Policy
+- Remote and Hybrid Work Policy
 - Expense and Reimbursement Policy
-- Code of Conduct
+- Benefits Guide
+- Compensation and Payroll Policy
 
 ## Summary
-Onboarding and equipment provisioning are designed to help employees start work effectively and securely. Employees are expected to use equipment responsibly, complete setup requirements, and protect company assets while performing their jobs.
+New hires complete onboarding — policy acknowledgment, payroll, security setup, training — within the first 5 business days. The standard kit is a laptop, monitor, keyboard, mouse, headset, and dock. Approved remote/hybrid employees get a one-time $500 setup stipend, and fully remote employees a $50/month connectivity stipend. Laptops refresh every 3 years. Report a lost device within one hour and return all equipment within 10 business days of leaving.

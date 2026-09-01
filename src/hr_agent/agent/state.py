@@ -1,0 +1,39 @@
+from __future__ import annotations
+
+from typing import Annotated, Any, TypedDict
+
+from langchain_core.messages import AnyMessage
+from langgraph.graph.message import add_messages
+
+
+class AgentState(TypedDict, total=False):
+    """Shared state for the agent loop.
+
+    ``messages`` accumulates the conversation (system + human + AI + tool
+    messages); ``add_messages`` appends rather than overwrites. Everything else
+    is derived output the web layer reads back.
+    """
+
+    query: str
+    corpus_dir: str | None
+    employee_id: str | None
+    # prior (user, assistant) turns for this session, oldest first; seeds the
+    # first model call as context and is never mutated by the graph.
+    history: list[AnyMessage]
+    messages: Annotated[list[AnyMessage], add_messages]
+    # operational trace only -- step/type/name/args_summary/result_summary/sources
+    tool_trace: list[dict[str, Any]]
+    citations: list[dict[str, Any]]
+    iterations: int
+    nudges: int
+    answer: str
+    llm_error: str | None
+    escalation: bool
+    # pre-agent gate (classify_intent -> clarify | scope | agent)
+    intent: str
+    gate_route: str
+    gate_message: str | None
+    scope_score: float
+    # confirmation gate (only used when the graph is built with confirm_gate=True)
+    confirm: bool | None
+    pending_action: dict[str, Any] | None

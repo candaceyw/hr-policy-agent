@@ -45,6 +45,24 @@
     "remote_tax_notes": "Standard US payroll and withholding apply."
   },
   {
+    "location_id": "chicago-hq",
+    "city": "Chicago",
+    "state": "IL",
+    "country": "US",
+    "timezone": "America/Chicago",
+    "legal_entity": "Northwind Robotics US",
+    "remote_tax_notes": "Standard US payroll and withholding apply."
+  },
+  {
+    "location_id": "miami-hq",
+    "city": "Miami",
+    "state": "FL",
+    "country": "US",
+    "timezone": "America/New_York",
+    "legal_entity": "Northwind Robotics US",
+    "remote_tax_notes": "Standard US payroll and withholding apply."
+  },
+  {
     "location_id": "remote-ca",
     "city": "Remote",
     "state": "CA",

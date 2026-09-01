@@ -1,56 +1,53 @@
 # Leave of Absence Policy
 
 ## Purpose
-This policy explains how employees may request time away from work for medical, family, military, or other approved needs. It is intended to balance employee support with operational continuity and compliance with legal requirements.
+This policy explains how employees request an extended time away from work for medical, family, military, or other approved reasons, and how pay, benefits, and job protection are handled. It balances employee support with operational continuity and legal compliance. Parental leave has its own detailed policy; see the Parental and Family Leave Policy.
 
-## General Rule
-Employees may need time away from work for reasons including illness, family needs, expected medical appointments, military obligations, or other qualifying circumstances. Leave may be paid, unpaid, or partially paid depending on the type of leave, employee classification, and applicable law.
+## Types of Leave Covered
+- **Medical / disability leave** — the employee's own serious health condition.
+- **Family care leave** — to care for a spouse, child, or parent with a serious health condition.
+- **Parental leave** — birth, adoption, or foster placement (see the dedicated policy).
+- **Bereavement leave** — death of a family member.
+- **Jury duty and court-ordered leave**.
+- **Military leave** — service and related obligations.
+- **Personal leave** — an unpaid, discretionary leave for another significant reason.
 
-Managers should not require an employee to work in a way that violates the leave process or the employee's protected rights. HR should be consulted whenever an employee may be eligible for protected leave or requires a schedule accommodation.
+## Job-Protected Leave
+An employee who has worked for Northwind for at least **12 months** and at least **1,250 hours** in the prior 12 months is eligible for up to **12 weeks** of job-protected leave in a 12-month period for a qualifying medical, family-care, or parental reason. Job-protected means the employee returns to the same or an equivalent role. Where a state program provides more (longer duration, additional reasons, or paid benefits), the more generous rule applies. Employees who do not meet the 12-month/1,250-hour threshold may still request leave, which the company will consider on a discretionary basis.
 
-## Types of Leave
-This policy may apply to leave types such as:
+## How to Request Leave
+Give notice to your manager and People Operations **as early as possible** — at least **30 days** in advance for a foreseeable leave (planned surgery, expected birth), and as soon as practical for an unexpected one. People Operations sends the employee the required forms and explains the process. **Medical documentation supporting the need for leave and the expected dates is due within 15 days** of the request; the company may follow up for a fitness-for-duty note before return.
 
-- medical or disability leave,
-- family and medical leave,
-- parental leave,
-- bereavement leave,
-- jury duty or court-mandated leave,
-- military leave,
-- approved administrative or personal leave.
+## Pay During Leave
+- **Bereavement:** paid, up to **5 days** for an immediate family member (spouse or partner, child, parent, sibling) and up to **2 days** for an extended family member. Additional time may be taken as PTO.
+- **Jury duty:** paid for up to **10 days** per year; the employee provides the court summons and any proof of service.
+- **Military leave:** handled per USERRA and applicable state law.
+- **Medical / disability leave:** the company's **short-term disability** benefit pays **60% of base pay** for up to **12 weeks** after a **7-day** waiting period. The employee may use PTO during the waiting period and may use PTO to top up disability pay where the plan allows.
+- **Family care and personal leave:** generally unpaid; the employee may use accrued PTO. State paid-family-leave benefits are coordinated where they exist.
 
-The company may use different procedures for each category depending on the reason and legal requirements.
+## Benefits During Leave
+Group health coverage continues during an approved job-protected leave on the same terms, with the employee continuing to pay their share of premiums. For an unpaid leave, People Operations arranges premium payment. 401(k) contributions pause during unpaid leave and resume on return. PTO does not accrue during an unpaid leave period. Time on approved leave counts as service for tenure purposes.
 
-## Request Process
-Employees seeking leave should provide notice to their manager and HR as early as possible. In many cases, the employee should provide sufficient information to allow the company to assess the request, the expected timeline, and whether supporting documentation is needed.
+## Return to Work
+Employees confirm their return date with People Operations and the manager. For a medical leave, a return may require a fitness-for-duty or work-restrictions note. If the employee needs a temporary accommodation or modified schedule on return, they raise it with People Operations, who will engage in an interactive review. Managers must not pressure an employee to return before they are cleared or before the return plan is set.
 
-Documentation may be required for some leave types, especially when a leave is tied to medical treatment, disability, or a legal requirement. Employees are expected to cooperate with the company by submitting requested information in a timely manner.
+## Failure to Return
+If an employee does not return at the end of an approved leave and has not requested and received an extension, the company may treat the employment as ended, consistent with law. Employees should contact People Operations before the leave end date if their situation has changed.
 
-## Protected Leave and Legal Compliance
-The company will handle leave in a way that complies with applicable law, including leave protections that may apply to medical conditions, pregnancy, parental status, military service, or disability. If a leave request may be protected under local or federal law, the company will follow the governing process.
+## Confidentiality
+Medical and leave information is kept confidential and shared only with the people who need it to administer the leave. It is stored separately from the general personnel file with restricted access, consistent with the Information Classification Standard.
 
-Employees should not assume that a leave request is automatically approved without the required documentation or manager/HR review.
-
-## Pay and Benefits During Leave
-Pay treatment depends on the leave type, employee status, and applicable law. Some leave may be paid using PTO or a separate company program, while other leave may be unpaid. Benefits continuation may also vary and may depend on plan rules and local requirements.
-
-Employees should ask HR about pay treatment, benefits continuation, and expected return-to-work timing before taking leave or while planning the absence.
-
-## Return to Work and Accommodation
-Before returning to work, employees may need to provide documentation, confirm their availability, or coordinate with their manager regarding a return plan. If an employee requires a temporary accommodation or a modified schedule after a leave, the issue should be discussed with HR and, if necessary, the manager.
-
-Managers should not pressure employees to return before they are medically cleared or before the documented return plan is finalized.
-
-## Documentation and Confidentiality
-Medical information and other leave-related details should be handled confidentially and only shared with people who need the information to make decisions. The company should use the minimum necessary information to process the leave and comply with legal requirements.
-
-Employees may be asked to provide appropriate records for family, medical, or other qualifying situations. Those records should be kept in a secure and restricted process.
+## Responsibilities
+- Employees: give as much notice as possible, submit documentation within 15 days, keep People Operations informed of changes, and confirm the return date.
+- Managers: refer leave requests to People Operations, plan coverage, keep the role available for a job-protected leave, and never retaliate.
+- People Operations: determine eligibility, coordinate pay and benefits, track the leave, and manage the return-to-work process.
 
 ## Related Policies
+- Parental and Family Leave Policy
 - PTO and Vacation Policy
-- Holiday and Company Closure Policy
 - Benefits Guide
-- Workplace Conduct and Grievance Procedure
+- Compensation and Payroll Policy
+- Workplace Health and Safety Policy
 
 ## Summary
-Leave of absence is a protected and policy-based process that supports employees during significant life events, medical needs, and obligations. Employees should communicate early, provide required information, and coordinate with HR and their manager to ensure compliance and a smooth return.
+Employees with 12 months and 1,250 hours of service get up to 12 weeks of job-protected leave for a qualifying reason, or more where a state program requires it. Give 30 days notice when foreseeable and medical documentation within 15 days. Bereavement is paid up to 5 days (2 for extended family), jury duty up to 10 days, and medical leave is covered by short-term disability at 60% of pay for up to 12 weeks after a 7-day wait. Health coverage continues while the employee pays their premium share.
