@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import logging
 import os
+from datetime import UTC, datetime
 from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
@@ -23,6 +25,26 @@ def _mock_data_dir() -> Path:
 
 def _load_json(path: Path) -> list[dict]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _employee_name(employee_id: str) -> str | None:
+    for item in _load_json(_mock_data_dir() / "employees.json"):
+        if item["employee_id"] == employee_id:
+            return item.get("name")
+    return None
+
+
+def _ticket_category(issue: str) -> str:
+    lowered = issue.lower()
+    if any(w in lowered for w in ("laptop", "monitor", "equipment", "device", "hardware", "chair")):
+        return "equipment"
+    if any(w in lowered for w in ("pto", "vacation", "leave", "time off", "time-off")):
+        return "pto"
+    if any(w in lowered for w in ("benefit", "enrollment", "coverage", "insurance", "401")):
+        return "benefits"
+    if any(w in lowered for w in ("pay", "payroll", "salary", "paycheck", "reimburs", "expense")):
+        return "payroll"
+    return "general"
 
 
 def build_mcp_server(host: str | None = None, port: int | None = None) -> FastMCP:
@@ -68,20 +90,77 @@ def build_mcp_server(host: str | None = None, port: int | None = None) -> FastMC
 
     @server.tool()
     def list_policy_documents() -> dict:
-        """List available policy documents in the corpus."""
+        """List available policy documents in the corpus as ``{doc_id, title}`` pairs."""
         corpus_dir = Path(__file__).resolve().parents[2] / "corpus"
-        docs = [path.name for path in load_corpus_documents(corpus_dir)]
+        docs = [
+            {"doc_id": path.stem, "title": path.stem.replace("-", " ").title()}
+            for path in load_corpus_documents(corpus_dir)
+        ]
         return {"documents": docs}
 
     @server.tool()
     def check_policy_compliance(question: str) -> dict:
-        """Return a minimal compliance assessment for an HR policy question."""
+        """Advisory compliance check for an HR scenario, backed by policy retrieval.
+
+        Retrieves the most relevant policy sections and returns them as
+        ``relevant_sections`` evidence alongside a heuristic ``status``:
+
+        * ``requires_review`` -- the scenario touches an area that policy routes
+          through manager / People Ops approval (relocation and out-of-state or
+          international remote work, expenses and reimbursement, leaves of
+          absence, terminations, grievances).
+        * ``ok`` -- routine time-off (PTO, vacation, holidays, sick leave).
+        * ``not_applicable`` -- no review trigger matched, or the corpus does
+          not cover the question.
+
+        This is a hint for the agent, not an authoritative ruling; the cited
+        sections are the substance.
+        """
+        corpus_dir = Path(__file__).resolve().parents[2] / "corpus"
+        passages = retrieve(question, corpus_dir=corpus_dir, k=3)
+        relevant_sections = [
+            {"doc_id": p["doc_id"], "section": p["section"], "snippet": p["snippet"]}
+            for p in passages
+        ]
+
         lowered = question.lower()
-        if "expense" in lowered or "reimbursement" in lowered:
-            return {"status": "requires_review", "message": "Expense reimbursement requires policy review and a manager approval check."}
-        if "pto" in lowered or "vacation" in lowered:
-            return {"status": "ok", "message": "PTO is governed by the time-off policy and manager approval rules."}
-        return {"status": "not_applicable", "message": "No direct compliance check is required for this question."}
+        review_triggers = (
+            "expense", "reimburse", "reimbursement", "receipt",
+            "relocat", "another state", "out of state", "out-of-state",
+            "international", "abroad", "overseas", "visa", "tax residency",
+            "leave of absence", "fmla", "sabbatical",
+            "terminat", "resignation", "grievance", "harassment", "misconduct",
+        )
+        routine_triggers = ("pto", "vacation", "holiday", "time off", "sick leave", "bereavement")
+
+        if any(term in lowered for term in review_triggers):
+            status = "requires_review"
+            message = (
+                "This scenario falls in an area policy routes through manager and "
+                "People Ops review. Confirm against the cited sections before acting."
+            )
+        elif any(term in lowered for term in routine_triggers):
+            status = "ok"
+            message = (
+                "Routine time-off request governed by the time-off policy and "
+                "standard manager approval. See the cited sections."
+            )
+        elif relevant_sections:
+            status = "not_applicable"
+            message = (
+                "No explicit review trigger matched. The cited sections are the "
+                "closest policy coverage; use them to answer directly."
+            )
+        else:
+            status = "not_applicable"
+            message = "This question does not appear to be covered by the indexed HR policy corpus."
+
+        return {
+            "question": question,
+            "status": status,
+            "message": message,
+            "relevant_sections": relevant_sections,
+        }
 
     @server.tool()
     def lookup_employee_profile(employee_id: str) -> dict:
@@ -121,23 +200,44 @@ def build_mcp_server(host: str | None = None, port: int | None = None) -> FastMC
 
     @server.tool()
     def create_mock_hr_ticket(employee_id: str, issue: str) -> dict:
-        """Create a mock HR ticket for workflow demonstration without touching real systems."""
+        """Create a mock HR ticket for workflow demonstration without touching real systems.
+
+        The ticket id is a deterministic ``HR-<hash>`` of ``(employee_id, issue)``
+        so the same request always yields the same id. The shape matches the
+        ``mock_data/hr_tickets.json`` sample rows; nothing is persisted.
+        """
+        digest = hashlib.sha1(f"{employee_id}|{issue}".encode()).hexdigest()[:6].upper()
+        summary = " ".join(issue.strip().split())
+        if len(summary) > 80:
+            summary = summary[:77].rstrip() + "..."
         return {
-            "ticket_id": "HR-1001",
+            "ticket_id": f"HR-{digest}",
             "employee_id": employee_id,
-            "issue": issue,
-            "status": "created",
-            "note": "This is a mock action used for demo purposes only.",
+            "category": _ticket_category(issue),
+            "summary": summary or "HR request",
+            "details": issue.strip(),
+            "status": "created_mock",
+            "created_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            "note": "Mock action for demo purposes only; no real HR system was touched.",
         }
 
     @server.tool()
     def draft_hr_email(employee_id: str, topic: str) -> dict:
-        """Draft a mock HR email for the employee and the given topic."""
-        return {
-            "employee_id": employee_id,
-            "topic": topic,
-            "draft": "Subject: HR Follow-Up\n\nHello,\n\nThank you for reaching out. We have opened a review of your request and will follow up with the relevant policy guidance and next steps.\n\nBest,\nHR Team",
-        }
+        """Draft a mock HR email addressed to the employee about the given topic."""
+        name = _employee_name(employee_id)
+        greeting = f"Hi {name.split()[0]}," if name else "Hi there,"
+        topic_clean = " ".join(topic.strip().split()) or "your request"
+        draft = (
+            f"Subject: HR follow-up: {topic_clean}\n\n"
+            f"{greeting}\n\n"
+            f"Thanks for reaching out about {topic_clean}. I've noted your request "
+            f"(employee {employee_id}) and reviewed the relevant Northwind Robotics "
+            f"policy. I'll follow up with the specific guidance and any approval steps "
+            f"you need to complete.\n\n"
+            f"If anything is time-sensitive, reply here and I'll prioritise it.\n\n"
+            f"Best,\nNorthwind Robotics People Ops"
+        )
+        return {"employee_id": employee_id, "topic": topic_clean, "draft": draft}
 
     return server
 
