@@ -1,12 +1,16 @@
 """Deterministic pre-agent gate: ``classify_intent -> clarify | scope | agent``.
 
-No LLM call. Three cheap signals decide the route before the agent loop runs:
+No LLM call. Four cheap signals decide the route before the agent loop runs:
 
 * **employee resolution** (:mod:`hr_agent.directory`) -- a workflow that needs a
   specific person but names none, or names one we have no record of, is sent to
   ``clarify`` instead of letting the model invent a profile.
 * **ambiguity** -- a bare first-person yes/no question with almost no content
   ("Am I eligible?") is sent to ``clarify`` for exactly one follow-up question.
+* **off-topic keyword match** -- a non-personal query that explicitly asks for
+  something outside HR (weather, sports scores, recipes, code, general trivia,
+  current events) is sent to ``scope`` even if a stray policy chunk scored above
+  threshold. Additive: it only fires on an explicit category match.
 * **retrieval scope score** (:mod:`hr_agent.guardrails`) -- only meaningful when
   vector retrieval ran; a policy question the corpus does not cover is sent to
   ``scope`` for a fixed redirect.
@@ -58,6 +62,28 @@ _ELIGIBILITY_RE = re.compile(
 
 _MOCK_ACTION_PHRASES = tuple(TICKET_PHRASES) + tuple(EMAIL_PHRASES)
 
+# Explicit non-HR request categories. A match here sends a *non-personal* query
+# straight to ``scope`` no matter what retrieval scored -- an off-topic question
+# ("weather in Austin tomorrow?") can still pull a policy chunk above
+# SCOPE_THRESHOLD and otherwise slip past the score-based guardrail into the
+# agent loop. This filter is purely additive: it only ever adds a refusal on an
+# explicit category match, so it cannot turn an in-scope policy question that
+# matches nothing into a refusal. Personal workflows are exempt in ``decide``
+# so "can I expense a recipe book?" still runs.
+_OFF_TOPIC_PATTERN_SOURCES: tuple[str, ...] = (
+    r"\bweather\b|\bforecast\b|\btemperature\s+(outside|today|tomorrow)\b",
+    r"\b(nba|nfl|mlb|nhl|world\s+cup|super\s+bowl|playoffs?|final\s+score)\b|\bwho\s+won\b",
+    r"\brecipe\s+(for|to)\b|\bgood\s+recipe\b|\bwhat\s+(should|can|do)\s+i\s+(cook|make|eat)\b",
+    r"\b(write|debug|fix|refactor)\b.{0,40}\b(code|function|script|regex|algorithm|linked\s+list)\b",
+    r"\bpython\s+(function|script|code|program)\b|\bleetcode\b|\bjavascript\b",
+    r"\bwho\s+(is|was)\s+the\s+(current\s+)?(ceo|president|founder|prime\s+minister)\s+of\b",
+    r"\bcapital\s+of\b|\bwho\s+(invented|discovered|painted|composed)\b|\bpopulation\s+of\b",
+    r"\bstock\s+price\b|\bwho\s+won\s+the\s+election\b|\btoday'?s\s+news\b",
+)
+_OFF_TOPIC_PATTERNS: tuple[re.Pattern[str], ...] = tuple(
+    re.compile(source, re.IGNORECASE) for source in _OFF_TOPIC_PATTERN_SOURCES
+)
+
 # Bleached verbs that add no content when counting how specific a question is.
 _BLEACHED = frozenset({"get", "take", "use", "go", "do", "have", "make", "put"})
 _STOP = frozenset({
@@ -99,6 +125,17 @@ def _content_tokens(query: str) -> list[str]:
 def looks_ambiguous(query: str) -> bool:
     """A bare first-person yes/no question with <= 2 content words ("Am I eligible?")."""
     return bool(_FIRST_PERSON_Q_RE.match(query.strip())) and len(_content_tokens(query)) <= 2
+
+
+def looks_off_topic(query: str) -> bool:
+    """True when the query explicitly asks for something outside HR policy.
+
+    Deliberately narrow: each pattern names a concrete non-HR category (weather,
+    sports scores, recipes, code-writing, general trivia, current events). The
+    caller only applies this to non-personal queries, so employee workflows are
+    never affected even when they mention a listed word.
+    """
+    return any(pattern.search(query) for pattern in _OFF_TOPIC_PATTERNS)
 
 
 def _clarify_message(*, unknown_id: str | None, ambiguous: bool) -> str:
@@ -166,7 +203,14 @@ def decide(
             "clarify", intent, None, _clarify_message(unknown_id=None, ambiguous=False)
         )
 
-    # 4. Plain policy question the corpus does not cover (vector signal only,
+    # 4. Explicitly off-topic (weather, sports, recipes, code, trivia, news) ->
+    #    redirect regardless of the retrieval score, which can rank a stray
+    #    policy chunk above threshold. Non-personal only; method-independent
+    #    because this signal is a keyword match, not a calibrated score.
+    if not personal and looks_off_topic(query):
+        return GateDecision("scope", "out_of_scope", None, None)
+
+    # 5. Plain policy question the corpus does not cover (vector signal only,
     #    and never on a follow-up -- see has_history).
     if (
         not personal

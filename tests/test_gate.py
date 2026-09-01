@@ -2,7 +2,14 @@
 
 from __future__ import annotations
 
-from hr_agent.agent.gate import decide, looks_ambiguous, wants_employee_workflow
+import pytest
+
+from hr_agent.agent.gate import (
+    decide,
+    looks_ambiguous,
+    looks_off_topic,
+    wants_employee_workflow,
+)
 
 
 def test_named_known_employee_routes_to_agent():
@@ -68,8 +75,9 @@ def test_plain_policy_question_routes_to_agent_when_in_scope():
 
 
 def test_out_of_scope_policy_question_routes_to_scope_on_vector_signal():
+    # A low vector score with no off-topic keyword -> the score path alone.
     d = decide(
-        "What is the weather tomorrow?",
+        "Tell me about quantum entanglement.",
         retrieval_results=[{"score": 0.31}],
         retrieval_method="vector",
     )
@@ -77,14 +85,62 @@ def test_out_of_scope_policy_question_routes_to_scope_on_vector_signal():
     assert d.intent == "out_of_scope"
 
 
-def test_keyword_retrieval_never_triggers_scope_refusal():
-    # TF-IDF scores are not calibrated 0-1, so the gate fails open on them.
+def test_keyword_retrieval_never_triggers_scope_refusal_on_score_alone():
+    # TF-IDF scores are not calibrated 0-1, so the gate fails open on a low
+    # score when nothing else marks the query as off-topic.
     d = decide(
-        "What is the weather tomorrow?",
+        "Tell me about quantum entanglement.",
         retrieval_results=[{"score": 0.31}],
         retrieval_method="keyword",
     )
     assert d.route == "agent"
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        "What's the weather in Austin tomorrow?",
+        "Write me a Python function that reverses a linked list.",
+        "What's a good recipe for dinner tonight?",
+        "Who is the current CEO of Google?",
+    ],
+)
+def test_off_topic_keyword_routes_to_scope_regardless_of_retrieval_score(query):
+    # Even with a high-scoring stray policy chunk, an explicit off-topic query
+    # is redirected. These four are the eval gold out-of-scope set.
+    assert looks_off_topic(query)
+    d = decide(query, retrieval_results=[{"score": 0.91}], retrieval_method="vector")
+    assert d.route == "scope"
+    assert d.intent == "out_of_scope"
+
+
+def test_off_topic_filter_is_method_independent():
+    # Unlike the score guardrail, the keyword filter also fires on keyword
+    # retrieval -- it is a match, not a calibrated score.
+    d = decide(
+        "What's the weather in Austin tomorrow?",
+        retrieval_results=[{"score": 0.42}],
+        retrieval_method="keyword",
+    )
+    assert d.route == "scope"
+
+
+def test_off_topic_filter_exempts_personal_workflows():
+    # "good recipe" matches the off-topic filter, but this is a mock-email
+    # workflow for a known employee -> the filter is skipped, the workflow runs.
+    query = "Draft an email to my manager about a good recipe for the team potluck."
+    assert looks_off_topic(query)
+    d = decide(query, employee_id_hint="E-1002")
+    assert d.route == "agent"
+    assert d.employee_id == "E-1002"
+    assert d.intent == "agentic_workflow"
+
+
+def test_looks_off_topic_leaves_real_policy_questions_alone():
+    assert not looks_off_topic("Does Northwind close the office for snow days?")
+    assert not looks_off_topic("What is the holiday schedule?")
+    assert not looks_off_topic("How do I submit an expense report?")
+    assert not looks_off_topic("Who is my manager?")
 
 
 def test_wants_employee_workflow_detects_mock_actions_and_personal_topics():

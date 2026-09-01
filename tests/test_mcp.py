@@ -1,7 +1,14 @@
 import asyncio
+import json
 
 from hr_agent.mcp_client import discovery
 from hr_agent.mcp_server import build_mcp_server, resolve_transport
+
+
+def _call(tool: str, args: dict) -> dict:
+    server = build_mcp_server()
+    result = asyncio.run(server.call_tool(tool, args))
+    return json.loads(result[0].text)
 
 EXPECTED_TOOLS = {
     "search_policy_documents",
@@ -58,6 +65,65 @@ def test_check_pto_balance_unknown_employee_errors():
     result = asyncio.run(server.call_tool("check_pto_balance", {"employee_id": "E-9999"}))
     payload = __import__("json").loads(result[0].text)
     assert payload["error"] == "not_found"
+
+
+def test_check_policy_compliance_is_retrieval_backed():
+    payload = _call(
+        "check_policy_compliance",
+        {"question": "Can an employee work remotely from another state for six weeks?"},
+    )
+    assert payload["status"] == "requires_review"
+    assert payload["relevant_sections"], "expected retrieved evidence, not a bare verdict"
+    for section in payload["relevant_sections"]:
+        assert set(section) == {"doc_id", "section", "snippet"}
+        assert section["doc_id"] and section["snippet"]
+
+
+def test_check_policy_compliance_routine_pto_is_ok():
+    payload = _call("check_policy_compliance", {"question": "I want to take PTO next Friday."})
+    assert payload["status"] == "ok"
+    assert payload["relevant_sections"]
+
+
+def test_check_policy_compliance_off_corpus_is_not_applicable():
+    payload = _call(
+        "check_policy_compliance",
+        {"question": "What is the airspeed velocity of an unladen swallow?"},
+    )
+    assert payload["status"] == "not_applicable"
+    assert payload["relevant_sections"] == []
+
+
+def test_create_mock_hr_ticket_has_unique_deterministic_id_and_sample_shape():
+    a = _call("create_mock_hr_ticket", {"employee_id": "E-1001", "issue": "broken laptop screen"})
+    b = _call("create_mock_hr_ticket", {"employee_id": "E-1001", "issue": "broken laptop screen"})
+    c = _call("create_mock_hr_ticket", {"employee_id": "E-1001", "issue": "missing paycheck"})
+
+    assert a["ticket_id"] == b["ticket_id"], "same inputs must be deterministic"
+    assert a["ticket_id"] != c["ticket_id"], "different issues must not collide"
+    assert a["ticket_id"].startswith("HR-")
+    assert a["status"] == "created_mock"
+    assert a["category"] == "equipment"
+    assert c["category"] == "payroll"
+    assert a["summary"] and a["created_at"].endswith("Z")
+
+
+def test_draft_hr_email_interpolates_topic_and_employee():
+    pto = _call("draft_hr_email", {"employee_id": "E-1001", "topic": "carrying over unused PTO"})
+    remote = _call("draft_hr_email", {"employee_id": "E-1001", "topic": "working from Ireland"})
+
+    assert pto["draft"] != remote["draft"], "draft must depend on the topic"
+    assert "carrying over unused PTO" in pto["draft"]
+    assert "Hi Alicia," in pto["draft"], "known employee id resolves to a first name"
+    assert "E-1001" in pto["draft"]
+
+
+def test_list_policy_documents_returns_doc_id_title_pairs():
+    payload = _call("list_policy_documents", {})
+    docs = payload["documents"]
+    assert docs and all(set(d) == {"doc_id", "title"} for d in docs)
+    sample = docs[0]
+    assert "-" not in sample["title"] or sample["title"][0].isupper()
 
 
 def test_resolve_transport_defaults_to_stdio():

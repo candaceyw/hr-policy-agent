@@ -62,8 +62,10 @@ React SPA ──POST /chat──► FastAPI (service "web")
 | `data/index/` | committed `sqlite-vec` index + `manifest.json` (hash-verified in CI) |
 | `evaluation/` | 25-item gold set, metrics, LLM judge, runner, ablation, `RESULTS.md` |
 | `frontend/` | React + Vite SPA |
-| `tests/` | 116 tests — ingestion, retrieval, gate, agent loop, MCP, app, evaluation |
+| `tests/` | 131 tests — ingestion, retrieval, gate, agent loop, MCP, app, evaluation |
 | `scripts/` | `build_index.py` (`--verify`), `build_corpus_formats.py` |
+
+> **MCP server & tool definitions:** [`src/hr_agent/mcp_server.py`](src/hr_agent/mcp_server.py) — the `FastMCP` server and all 9 tool schemas are defined inline in `build_mcp_server()`. The agent-side MCP client (discovery, health, degrade-to-RAG) is in [`src/hr_agent/mcp_client/`](src/hr_agent/mcp_client/).
 
 ## Local setup
 
@@ -97,7 +99,7 @@ For the production-shaped two-process / two-container setup, see
 ## Tests & checks
 
 ```bash
-python -m pytest -q                       # 116 tests, offline by default
+python -m pytest -q                       # 131 tests, offline by default
 ruff check .                              # lint (line length 100)
 python scripts/build_index.py --verify    # index is deterministic vs the manifest
 python -m evaluation.run_eval --smoke --offline   # eval harness plumbing, no tokens
@@ -125,6 +127,7 @@ latency p50/p95, plus a retrieval-`k` ablation.
 
 ```bash
 python -m evaluation.run_eval                          # full judged run + RESULTS.md
+python -m evaluation.run_eval --only straightforward,multi_doc   # citation-bearing subset
 python -m evaluation.run_eval --rejudge results/<f>.json   # re-score saved answers only
 python -m evaluation.ablation --no-judge               # k sweep + tools-vs-RAG
 ```

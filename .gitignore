@@ -18,6 +18,7 @@ frontend/dist/
 
 # Personal/private developer notes
 build-note.md
+HANDOFF.md
 
 # OS/editor
 .DS_Store
@@ -26,3 +27,7 @@ build-note.md
 
 # Logs
 *.log
+
+# Local eval smoke / subset output (full judged runs are committed deliberately)
+evaluation/results/eval-smoke-*.json
+evaluation/results/eval-subset-*.json

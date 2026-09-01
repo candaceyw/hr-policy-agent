@@ -66,6 +66,22 @@ def test_smoke_subset_is_six_and_spans_behaviors():
     assert {it.expected_behavior for it in smoke} >= {"answer", "clarify", "refuse", "confirm"}
 
 
+def test_only_filter_selects_by_id_and_category():
+    from evaluation.run_eval import _filter_items
+
+    items = load_items()
+    kept, unmatched = _filter_items(items, "md-01, out_of_scope , bogus-id")
+    ids = {it.id for it in kept}
+    assert "md-01" in ids
+    assert all(it.category == "out_of_scope" or it.id == "md-01" for it in kept)
+    assert {it.category for it in kept} == {"multi_doc", "out_of_scope"}
+    assert unmatched == {"bogus-id"}
+
+    citation_bearing, _ = _filter_items(items, "straightforward,multi_doc")
+    assert len(citation_bearing) == 11
+    assert all(it.gold_doc_ids for it in citation_bearing)
+
+
 # --------------------------------------------------------------------- metrics
 
 

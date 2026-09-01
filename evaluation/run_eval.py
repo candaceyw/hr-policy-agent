@@ -395,9 +395,30 @@ def _rejudge(src: Path, out_dir: Path) -> int:
     return 0
 
 
+def _filter_items(
+    items: list[EvalItem], only: str
+) -> tuple[list[EvalItem], set[str]]:
+    """Keep items whose id or category is in the comma-separated ``only`` string.
+
+    Returns ``(kept, unmatched_tokens)`` so the caller can warn about typos.
+    """
+    wanted = {tok.strip() for tok in only.split(",") if tok.strip()}
+    kept = [it for it in items if it.id in wanted or it.category in wanted]
+    unmatched = wanted - {it.id for it in kept} - {it.category for it in kept}
+    return kept, unmatched
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--smoke", action="store_true", help="run the 6-item subset")
+    parser.add_argument(
+        "--only",
+        metavar="IDS_OR_CATEGORIES",
+        help="comma-separated item ids (md-01) and/or categories "
+        "(straightforward, multi_doc, tool, ambiguous, out_of_scope) to run a "
+        "subset -- e.g. --only straightforward,multi_doc for the 11 "
+        "citation-bearing items. RESULTS.md is not regenerated on a subset run.",
+    )
     parser.add_argument("--no-judge", dest="judge", action="store_false", help="skip LLM-judge metrics")
     parser.add_argument("--offline", action="store_true", help="stub model, no provider calls")
     parser.add_argument(
@@ -417,6 +438,14 @@ def main(argv: list[str] | None = None) -> int:
         return _rejudge(Path(args.rejudge), Path(args.out_dir))
 
     items = load_smoke_items() if args.smoke else load_items()
+    if args.only:
+        items, unmatched = _filter_items(items, args.only)
+        if not items:
+            print(f"! --only {args.only!r} matched no items")
+            return 1
+        if unmatched:
+            print(f"! --only: ignoring unknown token(s) {sorted(unmatched)}")
+
     model = _build_offline_model() if args.offline else None
     judge = args.judge and not args.offline
     if judge and not judge_available():
@@ -428,7 +457,8 @@ def main(argv: list[str] | None = None) -> int:
     timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H-%M-%SZ")
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    results_file = out_dir / f"eval-{'smoke-' if args.smoke else ''}{timestamp}.json"
+    prefix = "smoke-" if args.smoke else ("subset-" if args.only else "")
+    results_file = out_dir / f"eval-{prefix}{timestamp}.json"
 
     records: list[dict[str, Any]] = []
     for i, item in enumerate(items, start=1):
@@ -443,9 +473,15 @@ def main(argv: list[str] | None = None) -> int:
         )
 
     summary = aggregate(records)
+    if args.smoke:
+        mode = f"smoke ({len(items)} items)"
+    elif args.only:
+        mode = f"subset --only {args.only} ({len(items)} items)"
+    else:
+        mode = "full (25 items)"
     meta = {
         "timestamp": timestamp,
-        "mode": "smoke (6 items)" if args.smoke else "full (25 items)",
+        "mode": mode,
         "llm_provider": settings.provider,
         "llm_model": settings.llm_model,
         "judge_model": settings.eval_judge_model if judge else "(none)",
@@ -458,7 +494,7 @@ def main(argv: list[str] | None = None) -> int:
     results_file.write_text(json.dumps(payload, indent=2) + "\n")
     print(f"\nwrote {results_file}")
 
-    if not args.smoke and not args.offline:
+    if not args.smoke and not args.offline and not args.only:
         RESULTS_MD.write_text(render_results_md(summary, {**meta, "results_file": str(results_file)}))
         print(f"wrote {RESULTS_MD}")
     else:

@@ -322,15 +322,23 @@ def build_agent_graph(
     def guardrail_scope_node(state: AgentState) -> dict:
         """Out-of-corpus policy question: fixed redirect, no LLM call."""
         score = float(state.get("scope_score", 0.0))
+        if score >= settings.scope_threshold:
+            # routed here by the gate's off-topic keyword filter, not the score
+            summary = (
+                f"off-topic query (keyword filter); redirected out of scope "
+                f"despite top similarity {score:.3f}"
+            )
+        else:
+            summary = (
+                f"out of scope: top similarity {score:.3f} < {settings.scope_threshold}"
+            )
         trace = list(state.get("tool_trace") or [])
         trace.append(
             {
                 "step": len(trace) + 1,
                 "type": "guardrail",
                 "name": "scope_refusal",
-                "result_summary": (
-                    f"out of scope: top similarity {score:.3f} < {settings.scope_threshold}"
-                ),
+                "result_summary": summary,
             }
         )
         return {
