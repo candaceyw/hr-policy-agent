@@ -164,12 +164,19 @@ def build_mcp_server(host: str | None = None, port: int | None = None) -> FastMC
 
     @server.tool()
     def lookup_employee_profile(employee_id: str) -> dict:
-        """Look up a synthetic employee profile by employee id."""
+        """Look up a synthetic employee profile by employee id.
+
+        Adds a resolved ``manager_name`` alongside ``manager_id`` so the agent
+        can name the manager without a second lookup.
+        """
         employees = _load_json(_mock_data_dir() / "employees.json")
-        for item in employees:
-            if item["employee_id"] == employee_id:
-                return item
-        return {"error": "not_found", "message": f"Employee {employee_id} was not found."}
+        by_id = {e["employee_id"]: e for e in employees}
+        item = by_id.get(employee_id)
+        if item is None:
+            return {"error": "not_found", "message": f"Employee {employee_id} was not found."}
+        manager_id = item.get("manager_id")
+        manager = by_id.get(manager_id) if manager_id else None
+        return {**item, "manager_name": manager["name"] if manager else None}
 
     @server.tool()
     def check_pto_balance(employee_id: str) -> dict:

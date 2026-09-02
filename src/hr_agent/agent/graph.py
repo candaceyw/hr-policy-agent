@@ -40,16 +40,26 @@ _ACTION_LABELS = {
 
 _AGENT_SYSTEM = (
     "You are an HR policy assistant for Northwind Robotics. You have tools to "
-    "search the policy corpus and to look up synthetic employee data. Ground "
-    "every policy claim with a policy-search tool. Call an employee-data tool "
-    "only when the question is about a specific named employee or employee id. "
-    "When you have enough information, stop calling tools and write the final "
-    "answer.\n"
+    "search the policy corpus and to look up synthetic employee data.\n"
+    "Answer ONLY the question the user actually asked. Do not invent, assume, or "
+    "expand it into a different request, and do not volunteer information they "
+    "did not ask for.\n"
+    "Tool discipline:\n"
+    "- Ground every policy claim with a policy-search tool.\n"
+    "- Call lookup_employee_profile for questions about a person's role, "
+    "department, manager, location, or employment details. To name a referenced "
+    "person (such as a manager id in a profile), call it again for that id.\n"
+    "- Call check_pto_balance ONLY if the question is about time off or PTO.\n"
+    "- Call lookup_benefits_status ONLY if the question is about benefits.\n"
+    "- Call check_policy_compliance ONLY if the question asks whether something "
+    "is allowed or compliant.\n"
+    "When you have enough information, stop calling tools and write the answer.\n"
     "Answer format: at most ~120 words, in short prose or a few bullet points. "
-    "Cite each policy fact inline as [doc-id]. Do NOT write a 'TL;DR', a summary "
-    "heading, an email, a letter, or a sign-off, and do not offer to draft one "
-    "unless the user explicitly asked. If the tools do not answer the question, "
-    "say so plainly and recommend contacting HR."
+    "Name the policy document for each policy fact (for example, 'the PTO and "
+    "Vacation Policy'). Do NOT write a 'TL;DR', a summary heading, an email, a "
+    "letter, or a sign-off, and do not offer to draft an email or open a ticket "
+    "unless the user explicitly asked for one. If the tools do not answer the "
+    "question, say so plainly and recommend contacting HR."
 )
 
 
@@ -64,7 +74,7 @@ def _employee_hint(query: str, employee_id: str | None = None) -> str | None:
         return None
     name = get_employee_name(employee_id)
     who = f"{name} ({employee_id})" if name else employee_id
-    return f"Context: this request is about employee {who}. Use {employee_id} for employee-data tools."
+    return f"Context: this request is about employee {who}; their employee id is {employee_id}."
 
 
 # gpt-oss on Groq sometimes abandons a multi-tool task and replies with a generic
@@ -78,13 +88,20 @@ _FILLER_RE = re.compile(
 
 
 def _looks_unfinished(state: AgentState) -> bool:
-    """True when the loop is about to compose a non-answer (no tools + filler)."""
-    if any(e.get("type") == "tool_call" for e in state.get("tool_trace") or []):
-        return False
+    """True when the loop is about to compose a non-answer.
+
+    An empty final message is always unfinished. Greeting/filler ("I'm ready to
+    help!") is unfinished even after a tool ran -- some models call a tool and
+    then reply with filler instead of the answer -- but only when the message is
+    short, so a real answer that happens to contain a stock phrase is left alone.
+    """
     last = _last_ai(state)
     text = (last.content if last else "") or ""
     text = text if isinstance(text, str) else str(text)
-    return not text.strip() or bool(_FILLER_RE.search(text))
+    stripped = text.strip()
+    if not stripped:
+        return True
+    return bool(_FILLER_RE.search(stripped)) and len(stripped) < 240
 
 # Tool results we can turn into citations, plus how to read them.
 _POLICY_TOOLS = {"search_policy_documents", "get_policy_section", "list_policy_documents"}
@@ -150,6 +167,53 @@ def _dedupe_citations(rows: list[dict[str, str]]) -> list[dict[str, str]]:
             seen.add(key)
             out.append(row)
     return out
+
+
+# Every policy-tool result row is collected as a candidate citation, so the agent
+# over-cites (eval: recall 0.86 >> precision 0.55). Keep only the documents the
+# composed answer actually names -- the model reliably writes prose names like
+# "the PTO and Vacation Policy", which map onto the doc-id stem. Fall back to the
+# first few (retrieval order) when the answer names none, so a real answer never
+# loses all its citations.
+_CITATION_CAP = 4
+_CITATION_STOPWORDS = frozenset(
+    {"and", "of", "the", "to", "for", "a", "an", "policy", "guide", "overview",
+     "standard", "procedure", "northwind", "robotics"}
+)
+
+
+def _doc_id_significant_words(doc_id: str) -> list[str]:
+    """Content words of a doc-id stem: ``05-out-of-state-and-international-remote-work``
+    -> ``["out", "state", "international", "remote", "work"]``."""
+    words = [w for w in re.split(r"[-_\s]+", doc_id.lower()) if w and not w.isdigit()]
+    return [w for w in words if w not in _CITATION_STOPWORDS]
+
+
+def _answer_names_doc(doc_id: str, answer_norm: str) -> bool:
+    """True when ``answer_norm`` (lower-cased, hyphens -> spaces) names this doc."""
+    full_phrase = " ".join(
+        w for w in re.split(r"[-_\s]+", doc_id.lower()) if w and not w.isdigit()
+    )
+    if full_phrase and full_phrase in answer_norm:
+        return True
+    words = _doc_id_significant_words(doc_id)
+    if not words:
+        return False
+    hits = sum(1 for w in words if re.search(rf"\b{re.escape(w)}\b", answer_norm))
+    need = len(words) if len(words) <= 2 else max(2, len(words) - 1)
+    return hits >= need
+
+
+def _select_citations(rows: list[dict[str, str]], answer: str) -> list[dict[str, str]]:
+    rows = _dedupe_citations(rows)
+    if not rows:
+        return []
+    answer_norm = re.sub(r"[-_]+", " ", (answer or "").lower())
+    named = [r for r in rows if _answer_names_doc(r["doc_id"], answer_norm)]
+    if named:
+        # a little slack over the cap when the answer genuinely cites many docs
+        return named[: _CITATION_CAP + 2]
+    return rows[:_CITATION_CAP]
 
 
 def _last_ai(state: AgentState) -> AIMessage | None:
@@ -382,7 +446,7 @@ def build_agent_graph(
         )
         return {
             "answer": answer,
-            "citations": _dedupe_citations(list(state.get("citations") or [])),
+            "citations": _select_citations(list(state.get("citations") or []), answer),
             "tool_trace": trace,
             "escalation": bool(state.get("escalation", False)),
         }
@@ -413,7 +477,7 @@ def build_agent_graph(
                 "confirm to proceed or decline to cancel."
             ),
             "tool_trace": trace,
-            "citations": _dedupe_citations(list(state.get("citations") or [])),
+            "citations": _select_citations(list(state.get("citations") or []), state.get("answer") or ""),
         }
 
     def declined_node(state: AgentState) -> dict:
@@ -448,7 +512,7 @@ def build_agent_graph(
                 "Ask again with a confirmation if you want me to proceed."
             ),
             "tool_trace": trace,
-            "citations": _dedupe_citations(list(state.get("citations") or [])),
+            "citations": _select_citations(list(state.get("citations") or []), state.get("answer") or ""),
         }
 
     def nudge_node(state: AgentState) -> dict:

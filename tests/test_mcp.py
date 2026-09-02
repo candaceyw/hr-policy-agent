@@ -51,6 +51,18 @@ def test_mcp_tool_lookup_employee_profile():
     assert payload["name"] == "Alicia Chen"
 
 
+def test_lookup_employee_profile_resolves_manager_name():
+    payload = _call("lookup_employee_profile", {"employee_id": "E-1007"})
+    assert payload["manager_id"] == "E-1014"
+    assert payload["manager_name"] == "Mina Park"
+
+
+def test_lookup_employee_profile_manager_name_is_none_at_the_top():
+    payload = _call("lookup_employee_profile", {"employee_id": "E-1014"})
+    assert payload["manager_id"] is None
+    assert payload["manager_name"] is None
+
+
 def test_check_pto_balance_derives_available_hours():
     server = build_mcp_server()
     result = asyncio.run(server.call_tool("check_pto_balance", {"employee_id": "E-1007"}))
