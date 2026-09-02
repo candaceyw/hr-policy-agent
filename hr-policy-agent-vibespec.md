@@ -24,6 +24,11 @@ This is a vibespec. It describes an agentic AI assistant that helps employees of
   Implementation, Testing, Deployment) against the shipped code, completed the
   Issues log for all phases, checked off met Acceptance Criteria, fixed the
   Glossary's confirmation-gate contradiction.
+- 2026-09-02 (Phase 9 — Tier 2): answer-aware citation selection (over-citation
+  fix; 17-item judged subset: citation F1 0.64 → 0.86, precision 0.55 → 0.89,
+  recall held at 0.86); `tl-03` tool-discipline changes (`_AGENT_SYSTEM`
+  per-tool rules, `lookup_employee_profile` `manager_name`, nudge on
+  filler-after-tool) — `tl-03` 0.0 → 1.0. Tests 131 → 139. See Issues → Phase 9.
 - 2026-09-01 (Phase 8 — Tier 1 hardening): off-topic keyword deny-list in the
   gate (4th `guardrail_scope` signal); `check_policy_compliance` made
   retrieval-backed; `create_mock_hr_ticket` / `draft_hr_email` /
@@ -549,7 +554,7 @@ Discovered via MCP `list_tools`. Each tool has a Pydantic input schema and retur
 - `get_policy_section(doc_id: str, section: str | None = None)` -> `{ "doc_id", "section", "content" }` (all sections joined if `section` omitted) or `{ "error": "not_found" }`
 - `list_policy_documents()` -> `{ "documents": [ { "doc_id", "title" }, ... ] }` (title = doc-id stem, de-hyphenated + title-cased)
 - `check_policy_compliance(question: str)` -> `{ "question", "status": "ok" | "requires_review" | "not_applicable", "message": string, "relevant_sections": [ { "doc_id", "section", "snippet" } ] }` — **retrieval-backed**: runs `retrieve()` for the top 3 policy sections and returns them as evidence; `status` is a keyword-derived hint (relocation / out-of-state / international remote / expense / leave / termination / grievance → `requires_review`; PTO / vacation / holiday → `ok`; empty retrieval → `not_applicable`). Advisory, not an LLM call and not authoritative — the cited sections are the substance.
-- `lookup_employee_profile(employee_id: str)` -> Employee object or `{ "error": "not_found", "message" }`
+- `lookup_employee_profile(employee_id: str)` -> Employee object **plus a resolved `manager_name`** (from `manager_id`, or `null` at the top of the chain), or `{ "error": "not_found", "message" }`
 - `check_pto_balance(employee_id: str)` -> PtoBalance object + derived `available_hours` (accrued − used − pending) or `{ "error": "not_found", "message" }`
 - `lookup_benefits_status(employee_id: str)` -> BenefitsElection object or `{ "error": "not_found", "message" }`
 - `create_mock_hr_ticket(employee_id: str, issue: str)` -> `{ "ticket_id": "HR-<sha1[:6]>", "employee_id", "category", "summary", "details", "status": "created_mock", "created_at", "note" }` — deterministic id over `(employee_id, issue)`; shape matches the `mock_data/hr_tickets.json` sample rows; confirmation-gated by the orchestrator; never persisted
@@ -590,7 +595,7 @@ that way; see Folder Structure for why.
 ### Agent (`src/hr_agent/agent/`)
 - `state.py`: `AgentState` (`TypedDict`, not the originally planned field set) — `query`, `corpus_dir`, `employee_id`, `history`, `messages` (LangGraph `add_messages`-annotated), `tool_trace`, `citations`, `iterations`, `nudges`, `answer`, `llm_error`, `escalation`, `intent`, `gate_route`, `gate_message`, `scope_score`, `confirm`, `pending_action`.
 - `gate.py`: `decide(query, employee_id_hint, retrieval_results, retrieval_method, has_history)` — **deterministic, no LLM.** Routes `clarify` (unknown/missing employee id, or a narrow first-person-yes/no ambiguity regex), `scope` (an off-topic keyword deny-list — `looks_off_topic()`, weather / sports / recipes / code / trivia / news on a non-personal query, method-independent — **or** a vector-only retrieval score below `SCOPE_THRESHOLD` skipped on a follow-up), or `agent`.
-- `graph.py`: `build_agent_graph(tools, model, confirm_gate, gate)` — no separate `nodes.py`/`trace.py` modules; every node is a closure inside this one function. Nodes: `classify` (calls `gate.decide`), `clarify`, `guardrail_scope`, `agent` (LLM bound to the MCP tools), `tools` (`ToolNode`, appends trace entries, collects citations), `confirm_gate` / `declined` (the two-call handshake — see Issues, not `interrupt_before`), `nudge` (recovers a model that stalls with filler once), `compose` (takes the last AI message as the answer, dedupes citations). `arun_workflow()` / `run_workflow()` are the entry points; `orchestration.py` wraps them with the RAG-only degradation.
+- `graph.py`: `build_agent_graph(tools, model, confirm_gate, gate)` — no separate `nodes.py`/`trace.py` modules; every node is a closure inside this one function. Nodes: `classify` (calls `gate.decide`), `clarify`, `guardrail_scope`, `agent` (LLM bound to the MCP tools), `tools` (`ToolNode`, appends trace entries, collects citations), `confirm_gate` / `declined` (the two-call handshake — see Issues, not `interrupt_before`), `nudge` (recovers a model that stalls with filler once, including filler that follows a tool call), `compose` (takes the last AI message as the answer; keeps only citations whose document the answer names via `_select_citations`, capped fallback to retrieval order). `arun_workflow()` / `run_workflow()` are the entry points; `orchestration.py` wraps them with the RAG-only degradation.
 
 ### MCP client (`src/hr_agent/mcp_client/`)
 - `discovery.py`: builds a `MultiServerMCPClient` (langchain-mcp-adapters). If `MCP_SERVER_URL` is set -> Streamable HTTP; else -> stdio spawning `python -m hr_agent.mcp_server` (not `python -m mcp.server` — see Issues). Exposes `get_tools()` / `get_tools_async()` (LangGraph-compatible) and `health()` (connected?, tool count, transport).
@@ -801,6 +806,34 @@ behind after Phase 2 for several phases; the 2026-09-01 entry closes that gap.
   change on one token-budget day; `RESULTS.md` is only regenerated on a full run.
 - Test count 116 → 131. Judged-eval re-run to quantify the out-of-scope gain and
   confirm the k=3 citation-F1 improvement is deferred to its own token-budget day.
+
+### Phase 9 — Tier 2 (citation precision + the tl-03 workflow miss)
+- **Answer-aware citation selection.** Every policy-tool result row was collected
+  as a citation, so the agent over-cited (baseline: recall 0.86 ≫ precision
+  0.55). `compose` now keeps only the documents the answer actually names —
+  `_answer_names_doc` matches the de-hyphenated doc-id stem against the answer
+  text, since the model reliably writes prose names ("the PTO and Vacation
+  Policy") rather than the `[doc-id]` markers the old prompt asked for. Falls
+  back to the first ~4 in retrieval order when the answer names none, so a real
+  answer never loses all citations. Confirmed on a 17-item judged subset
+  (`--only straightforward,multi_doc,tool`, same Groq judge as the baseline,
+  2026-09-02): citation **F1 0.64 → 0.86, precision 0.55 → 0.89, recall
+  0.86 → 0.86** — precision fixed with no recall cost. Groundedness 0.73 → 0.77
+  and similarity 0.72 → 0.78 on the shared items. Full 25-item re-run pending
+  its own token-budget day.
+- **`tl-03` ("I'm E-1007. Who is my manager?")** — was the sole workflow-completion
+  miss (fabricated PTO summary, similarity 0.0). Three changes:
+  (a) `_AGENT_SYSTEM` rewritten with explicit per-tool "call X ONLY if …" rules
+  and "answer only the question asked"; (b) `lookup_employee_profile` resolves
+  `manager_name` so one call answers a manager question; (c) `_looks_unfinished`
+  now also nudges filler that follows a tool call. In the subset re-run `tl-03`
+  scores **1.0** (fixed). `tl-05` (a tiered PTO-notice question the model reads
+  as the 5-day tier) was a knife-edge 0.50 in the baseline and 0.0 in the
+  re-run, so workflow completion stays 6/7 — a lateral move on a pre-existing
+  weak item, and the `tl-03` fix is the more robust of the two.
+- **`_employee_hint`** no longer instructs the model to "use … for employee-data
+  tools" (it read as a push to call tools).
+- Test count 131 → 139.
 
 ### Known risks — status
 1. **Free-tier LLM rate limits during the full 25-item eval.** *Materialized

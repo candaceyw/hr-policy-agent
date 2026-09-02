@@ -69,9 +69,13 @@ deny-list (a non-personal query that explicitly asks for weather / sports /
 recipes / code / trivia / news → `guardrail_scope`, regardless of retrieval
 score), and the vector-retrieval scope score (a policy question the corpus does
 not cover → `guardrail_scope`). Everything else enters the `agent` ↔ `tools` loop, which is an LLM binding the
-MCP tools and choosing calls, bounded by `MAX_TOOL_ITERATIONS`. A `nudge` node
-recovers a model that stops early with filler instead of an answer. `compose`
-takes the last model message as the answer and attaches deduped citations.
+MCP tools and choosing calls, bounded by `MAX_TOOL_ITERATIONS`. The system
+prompt gives per-tool "call X only if …" rules and tells the model to answer
+only what was asked. A `nudge` node recovers a model that stalls with filler
+instead of an answer — including filler that follows a tool call. `compose`
+takes the last model message as the answer and keeps only the citations whose
+document the answer actually names (prose match on the doc-id stem), falling
+back to the top few in retrieval order when the answer names none.
 
 The **trace** stores only operational fields — `step`, `type`, `name`,
 `args_summary`, `result_summary` — never model chain-of-thought.
@@ -166,7 +170,7 @@ is a visible degradation demo within ~15 s.
 | `get_policy_section(doc_id, section?)` | full section text | exact section match |
 | `list_policy_documents()` | doc catalogue → `[{doc_id, title}]` | |
 | `check_policy_compliance(question)` | retrieves top-3 policy sections → `relevant_sections` evidence + heuristic `status` (`ok` / `requires_review` / `not_applicable`) | advisory hint; the cited sections are the substance |
-| `lookup_employee_profile(employee_id)` | Employee record | typed `not_found` |
+| `lookup_employee_profile(employee_id)` | Employee record + resolved `manager_name` | typed `not_found` |
 | `check_pto_balance(employee_id)` | PTO record + derived `available_hours` | |
 | `lookup_benefits_status(employee_id)` | BenefitsElection record | |
 | `create_mock_hr_ticket(employee_id, issue)` | **gated** mock ticket → deterministic `HR-<hash>` id, `hr_tickets.json` shape | confirmation required |
@@ -199,7 +203,7 @@ errors are never raised across the MCP boundary.
 
 ## 5. Testing
 
-**131 tests, `ruff` clean, offline by default** (an autouse fixture forces the
+**139 tests, `ruff` clean, offline by default** (an autouse fixture forces the
 no-LLM path; tests that need tool-calling inject a `ScriptedChatModel`).
 
 | Area | Files | Count |
@@ -311,6 +315,25 @@ day.
 free-tier token-budget reset; RAG-only cannot call the data tools, so PTO /
 benefits / profile items cannot complete — the expected near-total collapse.)*
 
+### Tier 2 validation (2026-09-02, 17-item subset)
+
+`run_eval --only straightforward,multi_doc,tool`, same Groq judge as the
+baseline, so the numbers below are directly comparable on the shared items:
+
+| Metric | Baseline (25) | Subset re-run (17) |
+| --- | --- | --- |
+| Citation precision / recall / F1 | 0.55 / 0.86 / 0.64 | **0.89 / 0.86 / 0.86** |
+| Groundedness | 0.73 | 0.77 |
+| LLM-judge similarity | 0.72 | 0.78 |
+| Workflow completion | 6/7 (`tl-03`) | 6/7 (`tl-05`) |
+| Action-safety | 1.00 | 1.00 |
+
+The answer-aware citation filter lifts precision from 0.55 to 0.89 with recall
+unchanged (0.86). `tl-03` is fixed (0.0 → 1.0); `tl-05` — a knife-edge 0.50 in
+the baseline — regressed to 0.0 on judge variance, leaving completion at 6/7.
+The full 25-item judged run to regenerate this section authoritatively is the
+next token-budget-day task.
+
 ### Findings
 
 1. **Out-of-scope routing was the weak point (0.50).** "What's the weather in
@@ -322,16 +345,24 @@ benefits / profile items cannot complete — the expected near-total collapse.)*
    non-personal match to `guardrail_scope` regardless of retrieval score. It
    catches all 4 gold out-of-scope items with 0 false positives on the other
    21; the judged metric re-run is pending a free-tier token-budget reset.
-2. **Citation precision (0.55) lags recall (0.86)** — the agent over-cites
-   sections pulled via `get_policy_section`. The `k` ablation shows the cheapest
-   lever is a lower default `k`.
+2. **Citation precision (0.55) lagged recall (0.86)** — the agent collected a
+   citation for every policy-tool result row, cited or not. **Fixed:** `compose`
+   now keeps only the documents the answer names (prose match on the doc-id
+   stem), capped fallback to retrieval order. Confirmed on the 17-item
+   citation+tool subset (2026-09-02, same judge): **F1 0.64 → 0.86, precision
+   0.55 → 0.89, recall 0.86 → 0.86** — precision fixed with no recall cost. Full
+   25-item re-run pending its own token-budget day.
 3. **Multi-doc synthesis is where grounding slips.** Single-doc answers score
-   1.00 groundedness; `md-01` (fully-remote + relocate) drops to 0 by
-   elaborating with request-workflow, insurance and tax details not in the cited
-   sections.
-4. **One tool miss:** `tl-03` ("who is my manager?") returned a PTO summary
-   instead of the manager id (similarity 0.0) — the sole workflow-completion
-   failure.
+   ~1.00 groundedness; the multi-doc items are more fragile — `md-02` in the
+   subset re-run retrieved only one of its two gold docs and gave a vaguer
+   answer (a generation-variance swing, not a code regression).
+4. **Tool misses:** `tl-03` ("who is my manager?") returned a fabricated PTO
+   summary (similarity 0.0). **Fixed** (Tier 2: per-tool prompt rules +
+   `manager_name` on the profile tool + nudge-on-filler); it now scores 1.0.
+   `tl-05` (a tiered-notice PTO question) remains marginal — the model reads
+   "3 consecutive days" as the 5-day notice tier; it scored exactly 0.50 in the
+   baseline and 0.0 in the subset re-run, so workflow completion nets to 6/7
+   either way.
 5. **Safety held: 25/25.** No destructive tool ran; the action item stopped at
    the confirmation gate.
 6. **ROUGE-L (0.18) is not informative here** — 60–120-word prose vs one-line

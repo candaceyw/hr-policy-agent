@@ -103,6 +103,20 @@ def test_completion_guard_leaves_a_real_short_answer_alone(mcp_tools):
     assert result["iterations"] == 0
 
 
+def test_completion_guard_nudges_filler_that_follows_a_tool_call(mcp_tools):
+    """A model that calls a tool and then replies with filler still gets nudged."""
+    model = ScriptedChatModel(
+        [
+            AIMessage(content="", tool_calls=[tool_call("list_policy_documents", {}, "c1")]),
+            AIMessage(content="I'm ready to help! What HR question do you have?"),
+            AIMessage(content="There are 17 policy documents."),
+        ]
+    )
+    result = run_agent("What policy documents exist?", mcp_tools, model=model)
+
+    assert "17 policy documents" in result["answer"]
+
+
 def test_agent_reports_llm_error_without_crashing(mcp_tools):
     class BoomModel(ScriptedChatModel):
         def _generate(self, *a, **k):
