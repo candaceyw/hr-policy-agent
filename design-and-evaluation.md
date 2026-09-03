@@ -203,7 +203,7 @@ errors are never raised across the MCP boundary.
 
 ## 5. Testing
 
-**139 tests, `ruff` clean, offline by default** (an autouse fixture forces the
+**140 tests, `ruff` clean, offline by default** (an autouse fixture forces the
 no-LLM path; tests that need tool-calling inject a `ScriptedChatModel`).
 
 | Area | Files | Count |
@@ -265,32 +265,38 @@ self-preference bias; it scores groundedness and answer-similarity in one call.
 11 citation-bearing items) to validate a change on one token-budget day before a
 full confirmation run.
 
-### Results (`evaluation/results/eval-2026-09-01T13-04-11Z*`, 0 provider errors)
+### Results (`evaluation/results/eval-2026-09-03T11-53-56Z-rejudged.json`, 0 provider errors)
 
-**Answer quality**
+Full 25-item judged run after Tier 1 + Tier 2, next to the pre-Tier-1 baseline.
+Both columns use the same Groq judge (`openai/gpt-oss-20b`) and the same
+completion rule, so they are directly comparable. (Generation had 0 provider
+errors; the first judging pass on Gemini hit its 20-req/day free-tier cap after
+8 items, so the answers were re-scored with `--rejudge` on the Groq judge —
+generation, the expensive half, was paid for once.)
 
-| Metric | Value | n |
-| --- | --- | --- |
-| Groundedness (LLM-judge, vs full gold docs) | **0.73** | 13 |
-| Citation precision / recall / F1 | 0.55 / **0.86** / 0.64 | 13 |
-| Partial match — ROUGE-L | 0.18 | — |
-| Partial match — LLM-judge similarity | **0.72** | 16 |
+| Metric | Baseline (2026-09-01) | After Tier 1+2 (2026-09-03) | n |
+| --- | --- | --- | --- |
+| **Out-of-scope behavior accuracy** | 0.50 (2/4) | **1.00 (4/4)** | 4 |
+| Escalation / clarification accuracy | 0.75 | **1.00** | 8 |
+| Citation precision / recall / F1 | 0.55 / 0.86 / 0.64 | **0.89 / 0.86 / 0.86** | 13 |
+| Groundedness (LLM-judge) | 0.73 | **0.85** | 13 |
+| Partial match — LLM-judge similarity | 0.72 | **0.78** | 16 |
+| Tool-selection accuracy (Jaccard) | 0.75 | 0.71 | 25 |
+| Workflow-completion rate | 5/7 | 5/7 | 7 |
+| Partial match — ROUGE-L | 0.18 | 0.18 | — |
+| **Action-safety pass rate** | **1.00** | **1.00** | 25 |
+| Latency p50 / p95 / mean (s) | 3.6 / 32.8 / 8.4 | 3.4 / 14.9 / 4.0 | — |
 
-**Agent behavior**
+Five metrics improve, two of them substantially (out-of-scope 0.50 → 1.00,
+citation F1 0.64 → 0.86). Workflow completion is flat: `tl-03` is fixed but a
+run-to-run flaky item (`tl-05`) swung the other way — see Findings 4. Latency
+also dropped (lower `RETRIEVAL_K`, tighter iteration cap).
 
-| Metric | Value | n |
-| --- | --- | --- |
-| Tool-selection accuracy (Jaccard) | 0.75 | 25 |
-| Workflow-completion rate | 0.86 (6/7) | 7 |
-| Escalation / clarification accuracy | 0.75 | 8 |
-| False clarify/refuse rate | 0.00 | 17 |
-| **Action-safety pass rate** | **1.00** | 25 |
-
-**System**
-
-| Metric | Value |
-| --- | --- |
-| Latency p50 / p95 / mean (s) | 3.6 / 32.8 / 8.4 |
+> The baseline's `RESULTS.md` reported workflow completion as **6/7**; that was
+> a bug — `--rejudge` updated the judge scores but never recomputed the
+> `completed` flag. Recomputed honestly from the judge scores, the baseline is
+> **5/7** (`tl-03` and `md-01` both fail). Fixed in `run_eval._mark_completed`,
+> now called from both `run_item` and `--rejudge`.
 
 ### Ablation — retrieval `k`
 
@@ -305,66 +311,49 @@ RAG-only path, 16 answer items, `RETRIEVAL_K` swept:
 Citation F1 falls monotonically as `k` grows: recall is already saturated at
 k=2 (the gold document is nearly always in the top 2), so every extra retrieved
 section only adds citations the gold set does not credit, dragging precision
-down. This mirrored the baseline run (then-default k=5: recall 0.86 ≫ precision
-0.55). **Acted on:** `RETRIEVAL_K` default is now **3** (and
-`MAX_TOOL_ITERATIONS` 8 → 5, which also trims tokens per agent turn); the
-judged full re-run to confirm the F1 gain is scheduled for its own token-budget
-day.
+down. This mirrored the pre-Tier-2 baseline (then-default k=5: recall 0.86 ≫
+precision 0.55). **Acted on:** `RETRIEVAL_K` default is now **3** and
+`MAX_TOOL_ITERATIONS` 8 → 5; the answer-aware citation filter (Findings 2) does
+most of the precision work, and the full 2026-09-03 run confirms F1 0.64 → 0.86.
 
-*(The tools-enabled vs RAG-only ablation on the 7 workflow items is pending a
-free-tier token-budget reset; RAG-only cannot call the data tools, so PTO /
-benefits / profile items cannot complete — the expected near-total collapse.)*
-
-### Tier 2 validation (2026-09-02, 17-item subset)
-
-`run_eval --only straightforward,multi_doc,tool`, same Groq judge as the
-baseline, so the numbers below are directly comparable on the shared items:
-
-| Metric | Baseline (25) | Subset re-run (17) |
-| --- | --- | --- |
-| Citation precision / recall / F1 | 0.55 / 0.86 / 0.64 | **0.89 / 0.86 / 0.86** |
-| Groundedness | 0.73 | 0.77 |
-| LLM-judge similarity | 0.72 | 0.78 |
-| Workflow completion | 6/7 (`tl-03`) | 6/7 (`tl-05`) |
-| Action-safety | 1.00 | 1.00 |
-
-The answer-aware citation filter lifts precision from 0.55 to 0.89 with recall
-unchanged (0.86). `tl-03` is fixed (0.0 → 1.0); `tl-05` — a knife-edge 0.50 in
-the baseline — regressed to 0.0 on judge variance, leaving completion at 6/7.
-The full 25-item judged run to regenerate this section authoritatively is the
-next token-budget-day task.
+*(The tools-enabled vs RAG-only ablation on the 7 workflow items is still
+pending; RAG-only cannot call the data tools, so PTO / benefits / profile items
+cannot complete — the expected near-total collapse.)*
 
 ### Findings
 
-1. **Out-of-scope routing was the weak point (0.50).** "What's the weather in
-   Austin tomorrow?" retrieves the *weather / company-closure* policy section
-   above the similarity threshold, so the score-based scope gate passed it
-   through; the agent then declined on its own, which registered as `answer`,
-   not a hard `refuse`. **Fixed:** `gate.py` now carries an off-topic keyword
-   deny-list (weather, sports, recipes, code, trivia, news) that routes a
-   non-personal match to `guardrail_scope` regardless of retrieval score. It
-   catches all 4 gold out-of-scope items with 0 false positives on the other
-   21; the judged metric re-run is pending a free-tier token-budget reset.
-2. **Citation precision (0.55) lagged recall (0.86)** — the agent collected a
-   citation for every policy-tool result row, cited or not. **Fixed:** `compose`
-   now keeps only the documents the answer names (prose match on the doc-id
-   stem), capped fallback to retrieval order. Confirmed on the 17-item
-   citation+tool subset (2026-09-02, same judge): **F1 0.64 → 0.86, precision
-   0.55 → 0.89, recall 0.86 → 0.86** — precision fixed with no recall cost. Full
-   25-item re-run pending its own token-budget day.
+1. **Out-of-scope routing was the weak point (0.50 → 1.00).** "What's the
+   weather in Austin tomorrow?" retrieves the *weather / company-closure* policy
+   section above the similarity threshold, so the score-based scope gate passed
+   it through; the agent then declined on its own, which registered as `answer`,
+   not a hard `refuse`. **Fixed** (Tier 1): `gate.py` carries an off-topic
+   keyword deny-list (weather, sports, recipes, code, trivia, news) that routes
+   a non-personal match to `guardrail_scope` regardless of retrieval score. The
+   2026-09-03 run scores all 4 gold out-of-scope items `refuse`, 0 false
+   positives on the other 21.
+2. **Citation precision (0.55 → 0.89) lagged recall.** The agent collected a
+   citation for every policy-tool result row, cited or not. **Fixed** (Tier 2):
+   `compose` keeps only the documents the answer names (prose match on the
+   doc-id stem), capped fallback to retrieval order. Full run: **F1 0.64 → 0.86,
+   precision 0.55 → 0.89, recall unchanged at 0.86** — precision fixed with no
+   recall cost.
 3. **Multi-doc synthesis is where grounding slips.** Single-doc answers score
-   ~1.00 groundedness; the multi-doc items are more fragile — `md-02` in the
-   subset re-run retrieved only one of its two gold docs and gave a vaguer
-   answer (a generation-variance swing, not a code regression).
-4. **Tool misses:** `tl-03` ("who is my manager?") returned a fabricated PTO
-   summary (similarity 0.0). **Fixed** (Tier 2: per-tool prompt rules +
-   `manager_name` on the profile tool + nudge-on-filler); it now scores 1.0.
-   `tl-05` (a tiered-notice PTO question) remains marginal — the model reads
-   "3 consecutive days" as the 5-day notice tier; it scored exactly 0.50 in the
-   baseline and 0.0 in the subset re-run, so workflow completion nets to 6/7
-   either way.
-5. **Safety held: 25/25.** No destructive tool ran; the action item stopped at
-   the confirmation gate.
+   ~1.00 groundedness; the multi-doc items are fragile. `md-01` ("fully remote +
+   move states") fails in both the baseline and the 2026-09-03 run — a verbose
+   answer that covers the state-move thresholds but omits the fully-remote
+   facts (Director approval, 12-month re-review). `md-02` swings run-to-run on
+   whether the model retrieves its second gold doc. This is the main remaining
+   answer-quality gap; it is a prompt/synthesis problem, not a retrieval one.
+4. **Tool misses — a lateral trade.** `tl-03` ("who is my manager?") returned a
+   fabricated PTO summary (similarity 0.0). **Fixed** (Tier 2: per-tool prompt
+   rules + `manager_name` on the profile tool + nudge-on-filler) — it now scores
+   1.0. But `tl-05` (a tiered-notice PTO question) is run-to-run flaky: the
+   generator reads "3 consecutive days" as the 5-day notice tier. It scored 1.0
+   in the baseline and 0.0 in the 2026-09-03 run, and reproduces the wrong
+   answer under the *old* prompt too — so it is generator variance, not a
+   regression from the Tier 2 changes. Net workflow completion: 5/7 either way.
+5. **Safety held: 25/25** across both runs. No destructive tool ran; the action
+   item stopped at the confirmation gate.
 6. **ROUGE-L (0.18) is not informative here** — 60–120-word prose vs one-line
    gold answers; the LLM-judge similarity score is the meaningful partial-match
    metric.
