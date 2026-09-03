@@ -21,10 +21,13 @@ checks that keep AI-generated code honest.
    the *how* (coding conventions) so the two never get mixed.
 2. **Generate in phases, not one pass.** Phases 1–7: real RAG → real MCP → two
    agentic workflows → UX + sessions → two-service deploy → CI/CD → evaluation →
-   docs. Each phase ends the same way: `ruff check` clean, `pytest` green, human
-   review of the diff, commit. New code ships with its tests in the same phase.
-   Empirical work (retrieval quality, prompt tuning, evaluation) is iterated on
-   real running code rather than guessed up front.
+   docs. Phases 8–9 were eval-driven hardening passes: each targeted a specific
+   metric the harness flagged (out-of-scope routing, citation precision, one
+   workflow miss) and was validated by re-running the judged eval. Each phase
+   ends the same way: `ruff check` clean, `pytest` green, human review of the
+   diff, commit. New code ships with its tests in the same phase. Empirical work
+   (retrieval quality, prompt tuning, evaluation) is iterated on real running
+   code rather than guessed up front.
 3. **Teach while building.** The author is taking the Quantic *AI Engineering
    Techniques and Architectures* course and needs to be able to explain the
    system. Build sessions run in a teaching style: at each design or concept
@@ -56,7 +59,7 @@ checks that keep AI-generated code honest.
 
 AI output is not trusted on sight. It has to pass:
 
-- **Tests in the same phase.** 116 tests, offline by default (an autouse fixture
+- **Tests in the same phase.** 140 tests, offline by default (an autouse fixture
   forces the no-LLM path; tool-calling tests inject a scripted model). CI runs
   the full suite plus MCP discovery + a real tool call.
 - **`ruff check` clean** as a hard gate.
@@ -75,6 +78,17 @@ Concrete AI mistakes this discipline caught:
   answers "unsupported" (0.29). Found by reading the judge rationales; fixed by
   giving it the full gold-document text (0.73). A `--rejudge` path was added so
   the fix cost one re-score, not a full rate-limited run.
+- **`--rejudge` reported a stale metric.** That same `--rejudge` path updated the
+  judge scores but never recomputed each item's pass/fail flag, so `RESULTS.md`
+  reported workflow completion as 6/7 when the honest figure from its own scores
+  was 5/7. Caught by recomputing by hand while writing up the Tier 2 results;
+  fixed by factoring the completion rule into one function called from both the
+  live run and `--rejudge`, with a test.
+- **A metric "improvement" that was really variance.** After the Tier 2 prompt
+  changes, one workflow item (`tl-05`) dropped from 1.0 to 0.0. Before claiming a
+  regression, the old prompt was re-tested on that item — it produced the same
+  wrong answer — so it was logged as generator nondeterminism, not a code fault,
+  and the write-up says so plainly.
 - **Model choice.** An early generation model (`openai/gpt-oss-120b`) over-wrote
   and derailed on multi-tool questions; switched to `qwen/qwen3.8-27b`, which is
   tighter and reliable on tool calls.
@@ -91,10 +105,13 @@ Concrete AI mistakes this discipline caught:
 - **Free-tier LLM limits shaped the evaluation.** Groq's free tier is 8000
   tokens/minute and 200k tokens/day; Gemini's judge model is 20 requests/day.
   A back-to-back 25-item judged run exceeds these, so the harness paces requests,
-  retries transient failures, and supports `--rejudge` to re-score saved answers
-  without re-running generation. One ablation half (tools-enabled vs RAG-only)
-  is deferred to a fresh token budget. This is documented in
-  `evaluation/RESULTS.md`.
+  retries transient failures, splits the run across days, and supports
+  `--rejudge` to re-score saved answers without re-running generation. The
+  authoritative 2026-09-03 run did exactly this: generation completed clean on
+  Groq, the Gemini judge capped out after 8 items, and the answers were
+  re-scored on the Groq judge. One ablation half (tools-enabled vs RAG-only) is
+  deferred to a fresh token budget. All documented in `evaluation/RESULTS.md`
+  and `design-and-evaluation.md` §7.
 - **AI-authored commits** are marked `Co-Authored-By: Claude` in the git history.
 - **No model chain-of-thought is stored or exposed.** The agent trace keeps only
   operational fields (step, type, tool name, argument summary, result summary,

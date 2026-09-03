@@ -419,7 +419,7 @@ hr-policy-agent/
 │   └── results/
 │       ├── .gitkeep
 │       └── eval-*.json, ablation-*.json   # committed run artifacts
-├── tests/                          # 18 files, 116 tests
+├── tests/                          # 18 files, 140 tests
 │   ├── conftest.py
 │   ├── _fakes.py                   # ScriptedChatModel test double
 │   ├── test_app.py
@@ -478,7 +478,7 @@ Environment variables (see `.env.example` — this is a representative subset, n
 
 ### Validation
 - `ruff check .` completes with no errors.
-- `pytest -q` passes (116 tests).
+- `pytest -q` passes (140 tests).
 - `python scripts/build_index.py --verify` reports identical chunk count and content hash across two runs.
 - `curl localhost:8000/health` returns JSON with `status: "ok"`, `mcp.connected: true`, `mcp.tools_discovered: 9`, `vector_store.index_present: true`.
 - In the UI, the two demo presets (remote-work eligibility, PTO request) each complete end-to-end, showing tool calls in the Trace panel and at least one citation.
@@ -623,7 +623,7 @@ evidence and derives `status` from a keyword hint — no LLM call.
 
 ## Testing
 
-**116 tests across 18 files** (offline by default — an autouse `conftest.py`
+**140 tests across 18 files** (offline by default — an autouse `conftest.py`
 fixture forces the no-LLM path; tests that need tool-calling inject a
 `ScriptedChatModel` from `tests/_fakes.py`). File names differ throughout from
 the original plan; grouped by what they actually cover:
@@ -725,7 +725,7 @@ detail and the six first-deploy gotchas: `deployed.md`.
   2. Import/start check: `python -c "import hr_agent.web.app"`.
   3. `ruff check .`.
   4. `python scripts/build_index.py --verify` (index determinism, offline).
-  5. `pytest -q` — 116 tests, incl. MCP tool discovery + a real tool call, app
+  5. `pytest -q` — 140 tests, incl. MCP tool discovery + a real tool call, app
      start via `TestClient` + lifespan.
   6. `python -m evaluation.run_eval --smoke --offline` — the reduced eval
      subset, zero tokens.
