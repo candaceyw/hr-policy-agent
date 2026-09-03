@@ -7,7 +7,7 @@ import json
 import pytest
 
 from evaluation import judges, metrics
-from evaluation.run_eval import aggregate, render_results_md, run_item
+from evaluation.run_eval import _mark_completed, aggregate, render_results_md, run_item
 from evaluation.schema import Category, load_items, load_smoke_items
 
 CORPUS_STEMS = {
@@ -230,6 +230,33 @@ def _record(**over):
     }
     base.update(over)
     return base
+
+
+def test_mark_completed_gates_answer_items_on_the_judge_score():
+    # answer item: needs behavior match, no error, non-empty answer, sim >= 0.5
+    r = {"behavior_match": True, "error": None, "answer": "text", "similarity": 0.5}
+    _mark_completed(r, is_answer_item=True)
+    assert r["completed"] is True
+
+    r["similarity"] = 0.49
+    _mark_completed(r, is_answer_item=True)
+    assert r["completed"] is False
+
+    # judge unavailable -> no similarity key -> completion does not gate on it
+    r = {"behavior_match": True, "error": None, "answer": "text"}
+    _mark_completed(r, is_answer_item=True)
+    assert r["completed"] is True
+
+    # a clarify/refuse item is not judged; behavior match alone completes it
+    r = {"behavior_match": True, "error": None, "answer": "", "similarity": 0.0}
+    _mark_completed(r, is_answer_item=False)
+    assert r["completed"] is True
+
+    # behavior mismatch or an error never completes
+    for bad in ({"behavior_match": False, "error": None}, {"behavior_match": True, "error": "boom"}):
+        bad.update({"answer": "x", "similarity": 1.0})
+        _mark_completed(bad, is_answer_item=True)
+        assert bad["completed"] is False
 
 
 def test_aggregate_shapes_rubric_metrics():

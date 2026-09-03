@@ -142,13 +142,22 @@ def run_item(
             record["judge_error"] = str(exc)
             print(f"    ! judge unavailable for {item.id}: {exc}")
 
-    completed = record["behavior_match"] and not record["error"]
-    if is_answer_item:
-        completed = completed and bool(answer.strip())
-        if "similarity" in record:
-            completed = completed and record["similarity"] >= _SIMILARITY_PASS
-    record["completed"] = completed
+    _mark_completed(record, is_answer_item=is_answer_item)
     return record
+
+
+def _mark_completed(rec: dict[str, Any], *, is_answer_item: bool) -> None:
+    """Set ``rec['completed']`` from the behavior match, error, and judge score.
+
+    Kept separate from :func:`run_item` so ``--rejudge`` recomputes completion
+    from the fresh similarity scores instead of leaving a stale flag.
+    """
+    done = bool(rec.get("behavior_match")) and not rec.get("error")
+    if is_answer_item:
+        done = done and bool((rec.get("answer") or "").strip())
+        if "similarity" in rec:
+            done = done and rec["similarity"] >= _SIMILARITY_PASS
+    rec["completed"] = done
 
 
 def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
@@ -379,6 +388,12 @@ def _rejudge(src: Path, out_dir: Path) -> int:
             rec["groundedness"] = round(verdict["groundedness"]["score"], 3)
             rec["groundedness_rationale"] = verdict["groundedness"]["rationale"]
         print(f"  {rec['id']:<7} groundedness={rec.get('groundedness')} similarity={rec['similarity']}")
+
+    for rec in payload["records"]:
+        item = by_id.get(rec["id"])
+        _mark_completed(
+            rec, is_answer_item=(item is not None and item.expected_behavior == "answer")
+        )
 
     summary = aggregate(payload["records"])
     payload["summary"] = summary

@@ -24,11 +24,13 @@ This is a vibespec. It describes an agentic AI assistant that helps employees of
   Implementation, Testing, Deployment) against the shipped code, completed the
   Issues log for all phases, checked off met Acceptance Criteria, fixed the
   Glossary's confirmation-gate contradiction.
-- 2026-09-02 (Phase 9 — Tier 2): answer-aware citation selection (over-citation
-  fix; 17-item judged subset: citation F1 0.64 → 0.86, precision 0.55 → 0.89,
-  recall held at 0.86); `tl-03` tool-discipline changes (`_AGENT_SYSTEM`
-  per-tool rules, `lookup_employee_profile` `manager_name`, nudge on
-  filler-after-tool) — `tl-03` 0.0 → 1.0. Tests 131 → 139. See Issues → Phase 9.
+- 2026-09-02/03 (Phase 9 — Tier 2): answer-aware citation selection (over-citation
+  fix); `tl-03` tool-discipline changes (`_AGENT_SYSTEM` per-tool rules,
+  `lookup_employee_profile` `manager_name`, nudge on filler-after-tool);
+  `--rejudge` completion-flag bug fixed. **Full 25-item judged run 2026-09-03:**
+  citation F1 0.64 → 0.86, groundedness 0.73 → 0.85, similarity 0.72 → 0.78,
+  out-of-scope 0.50 → 1.00, gate accuracy 0.75 → 1.00, workflow completion 5/7
+  (flat), action-safety 1.00. Tests 131 → 140. See Issues → Phase 9.
 - 2026-09-01 (Phase 8 — Tier 1 hardening): off-topic keyword deny-list in the
   gate (4th `guardrail_scope` signal); `check_policy_compliance` made
   retrieval-backed; `create_mock_hr_ticket` / `draft_hr_email` /
@@ -164,7 +166,7 @@ Primary flow (`/chat` request):
 - [x] A plain policy question returns an answer with at least one correct citation to the source document and section. *(verified: eval `straightforward` category, behavior accuracy 1.00.)*
 - [x] The remote-work eligibility task retrieves from at least two distinct policy documents and calls `lookup_employee_profile` and `check_policy_compliance` before answering. *(verified trace, Phase 3: citations from 4 docs, both tools called in order — `build-note.md` §9d.)*
 - [x] The PTO request task calls `check_pto_balance`, retrieves the PTO policy, and does not create a ticket or draft an email until the user confirms. *(verified trace, Phase 3, and `evaluation` item `tl-06` — `pending_action` set, no ticket created without `confirm: true`.)*
-- [x] An out-of-scope question is refused/redirected without fabricating a policy answer. **Met (Tier 1).** `gate.py`'s `looks_off_topic()` deny-list (weather / sports / recipes / code / trivia / news) routes a non-personal match to `guardrail_scope` regardless of the retrieval score, so "weather in Austin" and "recipe for dinner" now get a hard deterministic redirect rather than slipping through on a real policy-chunk match. Catches all 4 eval out-of-scope items with 0 false positives on the other 21; the judged-metric re-run is pending a free-tier token-budget reset. See `design-and-evaluation.md` §7 finding 1.
+- [x] An out-of-scope question is refused/redirected without fabricating a policy answer. **Met (Tier 1).** `gate.py`'s `looks_off_topic()` deny-list (weather / sports / recipes / code / trivia / news) routes a non-personal match to `guardrail_scope` regardless of the retrieval score. The full 2026-09-03 judged run scores all 4 gold out-of-scope items `refuse` (**behavior accuracy 0.50 → 1.00**), 0 false positives on the other 21. See `design-and-evaluation.md` §7 finding 1.
 - [x] An ambiguous question yields exactly one clarifying question rather than a guess. *(verified: eval `ambiguous` category, 4/4 correct; verified trace, Phase 3.)*
 - [x] Every `/chat` response includes a non-empty `trace` array whose entries name the tools called, their argument summaries, and result summaries.
 - [x] `/health` returns JSON with `status`, `mcp.connected`, `mcp.tools_discovered` (>= 5, actually 9), and a vector-store-loaded signal — implemented as `vector_store.index_present` (not `.loaded`; see API).
@@ -815,25 +817,29 @@ behind after Phase 2 for several phases; the 2026-09-01 entry closes that gap.
   text, since the model reliably writes prose names ("the PTO and Vacation
   Policy") rather than the `[doc-id]` markers the old prompt asked for. Falls
   back to the first ~4 in retrieval order when the answer names none, so a real
-  answer never loses all citations. Confirmed on a 17-item judged subset
-  (`--only straightforward,multi_doc,tool`, same Groq judge as the baseline,
-  2026-09-02): citation **F1 0.64 → 0.86, precision 0.55 → 0.89, recall
-  0.86 → 0.86** — precision fixed with no recall cost. Groundedness 0.73 → 0.77
-  and similarity 0.72 → 0.78 on the shared items. Full 25-item re-run pending
-  its own token-budget day.
-- **`tl-03` ("I'm E-1007. Who is my manager?")** — was the sole workflow-completion
+  answer never loses all citations. **Full 25-item judged run (2026-09-03, same
+  Groq judge as the baseline):** citation **F1 0.64 → 0.86, precision
+  0.55 → 0.89, recall unchanged at 0.86**; groundedness 0.73 → 0.85, similarity
+  0.72 → 0.78; out-of-scope behavior 0.50 → 1.00; gate accuracy 0.75 → 1.00;
+  action-safety held 1.00.
+- **`tl-03` ("I'm E-1007. Who is my manager?")** — was a workflow-completion
   miss (fabricated PTO summary, similarity 0.0). Three changes:
   (a) `_AGENT_SYSTEM` rewritten with explicit per-tool "call X ONLY if …" rules
   and "answer only the question asked"; (b) `lookup_employee_profile` resolves
   `manager_name` so one call answers a manager question; (c) `_looks_unfinished`
-  now also nudges filler that follows a tool call. In the subset re-run `tl-03`
-  scores **1.0** (fixed). `tl-05` (a tiered PTO-notice question the model reads
-  as the 5-day tier) was a knife-edge 0.50 in the baseline and 0.0 in the
-  re-run, so workflow completion stays 6/7 — a lateral move on a pre-existing
-  weak item, and the `tl-03` fix is the more robust of the two.
+  now also nudges filler that follows a tool call. In the full run `tl-03`
+  scores **1.0** (fixed). `tl-05` (a tiered PTO-notice question the generator
+  misreads as the 5-day tier) scored 1.0 in the baseline and 0.0 in this run —
+  it reproduces the wrong answer under the *old* prompt too, so it is generator
+  variance, not a Tier 2 regression. Net workflow completion 5/7 either way.
 - **`_employee_hint`** no longer instructs the model to "use … for employee-data
   tools" (it read as a push to call tools).
-- Test count 131 → 139.
+- **`--rejudge` completion bug.** It updated judge scores but never recomputed
+  the per-record `completed` flag, so the committed baseline `RESULTS.md`
+  reported workflow completion as 6/7 when the honest figure from its own judge
+  scores is 5/7. Fixed: `run_eval._mark_completed` is now shared by `run_item`
+  and `--rejudge`.
+- Test count 131 → 140.
 
 ### Known risks — status
 1. **Free-tier LLM rate limits during the full 25-item eval.** *Materialized

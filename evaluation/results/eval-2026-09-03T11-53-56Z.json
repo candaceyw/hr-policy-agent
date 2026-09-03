@@ -1,0 +1,829 @@
+{
+  "meta": {
+    "timestamp": "2026-09-03T11-53-56Z",
+    "mode": "full (25 items)",
+    "llm_provider": "groq",
+    "llm_model": "qwen/qwen3.8-27b",
+    "judge_model": "gemini-3.6-flash",
+    "judge": true,
+    "offline": false,
+    "python": "3.12.13",
+    "results_file": "eval-2026-09-03T11-53-56Z.json"
+  },
+  "summary": {
+    "n": 25,
+    "errored_items": [],
+    "answer_quality": {
+      "groundedness": 0.812,
+      "groundedness_n": 8,
+      "citation": {
+        "precision": 0.885,
+        "recall": 0.859,
+        "f1": 0.856
+      },
+      "citation_n": 13,
+      "rouge_l": 0.181,
+      "similarity": 0.812,
+      "similarity_n": 8
+    },
+    "agent_behavior": {
+      "tool_selection_jaccard": 0.713,
+      "workflow_completion_rate": 0.857,
+      "workflow_n": 7,
+      "gate_accuracy": 1.0,
+      "gate_n": 8,
+      "false_gate_rate": 0.0,
+      "action_safety_pass_rate": 1.0
+    },
+    "system": {
+      "latency_p50_s": 3.398,
+      "latency_p95_s": 14.869999999999964,
+      "latency_mean_s": 3.955
+    },
+    "by_category": {
+      "ambiguous": {
+        "n": 4,
+        "behavior_accuracy": 1.0,
+        "tool_jaccard": 1.0,
+        "similarity": null,
+        "groundedness": null
+      },
+      "multi_doc": {
+        "n": 5,
+        "behavior_accuracy": 1.0,
+        "tool_jaccard": 0.5,
+        "similarity": 0.25,
+        "groundedness": 0.25
+      },
+      "out_of_scope": {
+        "n": 4,
+        "behavior_accuracy": 1.0,
+        "tool_jaccard": 1.0,
+        "similarity": null,
+        "groundedness": null
+      },
+      "straightforward": {
+        "n": 6,
+        "behavior_accuracy": 1.0,
+        "tool_jaccard": 0.583,
+        "similarity": 1.0,
+        "groundedness": 1.0
+      },
+      "tool": {
+        "n": 6,
+        "behavior_accuracy": 1.0,
+        "tool_jaccard": 0.639,
+        "similarity": null,
+        "groundedness": null
+      }
+    }
+  },
+  "records": [
+    {
+      "id": "sq-01",
+      "category": "straightforward",
+      "query": "How many hours of PTO does a full-time employee accrue each month?",
+      "is_workflow": false,
+      "latency_s": 2.373,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents"
+      ],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [
+        "02-pto-and-vacation-policy"
+      ],
+      "observed_doc_ids": [
+        "02-pto-and-vacation-policy"
+      ],
+      "action_safe": true,
+      "answer": "A regular full-time employee accrues **10 hours of PTO per month**, which works out to **120 hours (15 days) per year**. Accrual posts monthly based on the company's timekeeping records.\n\n(Source: PTO and Vacation Policy \u2014 \"Accrual Rates\")",
+      "citation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "rouge_l": 0.517,
+      "similarity": 1.0,
+      "similarity_rationale": "The answer accurately matches the reference answer on all key facts and figures regarding full-time PTO accrual.",
+      "groundedness": 1.0,
+      "groundedness_rationale": "Every claim in the answer is directly supported by the Accrual Rates section of the context.",
+      "completed": true
+    },
+    {
+      "id": "sq-02",
+      "category": "straightforward",
+      "query": "How many paid company holidays does Northwind Robotics observe each year?",
+      "is_workflow": false,
+      "latency_s": 3.398,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "03-holidays-and-company-closure"
+      ],
+      "observed_doc_ids": [
+        "03-holidays-and-company-closure"
+      ],
+      "action_safe": true,
+      "answer": "Northwind observes **nine paid company holidays each year**:\n\n1. New Year's Day\n2. Martin Luther King Jr. Day\n3. Memorial Day\n4. Juneteenth\n5. Independence Day\n6. Labor Day\n7. Thanksgiving Day\n8. Day after Thanksgiving\n9. Christmas Day\n\n**Additional notes:**\n- **Floating holidays:** Regular employees also receive **two floating holidays per calendar year** for personal, religious, or cultural observances (prorated for new hires).\n- **Weekend rule:** If a holiday falls on a Saturday, it's generally observed on the preceding Friday; if on a Sunday, on the following Monday. Exact observed dates are published on the internal portal each January.\n- **International locations:** Follow their local statutory holiday calendar instead of this list (e.g., the Dublin office has a separately published schedule).\n\n**Eligibility:** Regular full-time employees active on the holiday date receive their standard day's pay for each recognized holiday, whether or not the office is open. Part-time employees receive holiday pay prorated.\n\nSource: *03 Holidays And Company Closure* \u2014 \"Recognized Company Holidays\" and \"Floating Holidays\" sections.",
+      "citation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "rouge_l": 0.126,
+      "similarity": 1.0,
+      "similarity_rationale": "The answer fully addresses the question and includes all key details from the reference answer.",
+      "groundedness": 1.0,
+      "groundedness_rationale": "All factual claims made in the answer are directly supported by the context provided.",
+      "completed": true
+    },
+    {
+      "id": "sq-03",
+      "category": "straightforward",
+      "query": "What minimum home internet speed does the remote work policy require?",
+      "is_workflow": false,
+      "latency_s": 3.799,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "get_policy_section",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "04-remote-and-hybrid-work-policy"
+      ],
+      "observed_doc_ids": [
+        "04-remote-and-hybrid-work-policy"
+      ],
+      "action_safe": true,
+      "answer": "The minimum home internet speed required for remote work is **25 Mbps download**.\n\nThis is listed under the **Core Standards** in the Remote and Hybrid Work Policy (doc 04). Before a remote or hybrid arrangement is approved, the employee must have a reliable, private workspace and home internet of at least 25 Mbps download, among other requirements (company-managed devices with MFA, availability during core collaboration hours 10:00\u201315:00 local, etc.).",
+      "citation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "rouge_l": 0.128,
+      "similarity": 1.0,
+      "similarity_rationale": "The answer directly matches the reference answer by stating that the minimum requirement is 25 Mbps download.",
+      "groundedness": 1.0,
+      "groundedness_rationale": "All details in the answer, including the required speed of 25 Mbps download and related policy context, are fully supported by the provided text.",
+      "completed": true
+    },
+    {
+      "id": "sq-04",
+      "category": "straightforward",
+      "query": "Within how many days do I have to submit an expense report?",
+      "is_workflow": false,
+      "latency_s": 3.4,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "07-expense-and-reimbursement-policy"
+      ],
+      "observed_doc_ids": [
+        "07-expense-and-reimbursement-policy"
+      ],
+      "action_safe": true,
+      "answer": "Here's the full policy text for reference:\n\n> **Submission and Timing**\n> Submit expense reports through the expense system within **30 days** of the expense date, or within 30 days of returning from a trip. Reports submitted more than 60 days late may be denied unless the employee provides a reasonable explanation. Approved reimbursements are paid with the **next regular payroll run** after approval.\n\n**Key points:**\n- **30-day window** from the expense date (or from returning from a trip)\n- **60+ days late** \u2192 may be denied without a reasonable explanation\n- Approved reimbursements are paid on the **next regular payroll run** after approval\n\nSource: *07 Expense and Reimbursement Policy*",
+      "citation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "rouge_l": 0.144,
+      "similarity": 1.0,
+      "similarity_rationale": "The answer accurately states the 30-day submission timeframe matching the substance of the reference answer.",
+      "groundedness": 1.0,
+      "groundedness_rationale": "All details provided in the answer are directly quoted and summarized from the provided context.",
+      "completed": true
+    },
+    {
+      "id": "sq-05",
+      "category": "straightforward",
+      "query": "How long is company-paid parental leave and what is the service requirement to qualify?",
+      "is_workflow": false,
+      "latency_s": 17.343,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "get_policy_section",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "15-parental-and-family-leave"
+      ],
+      "observed_doc_ids": [
+        "15-parental-and-family-leave",
+        "10-leave-of-absence-policy"
+      ],
+      "action_safe": true,
+      "answer": "Here's what the policy says about parental leave:\n\n## Duration\n- **12 weeks of company-paid parental leave at 100% of base pay** for a qualifying event (birth, adoption, or foster placement).\n- For a multiple birth or simultaneous placement of more than one child, it's a **single 12-week benefit**, not one per child.\n- If both parents work at Northwind, **each** is independently eligible for the full 12 weeks.\n\n## Service Requirement\n- Regular **full-time** or regular **part-time** employees who have completed **at least 6 months of continuous service** by the date leave begins are eligible.\n\n## Other Key Details\n- **Timing:** Leave must be started within **12 months** of the birth/placement and used within that window.\n- **Structure:** Can be taken as one continuous block, or \u2014 with manager agreement \u2014 in up to **three separate blocks** of at least two weeks each.\n- **Birth parent:** Short-term disability covers pregnancy-related medical recovery first (typically 6 weeks uncomplicated, 8 weeks cesarean; the 7-day waiting period is waived for childbirth), then paid parental leave follows back-to-back.\n- **Notice:** At least **30 days notice** when foreseeable (or as soon as practical otherwise); documentation due within **15 days** of the request.\n- **Job protection:** Runs concurrently with the 12 weeks of job-protected leave under the Leave of Absence Policy for those who qualify; even employees below the 12-month/1,250-hour threshold still get the paid benefit with the role held open for the paid-leave period.\n- **Benefits:** Health coverage continues on the same terms; 401(k) contributions continue from paid leave pay. PTO is not required to be used before or during the leave.\n\nSource: *Parental and Family Leave Policy* (doc 15).\n\nWould you like me to check a specific employee's eligibility or PTO balance?",
+      "citation": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667
+      },
+      "rouge_l": 0.152,
+      "similarity": 1.0,
+      "similarity_rationale": "The answer fully covers all key details from the reference answer, including the duration of leave, qualifying events, service requirements, and usage timeline.",
+      "groundedness": 1.0,
+      "groundedness_rationale": "Every factual claim in the answer is directly supported by the context document.",
+      "completed": true
+    },
+    {
+      "id": "sq-06",
+      "category": "straightforward",
+      "query": "What is the company 401(k) match?",
+      "is_workflow": false,
+      "latency_s": 25.178,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "09-benefits-guide"
+      ],
+      "observed_doc_ids": [
+        "09-benefits-guide"
+      ],
+      "action_safe": true,
+      "answer": "Here's how the 401(k) match works:\n\n**Match formula:** The company matches **100% of the first 4%** of your eligible pay that you contribute.\n\n**Key details:**\n- **Eligibility:** You can start contributing after **90 days of employment**.\n- **Vesting:** The match is **immediately vested** \u2014 it's yours from day one, no waiting period.\n- **Contribution types:** You can choose **traditional pre-tax** or **Roth** contributions, up to the IRS annual limit.\n- **If you contribute less than 4%:** You get a proportionally smaller match (e.g., contribute 2% \u2192 get a 2% match).\n- **If you contribute more than 4%:** You still only receive the 4% match, but you keep the extra personal contribution.\n\n**Example:** If your eligible pay is $100,000 and you contribute 4% ($4,000), the company adds a $4,000 match \u2014 so $8,000 total goes into your 401(k) from that portion.\n\nSource: *09 Benefits Guide \u2014 401(k) Retirement Plan*\n\nWant me to look up anything else, like your current benefits status or how to change your contribution percentage?",
+      "citation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "rouge_l": 0.167,
+      "similarity": 1.0,
+      "similarity_rationale": "The answer covers all key facts from the reference answer (100% match on first 4%, immediate vesting, 90-day eligibility) and provides additional clear context consistent with the reference.",
+      "groundedness": 1.0,
+      "groundedness_rationale": "All details provided in the answer, including eligibility, vesting, match formula, contribution types, and examples, are fully supported by the context.",
+      "completed": true
+    },
+    {
+      "id": "md-01",
+      "category": "multi_doc",
+      "query": "I want to switch to fully remote and move to another state. What approvals and requirements apply?",
+      "is_workflow": true,
+      "latency_s": 3.843,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "04-remote-and-hybrid-work-policy",
+        "05-out-of-state-and-international-remote-work",
+        "06-data-security-and-acceptable-use"
+      ],
+      "observed_doc_ids": [
+        "04-remote-and-hybrid-work-policy",
+        "05-out-of-state-and-international-remote-work"
+      ],
+      "action_safe": true,
+      "answer": "Here's what the policy says about working from another state:\n\n## Short answer\nA **permanent move to another state** (or any arrangement of **31+ days** in a new state, or a recurring/indefinite pattern) requires **prior written approval from your manager, People Operations, and Payroll before you start working from the new state**. You cannot simply begin working from the new location.\n\n## Key thresholds (US)\n- **30 days or fewer** in another state (rolling 12-month period): allowed with **advance notice to your manager** only \u2014 no People Ops review needed, unless you're establishing a residence.\n- **31+ days, or indefinite/recurring**: requires **People Operations and Payroll review and written approval before work begins**. Working more than 30 days in a state generally establishes a new work state, which triggers company registration and withholding changes.\n\n## What the approval request must include\n- Destination\n- Start and expected end dates\n- Planned work schedule\n- The reason for the move\n\nThe request is routed through the **People Operations workflow**. The company may deny or delay a request that creates material legal, tax, payroll, or business risk.\n\n## Why the extra review\nA new work state can change:\n- Income tax withholding and net pay\n- Unemployment insurance and local employment taxes\n- Employer registration and reporting duties\n- Workers' comp / insurance coverage (People Ops confirms coverage)\n- Security/system access (Security may require additional review or controls)\n\n## Important notes\n- **Disclose before, not after.** Working from an unapproved state beyond 30 days can be treated as non-compliant, potentially leading to payroll corrections, suspension of the remote arrangement, removal of system access, or corrective action.\n- **Personal tax advice is on you.** The company updates your work state for payroll, but you're responsible for your own multi-state tax filing obligations and should seek your own tax advice.\n- All approvals are documented and retained in your records, and you receive a copy of the approved terms.\n\n**Bottom line:** For a permanent out-of-state move, start the People Operations approval workflow now (with your manager's sign-off) and don't begin working from the new state until written approval is in hand.\n\nWant me to check your current work state on file or draft a request to your manager/People Ops?",
+      "citation": {
+        "precision": 1.0,
+        "recall": 0.667,
+        "f1": 0.8
+      },
+      "rouge_l": 0.121,
+      "similarity": 0.0,
+      "similarity_rationale": "The answer fails to mention Director-level approval, annual reviews, and technical requirements (25 Mbps internet, company-managed device with MFA) necessary for switching to fully remote work.",
+      "groundedness": 0.0,
+      "groundedness_rationale": "The answer contains numerous claims not supported by the context, such as specific details required in an approval request, a rolling 12-month period, and specific security or tax disclaimer language.",
+      "completed": false
+    },
+    {
+      "id": "md-02",
+      "category": "multi_doc",
+      "query": "What are the limits and requirements for working internationally for a few weeks?",
+      "is_workflow": false,
+      "latency_s": 3.84,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "05-out-of-state-and-international-remote-work",
+        "06-data-security-and-acceptable-use"
+      ],
+      "observed_doc_ids": [
+        "04-remote-and-hybrid-work-policy"
+      ],
+      "action_safe": true,
+      "answer": "Based on the **Remote and Hybrid Work Policy** (section: *Out-of-State and International Work*), here's what applies to working from another country:\n\n## Key Rule\nWorking from **another country for any period beyond brief incidental work** requires **review and approval under the Out-of-State and International Remote Work Policy before the work begins**.\n\nIn other words, unlike a short domestic trip (30 days or fewer, which only needs advance notice to your manager), international remote work is subject to a formal approval process that must be completed **in advance** \u2014 you can't start working from abroad first and sort out approval afterward.\n\n## What This Means in Practice\n- **Approval is required up front** \u2014 the review must happen before you begin working from the other country.\n- **\"Brief incidental work\" is the only exception** \u2014 very short, incidental stays may not trigger the full process, but anything beyond that does.\n- The approval is routed through **manager / People Ops review**, so it's not something you can self-approve.\n\n## Recommended Next Steps\n1. **Talk to your manager** about your planned international work period and get their buy-in.\n2. **Initiate the Out-of-State and International Remote Work review** with People Ops before your travel dates.\n3. Be prepared to address factors that typically come up in these reviews (e.g., tax/employment implications, data security, availability across time zones, and the approved workspace).\n\nWould you like me to run a compliance check on your specific scenario, or help draft a request to your manager / People Ops?",
+      "citation": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "rouge_l": 0.101,
+      "similarity": 0.5,
+      "similarity_rationale": "The answer misses essential specific facts from the reference, including the 10-business-day cap for incidental work, the Legal and entity review required for longer periods, and restrictions regarding restricted-list countries.",
+      "groundedness": 0.5,
+      "groundedness_rationale": "The answer inaccurately claims that brief incidental work is an exception that may not trigger approval, whereas the context states that incidental work up to 10 business days still requires manager and People Operations approval.",
+      "completed": true
+    },
+    {
+      "id": "md-03",
+      "category": "multi_doc",
+      "query": "What approvals do I need before booking a $1,500 international flight for a work trip?",
+      "is_workflow": false,
+      "latency_s": 3.716,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "get_policy_section",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "08-travel-policy",
+        "07-expense-and-reimbursement-policy"
+      ],
+      "observed_doc_ids": [
+        "08-travel-policy",
+        "07-expense-and-reimbursement-policy"
+      ],
+      "action_safe": true,
+      "answer": "Here's what the Travel Policy says about your international trip to Tokyo:\n\n## 1. Approval required before booking\n- **Manager approval is mandatory** before you book any business travel.\n- Because the trip is **international**, you need **advance *written* approval** (not just a verbal OK).\n- Your approval request should include:\n  - Business purpose (e.g., customer meeting, onsite work, conference)\n  - Destination (Tokyo)\n  - Dates\n  - Estimated total cost\n\n## 2. International-travel-specific checks\nBefore you go, you should:\n- **Confirm passport validity** and any **visa or entry requirement** for Japan.\n- **Carry only the data and devices you need** for the trip, and follow the Data Security and Acceptable Use Policy for border crossings.\n- **Check the company travel-risk guidance** for the destination.\n\n> Note: If your stay is extended and you'll be *working* from Tokyo, it may fall under the **Out-of-State and International Remote Work Policy** instead of (or in addition to) the travel policy \u2014 worth flagging to your manager/People Ops.\n\n## 3. Flight class (related, from the Expense & Reimbursement Policy)\n- **Economy** for flights under 6 hours.\n- **Premium economy** allowed for flights of **6 hours or more** \u2014 but only **with manager approval**.\n- No business class.\n\nSince Tokyo is a long-haul flight (well over 6 hours), you *could* request premium economy, but it requires explicit manager approval.\n\n---\n\n**Bottom line:** Get written manager approval first (with purpose, dates, and estimated cost), sort out your passport/visa, and confirm the flight class you're claiming. Want me to draft a short approval-request email to your manager, or check whether an extended working stay would trigger the remote-work policy?",
+      "citation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "rouge_l": 0.177,
+      "judge_error": "judge call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 42.134047113s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.6-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '42s'}]}}",
+      "completed": true
+    },
+    {
+      "id": "md-04",
+      "category": "multi_doc",
+      "query": "I'm a new hire starting fully remote. What equipment and onboarding steps should I expect in my first week?",
+      "is_workflow": false,
+      "latency_s": 3.986,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "11-onboarding-and-equipment-provisioning",
+        "06-data-security-and-acceptable-use"
+      ],
+      "observed_doc_ids": [
+        "11-onboarding-and-equipment-provisioning"
+      ],
+      "action_safe": true,
+      "answer": "Here's what the policy says about remote-work equipment for a new hire in their first week:\n\n## Standard Equipment Kit\nNorthwind provides a standard kit based on role:\n- Laptop (specification by role)\n- One external monitor\n- Keyboard and mouse\n- Headset\n- Docking station\n\nAdditional standard accessories (a second monitor, webcam, adapters) are available on request with manager approval.\n\n## Home-Office Setup (Remote/Hybrid)\n- Employees with an approved remote or hybrid arrangement are eligible for a **one-time $500 home-office setup stipend** toward a chair, desk, lighting, or ergonomic accessories. Receipts are submitted through the expense system, and items purchased with the stipend belong to the employee.\n- Fully remote employees also receive the **$50 monthly connectivity stipend** (per the Remote and Hybrid Work Policy). This does not cover general home internet or phone service beyond that amount.\n\n## Onboarding Timeline (First 5 Business Days)\nOnboarding activities must be completed within the first 5 business days, including:\n- Accepting the handbook and acknowledging the Code of Conduct and Data Security & Acceptable Use Policy\n- Completing payroll/tax forms and confirming banking details\n- Identity and work-authorization verification\n- Security setup (SSO, MFA enrollment, password manager)\n- Required onboarding and security-awareness training\n- Reviewing benefits enrollment materials\n\nNote: Incomplete onboarding can delay system access, payroll, benefits enrollment, **and equipment** \u2014 so finishing these steps promptly helps ensure equipment arrives on time.\n\n## Requests & Purchasing\n- Additional equipment is requested through the provisioning workflow, with manager approval and budget review for higher-cost or role-specific items.\n- Employees must not buy equipment with company funds or a corporate card without advance approval (any single item of **$500 or more** needs written approval). Unapproved purchases may not be reimbursed.\n\n## Care & Security\n- Protect equipment from damage, loss, and theft; keep it in a secure location.\n- A **lost or stolen device must be reported to IT and the security team within one hour**, and to the manager.\n\n**Source:** *11 Onboarding and Equipment Provisioning Policy*\n\nWould you like me to look up the Remote and Hybrid Work Policy for more detail on the connectivity stipend, or help with anything else?",
+      "citation": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.667
+      },
+      "rouge_l": 0.195,
+      "judge_error": "judge call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 5.858767631s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.6-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '5s'}]}}",
+      "completed": true
+    },
+    {
+      "id": "md-05",
+      "category": "multi_doc",
+      "query": "What happens to unused PTO and company equipment when an employee leaves Northwind?",
+      "is_workflow": false,
+      "latency_s": 4.978,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "search_policy_documents",
+        "search_policy_documents",
+        "get_policy_section",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [
+        "02-pto-and-vacation-policy",
+        "11-onboarding-and-equipment-provisioning"
+      ],
+      "observed_doc_ids": [
+        "02-pto-and-vacation-policy",
+        "11-onboarding-and-equipment-provisioning"
+      ],
+      "action_safe": true,
+      "answer": "Here's what Northwind's policies say on both points:\n\n## 1. Unused PTO payout on separation\n\n**Policy (PTO & Vacation Policy \u2014 \"Payout on Separation\"):**\n- Northwind pays out an accrued, unused PTO balance when employment ends **only where state law requires it**.\n- Where payout is **not** legally required, unused PTO is **forfeited on the last day of employment**.\n- Employees are directed to **confirm the rule for their work state with People Operations before separation**.\n\nSo whether you receive a payout depends entirely on the state where you work \u2014 some states (e.g., California) require payout of accrued PTO, while others do not. The policy itself doesn't list states, so the definitive answer comes from People Ops for your specific work state.\n\n## 2. Returning company equipment\n\n**Policy (Onboarding & Equipment Provisioning \u2014 \"Return of Equipment\"):**\n- On separation, you must return **all company equipment in good working order** (normal wear excepted) **within 10 business days**.\n- For remote employees, **IT provides a prepaid shipping method**.\n- If equipment is not returned, the company may pursue the value of the equipment and, where law allows, **deduct it from final pay**.\n- **Do not wipe or factory-reset any device yourself** \u2014 IT wipes the data on returned devices.\n\n## Recommended next steps\n1. **Contact People Operations** to confirm the PTO payout rule for your work state before your last day.\n2. **Coordinate with IT** to get the prepaid shipping method and return the equipment within 10 business days, and leave the devices un-wiped.\n\nWould you like me to draft an email to People Operations to confirm your state's PTO payout rule, or create a ticket to track the equipment return?",
+      "citation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "rouge_l": 0.129,
+      "judge_error": "judge call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 30.327155483s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.6-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '30s'}]}}",
+      "completed": true
+    },
+    {
+      "id": "tl-01",
+      "category": "tool",
+      "query": "How much PTO does Sophie Martin (E-1007) have available right now?",
+      "is_workflow": true,
+      "latency_s": 2.12,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "check_pto_balance"
+      ],
+      "observed_tools": [
+        "check_pto_balance"
+      ],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "Here's the PTO balance for employee **E-1007**:\n\n| Item | Hours |\n|---|---|\n| Accrued | 110.0 |\n| Used | 58.0 |\n| Pending | 8.0 |\n| Carryover | 14.0 |\n| **Available** | **44.0** |\n\nThey accrue at **10 hours/month** and currently have **44.0 hours available** (accrued \u2212 used \u2212 pending).\n\nLet me know if you'd like me to look up their profile, benefits status, or anything else.",
+      "rouge_l": 0.205,
+      "judge_error": "judge call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 56.080881829s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.6-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '56s'}]}}",
+      "completed": true
+    },
+    {
+      "id": "tl-02",
+      "category": "tool",
+      "query": "What medical plan is employee E-1002 enrolled in?",
+      "is_workflow": true,
+      "latency_s": 2.294,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "lookup_benefits_status"
+      ],
+      "observed_tools": [
+        "lookup_benefits_status"
+      ],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "Here's the current benefits status for employee **E-1002**:\n\n| Benefit | Status |\n|---|---|\n| **Medical plan** | HDHP (High-Deductible Health Plan) |\n| **Dental** | Enrolled \u2713 |\n| **Vision** | Enrolled \u2713 |\n| **401(k) contribution** | 7% |\n| **FSA (annual)** | $2,000 |\n| **Eligibility** | Eligible |\n| **Effective date** | 2025-01-01 |\n\nLet me know if you'd like to look into anything further \u2014 for example, plan details, change-of-benefits options, or PTO balance.",
+      "rouge_l": 0.23,
+      "judge_error": "judge call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 21.605028391s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.6-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '21s'}]}}",
+      "completed": true
+    },
+    {
+      "id": "tl-03",
+      "category": "tool",
+      "query": "I'm E-1007. Who is my manager?",
+      "is_workflow": true,
+      "latency_s": 3.827,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "lookup_employee_profile"
+      ],
+      "observed_tools": [
+        "lookup_employee_profile",
+        "check_pto_balance"
+      ],
+      "tool_jaccard": 0.5,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "Here's Sophie Martin's PTO balance:\n\n| Item | Hours |\n|---|---|\n| Accrued | 110.0 |\n| Used | 58.0 |\n| Pending | 8.0 |\n| Carryover | 14.0 |\n| **Available** | **44.0** |\n\n**Accrual rate:** 10.0 hours/month\n\n**Quick context:**\n- **Name:** Sophie Martin\n- **Title:** Data Analyst (Analytics)\n- **Manager:** Mina Park\n- **Work state:** CO (denver-hq)\n- **Employment type:** Full-time, non-exempt\n\nSo Sophie currently has **44.0 hours of PTO available** to use. Let me know if you'd like me to check anything else \u2014 for example, her benefits status, or to draft a PTO-related email or ticket.",
+      "rouge_l": 0.151,
+      "judge_error": "judge call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 45.877353045s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.6-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '45s'}]}}",
+      "completed": true
+    },
+    {
+      "id": "tl-04",
+      "category": "tool",
+      "query": "Is Daniel Ortiz (E-1006) eligible for benefits, and why or why not?",
+      "is_workflow": true,
+      "latency_s": 3.822,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "lookup_benefits_status",
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "lookup_benefits_status",
+        "search_policy_documents",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.667,
+      "gold_doc_ids": [
+        "09-benefits-guide"
+      ],
+      "observed_doc_ids": [
+        "09-benefits-guide"
+      ],
+      "action_safe": true,
+      "answer": "Here's what I found for **E-1006**:\n\n## Current Benefits Status\n| Item | Status |\n|------|--------|\n| Medical plan | None |\n| Dental | Not enrolled |\n| Vision | Not enrolled |\n| 401(k) contribution | 0% |\n| FSA (annual) | $0 |\n| **Eligibility status** | **Ineligible** |\n| Effective date | \u2014 |\n\n## Why They're Ineligible\nPer the **Benefits Guide (Eligibility section)**, eligibility is driven by employment classification and scheduled hours:\n\n- **Full-time (30+ hrs/week):** eligible for the full benefits package.\n- **Part-time (<30 hrs/week):** generally **not** eligible for medical, dental, and vision (except where state law requires an offer). They *may* still qualify for the **401(k)** once they meet the service requirement.\n- **Contractors, interns, and temporary workers:** not eligible for the standard employee benefits package.\n\nSince E-1006's status is **ineligible**, they most likely fall into one of the non-eligible categories (e.g., part-time under 30 hrs/week, contractor, intern, or temp).\n\n## What to Do Next\n1. **Confirm their classification and scheduled hours** \u2014 I can pull their employee profile to verify whether they're part-time, a contractor, etc.\n2. **If part-time:** they may still be able to enroll in the **401(k)** once the service requirement is met, even without medical/dental/vision.\n3. **If they believe they should be eligible** (e.g., they work 30+ hours), this would warrant a review \u2014 I can open a mock HR ticket to flag it.\n\nWould you like me to look up their employee profile to confirm their classification and hours?",
+      "citation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "rouge_l": 0.13,
+      "judge_error": "judge call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 9.919264076s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.6-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '9s'}]}}",
+      "completed": true
+    },
+    {
+      "id": "tl-05",
+      "category": "tool",
+      "query": "I'm E-1007 and I want to request 3 consecutive days of PTO next month. Do I have enough, and what notice is required?",
+      "is_workflow": true,
+      "latency_s": 3.696,
+      "error": null,
+      "expected_behavior": "answer",
+      "observed_behavior": "answer",
+      "behavior_match": true,
+      "expected_tools": [
+        "check_pto_balance",
+        "search_policy_documents"
+      ],
+      "observed_tools": [
+        "check_pto_balance",
+        "search_policy_documents",
+        "get_policy_section"
+      ],
+      "tool_jaccard": 0.667,
+      "gold_doc_ids": [
+        "02-pto-and-vacation-policy"
+      ],
+      "observed_doc_ids": [
+        "02-pto-and-vacation-policy"
+      ],
+      "action_safe": true,
+      "answer": "Here's the answer for E-1007:\n\n**PTO balance:** 44.0 hours available (110 accrued \u2212 58 used \u2212 8 pending).\n\n**Notice required for 5 consecutive days:** At least **30 days** advance notice.\n\nSo the request should be submitted **no later than 30 days before the first day of leave**. Since the request is for 5 consecutive days, the 30-day rule (not the 2-week rule for 3+ days) applies.\n\n**Policy reference:** *02 PTO and Vacation Policy \u2014 Request Process and Notice*: \"5 or more consecutive days: at least 30 days notice.\"\n\nA couple of practical notes:\n- The request should include the requested dates, total hours, reason (if relevant), and any coverage considerations.\n- Managers aim to respond within 3 business days, so submitting well ahead of the 30-day mark gives room for any requested changes.\n- If a company holiday falls within the approved PTO period, that day is recorded as holiday time and won't be charged against the PTO balance.",
+      "citation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "rouge_l": 0.221,
+      "judge_error": "judge call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 34.356221515s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.6-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '34s'}]}}",
+      "completed": true
+    },
+    {
+      "id": "tl-06",
+      "category": "tool",
+      "query": "I'm E-1007. Please file an HR ticket to review my PTO request for next month.",
+      "is_workflow": true,
+      "latency_s": 1.325,
+      "error": null,
+      "expected_behavior": "confirm",
+      "observed_behavior": "confirm",
+      "behavior_match": true,
+      "expected_tools": [
+        "create_mock_hr_ticket"
+      ],
+      "observed_tools": [],
+      "tool_jaccard": 0.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "This would create a mock HR ticket for E-1007. It is a mock action and nothing has run yet \u2014 confirm to proceed or decline to cancel.",
+      "completed": true
+    },
+    {
+      "id": "am-01",
+      "category": "ambiguous",
+      "query": "How much vacation do I have left?",
+      "is_workflow": false,
+      "latency_s": 0.704,
+      "error": null,
+      "expected_behavior": "clarify",
+      "observed_behavior": "clarify",
+      "behavior_match": true,
+      "expected_tools": [],
+      "observed_tools": [],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "Which employee is this for? Share the employee id (for example E-1002) and I'll look up the details.",
+      "completed": true
+    },
+    {
+      "id": "am-02",
+      "category": "ambiguous",
+      "query": "Am I eligible?",
+      "is_workflow": false,
+      "latency_s": 0.706,
+      "error": null,
+      "expected_behavior": "clarify",
+      "observed_behavior": "clarify",
+      "behavior_match": true,
+      "expected_tools": [],
+      "observed_tools": [],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "I want to answer the right thing -- could you say a bit more about what you need (the specific policy, benefit, or expense, and any dates)?",
+      "completed": true
+    },
+    {
+      "id": "am-03",
+      "category": "ambiguous",
+      "query": "Can I get reimbursed for that?",
+      "is_workflow": false,
+      "latency_s": 0.708,
+      "error": null,
+      "expected_behavior": "clarify",
+      "observed_behavior": "clarify",
+      "behavior_match": true,
+      "expected_tools": [],
+      "observed_tools": [],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "I want to answer the right thing -- could you say a bit more about what you need (the specific policy, benefit, or expense, and any dates)?",
+      "completed": true
+    },
+    {
+      "id": "am-04",
+      "category": "ambiguous",
+      "query": "I need to take some time off next week, what do I do?",
+      "is_workflow": false,
+      "latency_s": 0.742,
+      "error": null,
+      "expected_behavior": "clarify",
+      "observed_behavior": "clarify",
+      "behavior_match": true,
+      "expected_tools": [],
+      "observed_tools": [],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "Which employee is this for? Share the employee id (for example E-1002) and I'll look up the details.",
+      "completed": true
+    },
+    {
+      "id": "oos-01",
+      "category": "out_of_scope",
+      "query": "What's the weather in Austin tomorrow?",
+      "is_workflow": false,
+      "latency_s": 0.845,
+      "error": null,
+      "expected_behavior": "refuse",
+      "observed_behavior": "refuse",
+      "behavior_match": true,
+      "expected_tools": [],
+      "observed_tools": [],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "I can only answer questions about Northwind Robotics HR policy -- time off, benefits, remote work, expenses, conduct, leave, pay, safety, and the like. That question looks outside that scope, so please redirect it to the right team (for example IT for account or device issues, or your manager for anything else).",
+      "completed": true
+    },
+    {
+      "id": "oos-02",
+      "category": "out_of_scope",
+      "query": "Write me a Python function that reverses a linked list.",
+      "is_workflow": false,
+      "latency_s": 0.761,
+      "error": null,
+      "expected_behavior": "refuse",
+      "observed_behavior": "refuse",
+      "behavior_match": true,
+      "expected_tools": [],
+      "observed_tools": [],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "I can only answer questions about Northwind Robotics HR policy -- time off, benefits, remote work, expenses, conduct, leave, pay, safety, and the like. That question looks outside that scope, so please redirect it to the right team (for example IT for account or device issues, or your manager for anything else).",
+      "completed": true
+    },
+    {
+      "id": "oos-03",
+      "category": "out_of_scope",
+      "query": "What's a good recipe for dinner tonight?",
+      "is_workflow": false,
+      "latency_s": 0.727,
+      "error": null,
+      "expected_behavior": "refuse",
+      "observed_behavior": "refuse",
+      "behavior_match": true,
+      "expected_tools": [],
+      "observed_tools": [],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "I can only answer questions about Northwind Robotics HR policy -- time off, benefits, remote work, expenses, conduct, leave, pay, safety, and the like. That question looks outside that scope, so please redirect it to the right team (for example IT for account or device issues, or your manager for anything else).",
+      "completed": true
+    },
+    {
+      "id": "oos-04",
+      "category": "out_of_scope",
+      "query": "Who is the current CEO of Google?",
+      "is_workflow": false,
+      "latency_s": 0.749,
+      "error": null,
+      "expected_behavior": "refuse",
+      "observed_behavior": "refuse",
+      "behavior_match": true,
+      "expected_tools": [],
+      "observed_tools": [],
+      "tool_jaccard": 1.0,
+      "gold_doc_ids": [],
+      "observed_doc_ids": [],
+      "action_safe": true,
+      "answer": "I can only answer questions about Northwind Robotics HR policy -- time off, benefits, remote work, expenses, conduct, leave, pay, safety, and the like. That question looks outside that scope, so please redirect it to the right team (for example IT for account or device issues, or your manager for anything else).",
+      "completed": true
+    }
+  ]
+}
