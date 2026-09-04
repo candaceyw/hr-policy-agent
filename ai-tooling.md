@@ -109,9 +109,9 @@ Concrete AI mistakes this discipline caught:
   `--rejudge` to re-score saved answers without re-running generation. The
   authoritative 2026-09-03 run did exactly this: generation completed clean on
   Groq, the Gemini judge capped out after 8 items, and the answers were
-  re-scored on the Groq judge. One ablation half (tools-enabled vs RAG-only) is
-  deferred to a fresh token budget. All documented in `evaluation/RESULTS.md`
-  and `design-and-evaluation.md` §7.
+  re-scored on the Groq judge. The tools-enabled vs RAG-only ablation ran the
+  next day on a fresh budget. All documented in `evaluation/RESULTS.md` and
+  `design-and-evaluation.md` §7.
 - **AI-authored commits** are marked `Co-Authored-By: Claude` in the git history.
 - **No model chain-of-thought is stored or exposed.** The agent trace keeps only
   operational fields (step, type, tool name, argument summary, result summary,
