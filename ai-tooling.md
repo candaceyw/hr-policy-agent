@@ -59,7 +59,7 @@ checks that keep AI-generated code honest.
 
 AI output is not trusted on sight. It has to pass:
 
-- **Tests in the same phase.** 140 tests, offline by default (an autouse fixture
+- **Tests in the same phase.** 143 tests, offline by default (an autouse fixture
   forces the no-LLM path; tool-calling tests inject a scripted model). CI runs
   the full suite plus MCP discovery + a real tool call.
 - **`ruff check` clean** as a hard gate.
@@ -89,6 +89,18 @@ Concrete AI mistakes this discipline caught:
   regression, the old prompt was re-tested on that item — it produced the same
   wrong answer — so it was logged as generator nondeterminism, not a code fault,
   and the write-up says so plainly.
+- **A malformed judge reply became a silent 0.0.** One judged item scored 0.0
+  with the rationale `"missing similarity in judge reply"` — the judge's JSON
+  was unparseable and the harness turned that into a real-looking zero.
+  `judges.py` now reads the reply with a brace-balanced scan, retries once for a
+  clean one, and then records a *judge error* (excluded from the average) rather
+  than a fabricated score. The affected item re-judged to 0.0 for genuine
+  reasons anyway, so no number moved — the point is the failure mode is closed.
+- **A fix that didn't hold, reverted.** The `md-01` multi-doc miss was
+  root-caused (a compound question the model searches as one blend). The fix
+  ("search each topic separately") was measured across all five multi-doc items
+  and made things worse overall — it was reverted, and `md-01` is documented as
+  a small-model limitation rather than papered over.
 - **Model choice.** An early generation model (`openai/gpt-oss-120b`) over-wrote
   and derailed on multi-tool questions; switched to `qwen/qwen3.8-27b`, which is
   tighter and reliable on tool calls.
@@ -102,9 +114,13 @@ Concrete AI mistakes this discipline caught:
   **Railway Hobby (paid, already owned by the author)**. Railway is named as an
   acceptable platform in the project brief. Hobby services are always-on, so
   there is no cold start to document.
-- **Free-tier LLM limits shaped the evaluation.** Groq's free tier is 8000
-  tokens/minute and 200k tokens/day; Gemini's judge model is 20 requests/day.
-  A back-to-back 25-item judged run exceeds these, so the harness paces requests,
+- **Free-tier LLM limits shaped the evaluation and the config.** Groq's free
+  tier is 8000 tokens/minute and 200k tokens/day, and it now also enforces an
+  output-tokens-per-minute cap (~1000 for `qwen3.8-27b`) that it reserves
+  against each request's `max_tokens` — so `LLM_MAX_OUTPUT_TOKENS` had to drop
+  from 2048 to 800 or every call 429'd before running. Gemini's judge model is
+  20 requests/day. A back-to-back 25-item judged run exceeds these, so the
+  harness paces requests,
   retries transient failures, splits the run across days, and supports
   `--rejudge` to re-score saved answers without re-running generation. The
   authoritative 2026-09-03 run did exactly this: generation completed clean on
