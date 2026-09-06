@@ -17,9 +17,12 @@ class Settings(BaseSettings):
     llm_provider: str = Field(default="gemini", alias="LLM_PROVIDER")
     llm_model: str = Field(default="gemini-3.6-flash", alias="LLM_MODEL")
     llm_base_url: str | None = Field(default=None, alias="LLM_BASE_URL")
-    # Reserved output budget for the tool-calling chat model. Counts toward
-    # provider TPM limits (Groq free tier = 8000 TPM), so keep it modest.
-    llm_max_output_tokens: int = Field(default=2048, alias="LLM_MAX_OUTPUT_TOKENS")
+    # Reserved output budget for the tool-calling chat model. Providers reserve
+    # this against per-minute output-token limits, so it must stay under them:
+    # Groq's free tier enforces an OTPM cap (observed 1000 for qwen3.8-27b), and
+    # a request reserving 2048 is rejected outright. 800 covers the ~120-word
+    # answer target with headroom; tool-call turns are far smaller.
+    llm_max_output_tokens: int = Field(default=800, alias="LLM_MAX_OUTPUT_TOKENS")
 
     gemini_api_key: str | None = Field(default=None, alias="GEMINI_API_KEY")
     groq_api_key: str | None = Field(default=None, alias="GROQ_API_KEY")
