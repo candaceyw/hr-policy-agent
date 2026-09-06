@@ -203,7 +203,7 @@ errors are never raised across the MCP boundary.
 
 ## 5. Testing
 
-**143 tests, `ruff` clean, offline by default** (an autouse fixture forces the
+**144 tests, `ruff` clean, offline by default** (an autouse fixture forces the
 no-LLM path; tests that need tool-calling inject a `ScriptedChatModel`).
 
 | Area | Files | Count |

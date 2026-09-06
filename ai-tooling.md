@@ -21,7 +21,7 @@ checks that keep AI-generated code honest.
    the *how* (coding conventions) so the two never get mixed.
 2. **Generate in phases, not one pass.** Phases 1–7: real RAG → real MCP → two
    agentic workflows → UX + sessions → two-service deploy → CI/CD → evaluation →
-   docs. Phases 8–9 were eval-driven hardening passes: each targeted a specific
+   docs. Phases 8–10 were eval-driven hardening passes: each targeted a specific
    metric the harness flagged (out-of-scope routing, citation precision, one
    workflow miss) and was validated by re-running the judged eval. Each phase
    ends the same way: `ruff check` clean, `pytest` green, human review of the
@@ -59,7 +59,7 @@ checks that keep AI-generated code honest.
 
 AI output is not trusted on sight. It has to pass:
 
-- **Tests in the same phase.** 143 tests, offline by default (an autouse fixture
+- **Tests in the same phase.** 144 tests, offline by default (an autouse fixture
   forces the no-LLM path; tool-calling tests inject a scripted model). CI runs
   the full suite plus MCP discovery + a real tool call.
 - **`ruff check` clean** as a hard gate.
@@ -101,6 +101,12 @@ Concrete AI mistakes this discipline caught:
   ("search each topic separately") was measured across all five multi-doc items
   and made things worse overall — it was reverted, and `md-01` is documented as
   a small-model limitation rather than papered over.
+- **A recovery path that made a failure worse.** When the model *call* errored
+  mid-loop, the agent appended an empty turn and the "you stalled" nudge fired
+  on top of it, so the retry answered a phantom question instead of returning
+  the clean "could not reach the model" message. `route` now sends an errored
+  turn straight to the degraded-answer node. Found while the Groq OTPM cap was
+  throwing 429s during the `md-01` investigation.
 - **Model choice.** An early generation model (`openai/gpt-oss-120b`) over-wrote
   and derailed on multi-tool questions; switched to `qwen/qwen3.8-27b`, which is
   tighter and reliable on tool calls.
