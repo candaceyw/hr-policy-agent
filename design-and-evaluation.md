@@ -316,9 +316,37 @@ precision 0.55). **Acted on:** `RETRIEVAL_K` default is now **3** and
 `MAX_TOOL_ITERATIONS` 8 → 5; the answer-aware citation filter (Findings 2) does
 most of the precision work, and the full 2026-09-03 run confirms F1 0.64 → 0.86.
 
-*(The tools-enabled vs RAG-only ablation on the 7 workflow items is still
-pending; RAG-only cannot call the data tools, so PTO / benefits / profile items
-cannot complete — the expected near-total collapse.)*
+### Ablation — tools-enabled vs RAG-only
+
+`evaluation.ablation --only tools --no-judge`, 2026-09-04, the 7 workflow items
+run twice: once through the full agent with MCP tools, once forced RAG-only
+(`tools=[]`):
+
+| variant | tool-selection Jaccard | citation F1 | completion rate | latency p50 (s) |
+| --- | --- | --- | --- | --- |
+| tools-enabled | **0.62** | **0.93** | 1.00 | 18.1 |
+| RAG-only | **0.00** | 0.72 | 0.86 | 1.2 |
+
+**Tool-selection Jaccard is the clean signal: 0.62 → 0.00.** RAG-only cannot
+call `check_pto_balance`, `lookup_benefits_status`, `lookup_employee_profile`,
+or `create_mock_hr_ticket` at all, so every workflow item that needs employee
+data or a mock action scores zero tool overlap — mechanical confirmation that
+these items structurally require tools, not just that RAG happens to do worse.
+
+**Completion rate (0.86, without a judge) understates the real gap.** With
+`--no-judge`, "completed" only checks that the expected *behavior* was produced
+(an answer, non-empty) — it cannot tell a correct PTO balance from a
+plausible-sounding guess. RAG-only still writes fluent prose for "how much PTO
+do I have," so it "completes" by this loose measure even though it has no way
+to know the real number. The **honest read is the Jaccard column**, not
+completion rate; a judged re-run would be needed to quantify the content gap,
+and is a cheap follow-up (`--only tools`, no `--no-judge`, ~12 extra judge
+calls) if that number is wanted.
+
+Also notable: citation F1 stays reasonable RAG-only (0.72) — the RAG-only
+degrade path still retrieves and cites real policy sections, it just can't
+reach employee-specific data. Latency drops 18.1s → 1.2s, as expected with no
+tool-calling loop.
 
 ### Findings
 

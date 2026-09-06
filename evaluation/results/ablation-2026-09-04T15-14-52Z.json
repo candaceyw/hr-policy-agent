@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-09-04T15-14-52Z",
+  "llm_provider": "groq",
+  "llm_model": "qwen/qwen3.8-27b",
+  "judge": false,
+  "ablations": {
+    "tools_vs_rag": {
+      "variable": "tools_enabled",
+      "results": {
+        "tools_enabled": {
+          "n": 7,
+          "groundedness": null,
+          "similarity": null,
+          "rouge_l": 0.167,
+          "citation_f1": 0.933,
+          "tool_jaccard": 0.619,
+          "completion_rate": 1.0,
+          "latency_p50_s": 18.063,
+          "latency_p95_s": 38.19669999999999
+        },
+        "rag_only": {
+          "n": 7,
+          "groundedness": null,
+          "similarity": null,
+          "rouge_l": 0.138,
+          "citation_f1": 0.722,
+          "tool_jaccard": 0.0,
+          "completion_rate": 0.857,
+          "latency_p50_s": 1.159,
+          "latency_p95_s": 2.742699999999999
+        }
+      }
+    }
+  }
+}

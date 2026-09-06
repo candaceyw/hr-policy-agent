@@ -50,5 +50,17 @@ _In-process timing (`run_workflow`); excludes HTTP framing. The deployed path ad
 
 ## Ablation
 
-See `python -m evaluation.ablation` -> `evaluation/results/ablation-*.json`.
-Summary table is pasted into `design-and-evaluation.md`.
+Full tables + analysis: `design-and-evaluation.md` §7. Raw: `evaluation/results/ablation-*.json`.
+
+**Retrieval k** (RAG-only path, 16 answer items): citation F1 falls 0.86 → 0.79 → 0.59 as k goes 2 → 4 → 8. Acted on: `RETRIEVAL_K` default is now 3.
+
+**Tools-enabled vs RAG-only** (2026-09-04, 7 workflow items, `--no-judge`):
+
+| variant | tool-selection Jaccard | citation F1 | completion rate | latency p50 (s) |
+| --- | --- | --- | --- | --- |
+| tools-enabled | 0.62 | 0.93 | 1.00 | 18.1 |
+| RAG-only | 0.00 | 0.72 | 0.86 | 1.2 |
+
+Tool-selection Jaccard (0.62 → 0.00) is the clean evidence that these items
+structurally require tools; the completion-rate column needs a judge to catch
+content failure and is not the discriminating metric here.

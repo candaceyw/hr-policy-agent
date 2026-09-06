@@ -3,9 +3,9 @@
 This is a vibespec. It describes an agentic AI assistant that helps employees of a hypothetical company (Northwind Robotics, Inc.) complete HR policy and operations tasks. The system combines Retrieval-Augmented Generation (RAG) over a corpus of internal policy documents with an agent orchestrator that plans, selects tools, calls one or more Model Context Protocol (MCP) servers, reads mock structured data (employee records, PTO balances, benefits elections), and produces grounded, cited responses with a concise operational trace. It is built for the Quantic "AI Engineering Techniques and Architectures" course project and is graded against that project's rubric.
 
 ## About
-- version: 0.8.0
+- version: 0.9.0
 - author: Candace Wilson
-- last updated: 2026-09-01
+- last updated: 2026-09-04
 
 ## Change History
 - 2026-08-29: Initial version. Captures all planning decisions prior to any code generation.
@@ -24,6 +24,11 @@ This is a vibespec. It describes an agentic AI assistant that helps employees of
   Implementation, Testing, Deployment) against the shipped code, completed the
   Issues log for all phases, checked off met Acceptance Criteria, fixed the
   Glossary's confirmation-gate contradiction.
+- 2026-09-01 (Phase 8 — Tier 1 hardening): off-topic keyword deny-list in the
+  gate (4th `guardrail_scope` signal); `check_policy_compliance` made
+  retrieval-backed; `create_mock_hr_ticket` / `draft_hr_email` /
+  `list_policy_documents` returns fleshed out; dead `ingest/builder.py` deleted;
+  CI actions bumped to v5. Tests 116 → 131. See Issues → Phase 8.
 - 2026-09-02/03 (Phase 9 — Tier 2): answer-aware citation selection (over-citation
   fix); `tl-03` tool-discipline changes (`_AGENT_SYSTEM` per-tool rules,
   `lookup_employee_profile` `manager_name`, nudge on filler-after-tool);
@@ -31,11 +36,10 @@ This is a vibespec. It describes an agentic AI assistant that helps employees of
   citation F1 0.64 → 0.86, groundedness 0.73 → 0.85, similarity 0.72 → 0.78,
   out-of-scope 0.50 → 1.00, gate accuracy 0.75 → 1.00, workflow completion 5/7
   (flat), action-safety 1.00. Tests 131 → 140. See Issues → Phase 9.
-- 2026-09-01 (Phase 8 — Tier 1 hardening): off-topic keyword deny-list in the
-  gate (4th `guardrail_scope` signal); `check_policy_compliance` made
-  retrieval-backed; `create_mock_hr_ticket` / `draft_hr_email` /
-  `list_policy_documents` returns fleshed out; dead `ingest/builder.py` deleted;
-  CI actions bumped to v5. Tests 116 → 131. See Issues → Phase 8.
+- 2026-09-04 (Phase 9, cont.): second ablation shipped — tools-enabled vs
+  RAG-only on the 7 workflow items (`evaluation.ablation --only tools
+  --no-judge`): tool-selection Jaccard 0.62 → 0.00, citation F1 0.93 → 0.72,
+  latency p50 18.1s → 1.2s. Closes Known risk (1).
 
 ## Specifications
 - type: full-stack web app with a React frontend and a Python FastAPI backend, plus a companion MCP service
@@ -99,7 +103,7 @@ Functional:
 - Expose an MCP server with nine tools: `search_policy_documents`, `get_policy_section`, `list_policy_documents`, `check_policy_compliance`, `lookup_employee_profile`, `check_pto_balance`, `lookup_benefits_status`, `create_mock_hr_ticket`, `draft_hr_email`. At least one tool reads the policy corpus (`search_policy_documents`, `get_policy_section`, `list_policy_documents`, and — as of Phase 8 — `check_policy_compliance`); at least one uses mock structured data or performs a mock operation (five do).
 - The agent must discover MCP tools at runtime and invoke them through the MCP layer.
 - Provide a `/chat` endpoint returning final answer, citations, snippets, and a concise tool-call trace; a `/health` endpoint returning JSON status including MCP connectivity; and a way for a grader to reproduce the two demo tasks from the UI.
-- Provide an evaluation set of 25 items covering straightforward policy Q&A, multi-document questions, tool-requiring tasks, ambiguous requests, and out-of-scope requests, each with gold answers / expected behavior. Report groundedness, citation accuracy, optional partial match, tool-selection accuracy, workflow-completion rate, escalation/clarification accuracy, action-safety pass rate, and latency p50/p95. Include at least one ablation — **shipped: a retrieval-k sweep** ({2, 4, 8}, real result: citation F1 falls 0.86→0.79→0.59 as k grows); tools-enabled vs RAG-only is built and run manually (`evaluation/ablation.py --only tools`) but not yet re-run after a free-tier token reset; chunk-size ablation is out of scope (only one ablation is required).
+- Provide an evaluation set of 25 items covering straightforward policy Q&A, multi-document questions, tool-requiring tasks, ambiguous requests, and out-of-scope requests, each with gold answers / expected behavior. Report groundedness, citation accuracy, optional partial match, tool-selection accuracy, workflow-completion rate, escalation/clarification accuracy, action-safety pass rate, and latency p50/p95. Include at least one ablation — **shipped, two:** a retrieval-k sweep ({2, 4, 8}, citation F1 falls 0.86→0.79→0.59 as k grows) and a tools-enabled vs RAG-only sweep on the 7 workflow items (2026-09-04: tool-selection Jaccard 0.62→0.00, the clean signal that these items structurally need tools; citation F1 0.93→0.72; see `design-and-evaluation.md` §7). Chunk-size ablation is out of scope (only one ablation is required; two are shipped).
 
 Non-functional:
 - Reproducibility: pinned `requirements.txt` + Python version (`uv.lock` was the original plan — see Issues), deterministic chunking (byte-identical chunks for identical input), fixed `SEED` for any evaluation sampling. The built vector index is committed as a deterministic artifact and rebuilt+verified in CI.
@@ -844,8 +848,9 @@ behind after Phase 2 for several phases; the 2026-09-01 entry closes that gap.
 ### Known risks — status
 1. **Free-tier LLM rate limits during the full 25-item eval.** *Materialized
    exactly as anticipated* — see the Phase 6 entries above. Mitigated with
-   `judge_combined`, `--rejudge`, `--item-pace`, and retry/backoff; not fully
-   closed — the tools-vs-RAG ablation is still pending a clean token budget.
+   `judge_combined`, `--rejudge`, `--item-pace`, retry/backoff, and spreading
+   the full run, the tools-vs-RAG ablation, and this doc pass across separate
+   token-budget days. **Closed** — both ablations are shipped (2026-09-04).
 2. **PDF heading inference for `06`/`09` might need a per-document override
    map.** Not needed in practice — both PDFs chunk and index successfully with
    the line-heuristic headings; no override map exists in the repo. Revisit if
