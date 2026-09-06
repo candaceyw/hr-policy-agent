@@ -203,7 +203,7 @@ errors are never raised across the MCP boundary.
 
 ## 5. Testing
 
-**140 tests, `ruff` clean, offline by default** (an autouse fixture forces the
+**143 tests, `ruff` clean, offline by default** (an autouse fixture forces the
 no-LLM path; tests that need tool-calling inject a `ScriptedChatModel`).
 
 | Area | Files | Count |
@@ -260,7 +260,12 @@ The harness (`run_eval.py`) drives the system **in-process** via `run_workflow`
 not HTTP framing). The **LLM judge** (`judges.py`) is a *different* model family
 from the one under test (`openai/gpt-oss-20b` vs the `qwen` generator) to avoid
 self-preference bias; it scores groundedness and answer-similarity in one call.
-`--rejudge` re-scores saved answers without re-running generation; `--only
+The reply is read with a brace-balanced JSON scan (tolerant of prose around the
+object or a second object); a reply that does not yield both scores is retried
+once with a "JSON only" instruction, and if it still fails it is recorded as a
+**judge error and excluded** from the aggregate — never averaged in as a
+fabricated 0.0. `--rejudge` re-scores saved answers without re-running
+generation; `--only
 <ids/categories>` runs a subset (e.g. `--only straightforward,multi_doc` for the
 11 citation-bearing items) to validate a change on one token-budget day before a
 full confirmation run.
@@ -297,6 +302,13 @@ also dropped (lower `RETRIEVAL_K`, tighter iteration cap).
 > `completed` flag. Recomputed honestly from the judge scores, the baseline is
 > **5/7** (`tl-03` and `md-01` both fail). Fixed in `run_eval._mark_completed`,
 > now called from both `run_item` and `--rejudge`.
+>
+> One `md-01` judge reply in the 2026-09-03 run was malformed and silently
+> became a 0.0 (`"missing similarity in judge reply"`). Re-judging that answer
+> with a clean parse gives 0.0 / 0.0 for real reasons ("omits key facts, adds
+> unsupported detail"), so the committed number is unaffected — but `judges.py`
+> is now hardened (brace-balanced parse + one reformat retry, then a recorded
+> judge error) so a well-scored answer can't be zeroed by a bad reply.
 
 ### Ablation — retrieval `k`
 

@@ -3,9 +3,9 @@
 This is a vibespec. It describes an agentic AI assistant that helps employees of a hypothetical company (Northwind Robotics, Inc.) complete HR policy and operations tasks. The system combines Retrieval-Augmented Generation (RAG) over a corpus of internal policy documents with an agent orchestrator that plans, selects tools, calls one or more Model Context Protocol (MCP) servers, reads mock structured data (employee records, PTO balances, benefits elections), and produces grounded, cited responses with a concise operational trace. It is built for the Quantic "AI Engineering Techniques and Architectures" course project and is graded against that project's rubric.
 
 ## About
-- version: 0.9.0
+- version: 0.9.1
 - author: Candace Wilson
-- last updated: 2026-09-04
+- last updated: 2026-09-06
 
 ## Change History
 - 2026-08-29: Initial version. Captures all planning decisions prior to any code generation.
@@ -40,6 +40,11 @@ This is a vibespec. It describes an agentic AI assistant that helps employees of
   RAG-only on the 7 workflow items (`evaluation.ablation --only tools
   --no-judge`): tool-selection Jaccard 0.62 → 0.00, citation F1 0.93 → 0.72,
   latency p50 18.1s → 1.2s. Closes Known risk (1).
+- 2026-09-06 (Phase 10 — residual-weakness checklist): Groq OTPM live fix
+  (`LLM_MAX_OUTPUT_TOKENS` 2048 → 800); judge-reply parsing hardened
+  (brace-balanced scan + reformat retry, then a recorded judge error instead of
+  a silent 0.0); `md-01` and `tl-05` root-caused and documented as small-model
+  ceilings after measured fixes did not hold. Tests 140 → 143. See Issues → Phase 10.
 
 ## Specifications
 - type: full-stack web app with a React frontend and a Python FastAPI backend, plus a companion MCP service
@@ -423,7 +428,7 @@ hr-policy-agent/
 │   └── results/
 │       ├── .gitkeep
 │       └── eval-*.json, ablation-*.json   # committed run artifacts
-├── tests/                          # 18 files, 140 tests
+├── tests/                          # 18 files, 143 tests
 │   ├── conftest.py
 │   ├── _fakes.py                   # ScriptedChatModel test double
 │   ├── test_app.py
@@ -482,7 +487,7 @@ Environment variables (see `.env.example` — this is a representative subset, n
 
 ### Validation
 - `ruff check .` completes with no errors.
-- `pytest -q` passes (140 tests).
+- `pytest -q` passes (143 tests).
 - `python scripts/build_index.py --verify` reports identical chunk count and content hash across two runs.
 - `curl localhost:8000/health` returns JSON with `status: "ok"`, `mcp.connected: true`, `mcp.tools_discovered: 9`, `vector_store.index_present: true`.
 - In the UI, the two demo presets (remote-work eligibility, PTO request) each complete end-to-end, showing tool calls in the Trace panel and at least one citation.
@@ -627,7 +632,7 @@ evidence and derives `status` from a keyword hint — no LLM call.
 
 ## Testing
 
-**140 tests across 18 files** (offline by default — an autouse `conftest.py`
+**143 tests across 18 files** (offline by default — an autouse `conftest.py`
 fixture forces the no-LLM path; tests that need tool-calling inject a
 `ScriptedChatModel` from `tests/_fakes.py`). File names differ throughout from
 the original plan; grouped by what they actually cover:
@@ -729,7 +734,7 @@ detail and the six first-deploy gotchas: `deployed.md`.
   2. Import/start check: `python -c "import hr_agent.web.app"`.
   3. `ruff check .`.
   4. `python scripts/build_index.py --verify` (index determinism, offline).
-  5. `pytest -q` — 140 tests, incl. MCP tool discovery + a real tool call, app
+  5. `pytest -q` — 143 tests, incl. MCP tool discovery + a real tool call, app
      start via `TestClient` + lifespan.
   6. `python -m evaluation.run_eval --smoke --offline` — the reduced eval
      subset, zero tokens.
@@ -843,7 +848,38 @@ behind after Phase 2 for several phases; the 2026-09-01 entry closes that gap.
   reported workflow completion as 6/7 when the honest figure from its own judge
   scores is 5/7. Fixed: `run_eval._mark_completed` is now shared by `run_item`
   and `--rejudge`.
-- Test count 131 → 140.
+- Test count 131 → 143.
+
+### Phase 10 — residual-weakness checklist (post-Tier-2 review)
+
+Went through the "not good" list from the post-eval honesty pass one item at a
+time. Outcome: two model-capability ceilings documented (not correctable
+without a bigger generation model), one harness hardening shipped, one live
+fix found along the way.
+
+- **Groq OTPM cap (live fix).** Groq's free tier now enforces ~1000
+  output-tokens/minute for `qwen3.8-27b` and rejects any request reserving more
+  (`max_tokens`), so with the old `LLM_MAX_OUTPUT_TOKENS=2048` default every
+  generation 429'd before running — locally and on the deploy. Lowered the
+  default to **800** (covers the ~120-word answer target with headroom).
+- **`md-01` (multi-doc synthesis) — documented, not fixed.** Root cause: a
+  compound question ("go fully remote" AND "relocate") gets one blended search
+  that drifts to the relocation half. A "search each topic separately" prompt
+  fix was measured across all 5 multi_doc items and **reverted as net-negative**
+  — it fixed `md-01`'s similarity but regressed `md-03` and dropped groundedness
+  on `md-03`/`md-04`/`md-05` by making the small model write padded essays.
+- **`tl-05` (tiered PTO notice) — documented, not fixed.** The generator
+  computes ~5 days of *capacity* from the 44-hour balance and conflates it with
+  the 3-day *request*, then applies the "5 or more days → 30 days notice" tier
+  instead of "3 or more → 2 weeks". Reproduces every run, survives "three"
+  spelled out, and two prompt hints ("apply the tier the exact value falls in")
+  had zero effect. Retrieval is correct; it is a small-model reasoning ceiling.
+- **Judge-reply parsing hardened.** A malformed judge reply used to become a
+  silent 0.0. `judges.py` now reads the reply with a brace-balanced JSON scan,
+  retries once with a "JSON only" instruction, and then raises `JudgeUnavailable`
+  (recorded as a judge error, excluded from the aggregate) rather than
+  fabricating a 0.0. No committed number changes — the one observed `md-01`
+  malformation re-judges to 0.0 for real reasons anyway.
 
 ### Known risks — status
 1. **Free-tier LLM rate limits during the full 25-item eval.** *Materialized

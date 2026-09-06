@@ -172,6 +172,23 @@ def test_judge_parse_tolerates_prose_and_garbage():
     assert junk["score"] == 0.0
 
 
+def test_extract_json_object_is_brace_balanced():
+    # prose on both sides
+    assert judges._extract_json_object('grade: {"score": 1} thanks') == {"score": 1}
+    # first complete object wins when the model emits two
+    assert judges._extract_json_object('{"a": 1} {"b": 2}') == {"a": 1}
+    # a brace inside a string value does not end the object early
+    assert judges._extract_json_object('{"rationale": "uses {curly} braces", "score": 0}') == {
+        "rationale": "uses {curly} braces",
+        "score": 0,
+    }
+    # nested object
+    assert judges._extract_json_object('x {"g": {"score": 0.5}} y') == {"g": {"score": 0.5}}
+    # nothing parseable
+    assert judges._extract_json_object("no json here") is None
+    assert judges._extract_json_object("{not: valid json}") is None
+
+
 def test_judge_combined_one_call_two_scores():
     calls: list[str] = []
 
@@ -189,9 +206,30 @@ def test_judge_combined_one_call_two_scores():
     # empty answer short-circuits without a model call
     v2 = judges.judge_combined("q", "ref", "  ", "ctx", complete_fn=fake)
     assert v2["groundedness"]["score"] == 0.0 and len(calls) == 1
-    # unparseable reply -> zeros, not a crash
-    v3 = judges.judge_combined("q", "ref", "a", "ctx", complete_fn=lambda _p: "nope")
-    assert v3["groundedness"]["score"] == 0.0 and v3["similarity"]["score"] == 0.0
+
+
+def test_judge_combined_retries_a_malformed_reply_once():
+    replies = iter(["not json at all", '{"groundedness": {"score": 1}, "similarity": {"score": 1}}'])
+    calls: list[str] = []
+
+    def fake(prompt: str) -> str:
+        calls.append(prompt)
+        return next(replies)
+
+    v = judges.judge_combined("q", "ref", "a", "ctx", complete_fn=fake)
+    assert len(calls) == 2
+    assert "JSON" in calls[1] and calls[1] != calls[0]  # stricter reformat suffix
+    assert v["groundedness"]["score"] == 1.0 and v["similarity"]["score"] == 1.0
+
+
+def test_judge_combined_raises_when_still_unparseable_after_retry():
+    with pytest.raises(judges.JudgeUnavailable):
+        judges.judge_combined("q", "ref", "a", "ctx", complete_fn=lambda _p: "nope")
+    # a reply missing one axis also fails rather than scoring it a fake 0.0
+    with pytest.raises(judges.JudgeUnavailable):
+        judges.judge_combined(
+            "q", "ref", "a", "ctx", complete_fn=lambda _p: '{"groundedness": {"score": 0.7}}'
+        )
 
 
 def test_judge_functions_use_injected_complete_fn():
