@@ -127,3 +127,28 @@ def test_agent_reports_llm_error_without_crashing(mcp_tools):
     assert result["llm_error"] is not None
     assert "provider exploded" in result["llm_error"]
     assert result["answer"]  # a degraded answer, not an exception
+
+
+def test_llm_error_degrades_cleanly_without_nudging_into_a_bad_retry(mcp_tools):
+    """A failed model call goes straight to compose, not through the nudge.
+
+    Otherwise the nudge appends a follow-up onto an empty turn and the retry
+    answers a phantom question ("I don't see any prior question...").
+    """
+    calls = {"n": 0}
+
+    class FlakyModel(ScriptedChatModel):
+        def _generate(self, *a, **k):
+            calls["n"] += 1
+            if calls["n"] == 1:
+                raise RuntimeError("provider exploded")
+            return super()._generate(*a, **k)
+
+    confused = AIMessage(content="I'm sorry, I don't see any prior question. How can I help?")
+    result = run_agent("What is the PTO accrual rate?", mcp_tools, model=FlakyModel([confused]))
+
+    assert result["llm_error"] is not None
+    assert "could not reach the language model" in result["answer"].lower()
+    assert "how can i help" not in result["answer"].lower()  # the retry text never leaks
+    assert calls["n"] == 1  # no nudge -> no second model call
+    assert not any(e.get("name") == "request_clarification" for e in result["trace"])
