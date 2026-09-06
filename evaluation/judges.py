@@ -11,7 +11,6 @@ Every function accepts ``complete_fn`` so tests can inject a fake and run offlin
 from __future__ import annotations
 
 import json
-import re
 import time
 from collections.abc import Callable
 
@@ -20,7 +19,47 @@ from hr_agent.llm import judge_complete
 
 CompleteFn = Callable[[str], str]
 
-_JSON_RE = re.compile(r"\{.*\}", re.DOTALL)
+_REFORMAT_SUFFIX = (
+    "\n\nYour previous reply could not be parsed. Reply with ONLY the JSON "
+    "object described above and nothing else."
+)
+
+
+def _extract_json_object(text: str) -> dict | None:
+    """First complete brace-balanced ``{...}`` object in ``text``, or ``None``.
+
+    More robust than a greedy ``{.*}`` regex: it tolerates prose around the
+    JSON, more than one object in the reply (it takes the first that parses),
+    and braces inside string values. ``None`` means nothing parseable was found.
+    """
+    s = text or ""
+    start = s.find("{")
+    while start != -1:
+        depth = 0
+        in_str = esc = False
+        for i in range(start, len(s)):
+            ch = s[i]
+            if in_str:
+                if esc:
+                    esc = False
+                elif ch == "\\":
+                    esc = True
+                elif ch == '"':
+                    in_str = False
+            elif ch == '"':
+                in_str = True
+            elif ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    try:
+                        obj = json.loads(s[start : i + 1])
+                    except json.JSONDecodeError:
+                        break  # malformed; try the next '{'
+                    return obj if isinstance(obj, dict) else None
+        start = s.find("{", start + 1)
+    return None
 
 _GROUNDEDNESS_PROMPT = """\
 You are grading whether an HR assistant's ANSWER is supported by the CONTEXT it \
@@ -97,13 +136,9 @@ Reply with JSON only:
 
 
 def _parse(text: str) -> dict:
-    match = _JSON_RE.search(text or "")
-    if not match:
-        return {"score": 0.0, "rationale": f"unparseable judge reply: {text[:120]!r}"}
-    try:
-        data = json.loads(match.group(0))
-    except json.JSONDecodeError:
-        return {"score": 0.0, "rationale": f"invalid judge JSON: {text[:120]!r}"}
+    data = _extract_json_object(text)
+    if data is None:
+        return {"score": 0.0, "rationale": f"unparseable judge reply: {(text or '')[:120]!r}"}
     try:
         score = float(data.get("score"))
     except (TypeError, ValueError):
@@ -168,14 +203,15 @@ def judge_similarity(
     return _parse(fn(prompt))
 
 
-def _sub(data: dict, key: str) -> dict:
+def _sub(data: dict, key: str) -> dict | None:
+    """One axis of a combined reply, or ``None`` if it is missing/unscoreable."""
     node = data.get(key) if isinstance(data, dict) else None
-    if not isinstance(node, dict):
-        return {"score": 0.0, "rationale": f"missing {key} in judge reply"}
+    if not isinstance(node, dict) or "score" not in node:
+        return None
     try:
         score = float(node.get("score"))
     except (TypeError, ValueError):
-        score = 0.0
+        return None
     return {"score": max(0.0, min(1.0, score)), "rationale": str(node.get("rationale", ""))}
 
 
@@ -190,6 +226,11 @@ def judge_combined(
     """Groundedness + similarity in **one** call -- halves judge requests so a
     25-item run fits a 20-req/day free tier. Returns
     ``{"groundedness": {...}, "similarity": {...}}``.
+
+    A reply that does not parse into both scores is retried once with a stricter
+    "JSON only" instruction; if it still cannot be parsed, this raises
+    :class:`JudgeUnavailable` so the runner records a missing score rather than
+    silently averaging in a fabricated 0.0.
     """
     if not answer.strip():
         empty = {"score": 0.0, "rationale": "empty answer"}
@@ -198,9 +239,13 @@ def judge_combined(
     prompt = _COMBINED_PROMPT.format(
         query=query, context=context or "(none)", reference=reference, answer=answer
     )
-    match = _JSON_RE.search(fn(prompt) or "")
-    try:
-        data = json.loads(match.group(0)) if match else {}
-    except json.JSONDecodeError:
-        data = {}
-    return {"groundedness": _sub(data, "groundedness"), "similarity": _sub(data, "similarity")}
+    raw = ""
+    for attempt in range(2):
+        raw = fn(prompt if attempt == 0 else prompt + _REFORMAT_SUFFIX) or ""
+        data = _extract_json_object(raw) or {}
+        grounded, similar = _sub(data, "groundedness"), _sub(data, "similarity")
+        if grounded is not None and similar is not None:
+            return {"groundedness": grounded, "similarity": similar}
+    raise JudgeUnavailable(
+        f"judge reply did not parse into both scores after a reformat retry: {raw[:160]!r}"
+    )
