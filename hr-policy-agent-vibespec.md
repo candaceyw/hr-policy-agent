@@ -43,8 +43,10 @@ This is a vibespec. It describes an agentic AI assistant that helps employees of
 - 2026-09-06 (Phase 10 — residual-weakness checklist): Groq OTPM live fix
   (`LLM_MAX_OUTPUT_TOKENS` 2048 → 800); judge-reply parsing hardened
   (brace-balanced scan + reformat retry, then a recorded judge error instead of
-  a silent 0.0); `md-01` and `tl-05` root-caused and documented as small-model
-  ceilings after measured fixes did not hold. Tests 140 → 143. See Issues → Phase 10.
+  a silent 0.0); graceful degradation on an LLM-call error (`route` skips the
+  nudge when `llm_error` is set); `md-01` and `tl-05` root-caused and documented
+  as small-model ceilings after measured fixes did not hold. Tests 140 → 144.
+  See Issues → Phase 10.
 
 ## Specifications
 - type: full-stack web app with a React frontend and a Python FastAPI backend, plus a companion MCP service
@@ -166,7 +168,7 @@ Primary flow (`/chat` request):
 4. `agent` node (bound to the discovered MCP tools) decides whether RAG alone is sufficient or tools are needed, and emits tool calls.
 5. `tools` node executes each MCP tool call, appends a `tool_call` trace entry (`ok` or `error: <code>`), and captures citations from policy tools.
 6. If a destructive tool (`create_mock_hr_ticket` or `draft_hr_email`) is pending, the graph stops with `pending_action` set (a two-call handshake, not a LangGraph interrupt — see Issues): the UI shows the proposed action with Confirm/Deny controls. The client re-POSTs `/chat` with the same `session_id` and `confirm: true` (executes) or `confirm: false` (drops it, adds a `confirmation` trace entry).
-7. The `agent` <-> `tools` loop repeats until no tool calls remain or the iteration cap (`MAX_TOOL_ITERATIONS`, default 5; was 8 through Phase 7) is hit. A `nudge` node fires once if the model stalls with filler instead of an answer, pushing it back into the loop.
+7. The `agent` <-> `tools` loop repeats until no tool calls remain or the iteration cap (`MAX_TOOL_ITERATIONS`, default 5; was 8 through Phase 7) is hit. A `nudge` node fires once if the model stalls with filler instead of an answer, pushing it back into the loop; when the model *call itself* errored (`llm_error` set) the loop skips the nudge and goes straight to `compose` for the "could not reach the language model" message.
 8. `compose` takes the last model message as the answer, attaches deduped citations, and appends a `compose` trace entry. If the model call itself failed, a fixed "could not reach the language model" message is used instead of fabricating an answer.
 9. The web layer (`orchestration.arun_chat` / `web/app.py`) assembles the `/chat` response: `session_id`, `answer`, `citations`, `trace`, `escalation`, `intent`, optional `pending_action`, optional `llm_error`.
 10. The UI renders the answer, the Citations panel, and the Tool Trace panel.
@@ -428,7 +430,7 @@ hr-policy-agent/
 │   └── results/
 │       ├── .gitkeep
 │       └── eval-*.json, ablation-*.json   # committed run artifacts
-├── tests/                          # 18 files, 143 tests
+├── tests/                          # 18 files, 144 tests
 │   ├── conftest.py
 │   ├── _fakes.py                   # ScriptedChatModel test double
 │   ├── test_app.py
@@ -487,7 +489,7 @@ Environment variables (see `.env.example` — this is a representative subset, n
 
 ### Validation
 - `ruff check .` completes with no errors.
-- `pytest -q` passes (143 tests).
+- `pytest -q` passes (144 tests).
 - `python scripts/build_index.py --verify` reports identical chunk count and content hash across two runs.
 - `curl localhost:8000/health` returns JSON with `status: "ok"`, `mcp.connected: true`, `mcp.tools_discovered: 9`, `vector_store.index_present: true`.
 - In the UI, the two demo presets (remote-work eligibility, PTO request) each complete end-to-end, showing tool calls in the Trace panel and at least one citation.
@@ -606,7 +608,7 @@ that way; see Folder Structure for why.
 ### Agent (`src/hr_agent/agent/`)
 - `state.py`: `AgentState` (`TypedDict`, not the originally planned field set) — `query`, `corpus_dir`, `employee_id`, `history`, `messages` (LangGraph `add_messages`-annotated), `tool_trace`, `citations`, `iterations`, `nudges`, `answer`, `llm_error`, `escalation`, `intent`, `gate_route`, `gate_message`, `scope_score`, `confirm`, `pending_action`.
 - `gate.py`: `decide(query, employee_id_hint, retrieval_results, retrieval_method, has_history)` — **deterministic, no LLM.** Routes `clarify` (unknown/missing employee id, or a narrow first-person-yes/no ambiguity regex), `scope` (an off-topic keyword deny-list — `looks_off_topic()`, weather / sports / recipes / code / trivia / news on a non-personal query, method-independent — **or** a vector-only retrieval score below `SCOPE_THRESHOLD` skipped on a follow-up), or `agent`.
-- `graph.py`: `build_agent_graph(tools, model, confirm_gate, gate)` — no separate `nodes.py`/`trace.py` modules; every node is a closure inside this one function. Nodes: `classify` (calls `gate.decide`), `clarify`, `guardrail_scope`, `agent` (LLM bound to the MCP tools), `tools` (`ToolNode`, appends trace entries, collects citations), `confirm_gate` / `declined` (the two-call handshake — see Issues, not `interrupt_before`), `nudge` (recovers a model that stalls with filler once, including filler that follows a tool call), `compose` (takes the last AI message as the answer; keeps only citations whose document the answer names via `_select_citations`, capped fallback to retrieval order). `arun_workflow()` / `run_workflow()` are the entry points; `orchestration.py` wraps them with the RAG-only degradation.
+- `graph.py`: `build_agent_graph(tools, model, confirm_gate, gate)` — no separate `nodes.py`/`trace.py` modules; every node is a closure inside this one function. Nodes: `classify` (calls `gate.decide`), `clarify`, `guardrail_scope`, `agent` (LLM bound to the MCP tools), `tools` (`ToolNode`, appends trace entries, collects citations), `confirm_gate` / `declined` (the two-call handshake — see Issues, not `interrupt_before`), `nudge` (recovers a model that stalls with filler once, including filler that follows a tool call; skipped when the model call errored — `route` sends `llm_error` straight to `compose`), `compose` (takes the last AI message as the answer; keeps only citations whose document the answer names via `_select_citations`, capped fallback to retrieval order). `arun_workflow()` / `run_workflow()` are the entry points; `orchestration.py` wraps them with the RAG-only degradation.
 
 ### MCP client (`src/hr_agent/mcp_client/`)
 - `discovery.py`: builds a `MultiServerMCPClient` (langchain-mcp-adapters). If `MCP_SERVER_URL` is set -> Streamable HTTP; else -> stdio spawning `python -m hr_agent.mcp_server` (not `python -m mcp.server` — see Issues). Exposes `get_tools()` / `get_tools_async()` (LangGraph-compatible) and `health()` (connected?, tool count, transport).
@@ -632,7 +634,7 @@ evidence and derives `status` from a keyword hint — no LLM call.
 
 ## Testing
 
-**143 tests across 18 files** (offline by default — an autouse `conftest.py`
+**144 tests across 18 files** (offline by default — an autouse `conftest.py`
 fixture forces the no-LLM path; tests that need tool-calling inject a
 `ScriptedChatModel` from `tests/_fakes.py`). File names differ throughout from
 the original plan; grouped by what they actually cover:
@@ -734,7 +736,7 @@ detail and the six first-deploy gotchas: `deployed.md`.
   2. Import/start check: `python -c "import hr_agent.web.app"`.
   3. `ruff check .`.
   4. `python scripts/build_index.py --verify` (index determinism, offline).
-  5. `pytest -q` — 143 tests, incl. MCP tool discovery + a real tool call, app
+  5. `pytest -q` — 144 tests, incl. MCP tool discovery + a real tool call, app
      start via `TestClient` + lifespan.
   6. `python -m evaluation.run_eval --smoke --offline` — the reduced eval
      subset, zero tokens.
@@ -880,6 +882,15 @@ fix found along the way.
   (recorded as a judge error, excluded from the aggregate) rather than
   fabricating a 0.0. No committed number changes — the one observed `md-01`
   malformation re-judges to 0.0 for real reasons anyway.
+- **Graceful degradation on an LLM-call error.** `agent_node` appends an empty
+  turn and sets `llm_error` when the model call throws; `route` used to read
+  that empty turn as a stalled model and send it to the `nudge` node, so the
+  retry answered a phantom question ("I don't see any prior question…"). `route`
+  now checks `llm_error` first and goes straight to `compose`, which emits the
+  "could not reach the language model" message. The nudge keeps its intended
+  case (a model that returns filler with no error). Surfaced during the OTPM
+  incident; low severity (the gate and grounding are untouched) but it kept the
+  "kill a service → graceful degradation" path from holding up.
 
 ### Known risks — status
 1. **Free-tier LLM rate limits during the full 25-item eval.** *Materialized

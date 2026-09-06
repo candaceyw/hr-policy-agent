@@ -530,6 +530,12 @@ def build_agent_graph(
     def route(state: AgentState) -> str:
         last = state["messages"][-1] if state.get("messages") else None
         if not (isinstance(last, AIMessage) and last.tool_calls):
+            # A model call that errored leaves an empty turn. Go straight to
+            # compose (it emits the "could not reach the model" message);
+            # nudging here would append a follow-up onto a broken conversation
+            # and the retry answers a phantom question.
+            if state.get("llm_error"):
+                return "compose"
             if _looks_unfinished(state) and state.get("nudges", 0) < _MAX_NUDGES:
                 return "nudge"
             return "compose"
