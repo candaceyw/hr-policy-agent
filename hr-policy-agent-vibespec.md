@@ -5,7 +5,7 @@ This is a vibespec. It describes an agentic AI assistant that helps employees of
 ## About
 - version: 0.9.1
 - author: Candace Wilson
-- last updated: 2026-09-06
+- last updated: 2026-09-07
 
 ## Change History
 - 2026-08-29: Initial version. Captures all planning decisions prior to any code generation.
@@ -47,6 +47,11 @@ This is a vibespec. It describes an agentic AI assistant that helps employees of
   nudge when `llm_error` is set); `md-01` and `tl-05` root-caused and documented
   as small-model ceilings after measured fixes did not hold. Tests 140 → 144.
   See Issues → Phase 10.
+- 2026-09-07 (Phase 11 — MCP tool annotations): all nine `@server.tool()`
+  decorators now declare explicit `ToolAnnotations` (`readOnlyHint` /
+  `destructiveHint` / `idempotentHint` / `openWorldHint`); the two mock actions
+  are flagged non-read-only so an MCP host can gate them. Behaviour unchanged;
+  tests 144 → 146. See Issues → Phase 11.
 
 ## Specifications
 - type: full-stack web app with a React frontend and a Python FastAPI backend, plus a companion MCP service
@@ -891,6 +896,23 @@ fix found along the way.
   case (a model that returns filler with no error). Surfaced during the OTPM
   incident; low severity (the gate and grounding are untouched) but it kept the
   "kill a service → graceful degradation" path from holding up.
+
+### Phase 11 — MCP tool annotations
+
+- **All nine tools now carry explicit `ToolAnnotations`.** Previously
+  `@server.tool()` was bare, so `list_tools()` returned no `annotations` block
+  and an MCP host had no machine-readable signal for which tools change state.
+  Each tool now sets all four hints (`readOnlyHint`, `destructiveHint`,
+  `idempotentHint`, `openWorldHint`) to explicit booleans that match the
+  handler: the seven policy/data tools are read-only / idempotent /
+  closed-world; `create_mock_hr_ticket` is `destructive` and non-idempotent (its
+  return carries a fresh `created_at`); `draft_hr_email` is non-read-only but
+  not destructive (draft text only, deterministic template). Behaviour is
+  unchanged — the annotations only describe the tools — but they let any MCP
+  client gate the two mock actions the same way the orchestrator's confirmation
+  gate does. Two tests added to `tests/test_mcp.py`; test count 144 → 146.
+  Prompted by a third-party MCP-index scan flagging the missing hints; the fix
+  is a real MCP-spec feature, not a vendor requirement.
 
 ### Known risks — status
 1. **Free-tier LLM rate limits during the full 25-item eval.** *Materialized

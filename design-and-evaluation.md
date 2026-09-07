@@ -179,6 +179,13 @@ is a visible degradation demo within ~15 s.
 Every tool returns a typed object or `{ "error": "<code>", "message": "…" }` —
 errors are never raised across the MCP boundary.
 
+Each tool also carries explicit MCP `ToolAnnotations` (`readOnlyHint`,
+`destructiveHint`, `idempotentHint`, `openWorldHint`). The seven policy/data
+tools are `readOnly` / idempotent / closed-world; `create_mock_hr_ticket` is
+`destructive` and non-idempotent, `draft_hr_email` is non-read-only but not
+destructive — so an MCP host can warn before a state-changing call without
+invoking it, reinforcing the orchestrator's confirmation gate.
+
 ---
 
 ## 4. Implementation notes
