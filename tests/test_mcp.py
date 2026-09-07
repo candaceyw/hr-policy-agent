@@ -43,6 +43,44 @@ def test_mcp_server_discovers_tools():
     assert len(names) >= 9
 
 
+def test_every_tool_declares_all_four_annotation_hints():
+    server = build_mcp_server()
+    tools = asyncio.run(server.list_tools())
+
+    hints = ("readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint")
+    for tool in tools:
+        assert tool.annotations is not None, f"{tool.name} has no annotations"
+        for hint in hints:
+            value = getattr(tool.annotations, hint)
+            assert isinstance(value, bool), f"{tool.name}.{hint} must be an explicit bool, got {value!r}"
+
+
+def test_read_tools_are_read_only_and_mock_actions_are_flagged():
+    server = build_mcp_server()
+    ann = {t.name: t.annotations for t in asyncio.run(server.list_tools())}
+
+    for name in (
+        "search_policy_documents",
+        "get_policy_section",
+        "list_policy_documents",
+        "check_policy_compliance",
+        "lookup_employee_profile",
+        "check_pto_balance",
+        "lookup_benefits_status",
+    ):
+        assert ann[name].readOnlyHint is True
+        assert ann[name].destructiveHint is False
+        assert ann[name].openWorldHint is False
+
+    # the two confirmation-gated mock actions are not read-only, so an MCP host
+    # can warn before invoking them (matches DESTRUCTIVE_TOOLS in agent/graph.py)
+    assert ann["create_mock_hr_ticket"].readOnlyHint is False
+    assert ann["create_mock_hr_ticket"].destructiveHint is True
+    assert ann["create_mock_hr_ticket"].idempotentHint is False
+    assert ann["draft_hr_email"].readOnlyHint is False
+    assert ann["draft_hr_email"].idempotentHint is True
+
+
 def test_mcp_tool_lookup_employee_profile():
     server = build_mcp_server()
     result = asyncio.run(server.call_tool("lookup_employee_profile", {"employee_id": "E-1001"}))

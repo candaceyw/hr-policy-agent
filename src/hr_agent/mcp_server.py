@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
+from mcp.types import ToolAnnotations
 
 from hr_agent.config import settings
 from hr_agent.retrieval import load_corpus_documents, load_sections, retrieve
@@ -17,6 +18,25 @@ logger = logging.getLogger(__name__)
 
 _HTTP_TRANSPORT = "streamable-http"
 _HTTP_ALIASES = {"http", "streamable-http", "streamable_http"}
+
+# Behaviour hints so an MCP host can describe a tool (and warn before calling a
+# state-changing one) without invoking it. All four are set explicitly on every
+# tool. The seven policy/data tools only read committed files, so they are
+# read-only, idempotent, and closed-world. The two mock actions are
+# confirmation-gated by the orchestrator (agent/graph.py DESTRUCTIVE_TOOLS);
+# they persist nothing, but they are annotated as the operations they model so a
+# client gates them the same way.
+_READ_ONLY = ToolAnnotations(
+    readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False
+)
+_CREATE_TICKET = ToolAnnotations(
+    # not idempotent: the return carries a fresh created_at timestamp
+    readOnlyHint=False, destructiveHint=True, idempotentHint=False, openWorldHint=False
+)
+_DRAFT_EMAIL = ToolAnnotations(
+    # produces a draft only (not destructive) and the template is deterministic
+    readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=False
+)
 
 
 def _mock_data_dir() -> Path:
@@ -59,14 +79,14 @@ def build_mcp_server(host: str | None = None, port: int | None = None) -> FastMC
         port=port if port is not None else settings.mcp_port,
     )
 
-    @server.tool()
+    @server.tool(annotations=_READ_ONLY)
     def search_policy_documents(query: str, k: int = 3) -> dict:
         """Search the HR policy corpus for relevant policy passages."""
         corpus_dir = Path(__file__).resolve().parents[2] / "corpus"
         results = retrieve(query, corpus_dir=corpus_dir, k=k)
         return {"results": results}
 
-    @server.tool()
+    @server.tool(annotations=_READ_ONLY)
     def get_policy_section(doc_id: str, section: str | None = None) -> dict:
         """Return the matching policy section from a document (any supported format)."""
         corpus_dir = Path(__file__).resolve().parents[2] / "corpus"
@@ -88,7 +108,7 @@ def build_mcp_server(host: str | None = None, port: int | None = None) -> FastMC
             "message": f"Section '{section}' was not found in {doc_id}.",
         }
 
-    @server.tool()
+    @server.tool(annotations=_READ_ONLY)
     def list_policy_documents() -> dict:
         """List available policy documents in the corpus as ``{doc_id, title}`` pairs."""
         corpus_dir = Path(__file__).resolve().parents[2] / "corpus"
@@ -98,7 +118,7 @@ def build_mcp_server(host: str | None = None, port: int | None = None) -> FastMC
         ]
         return {"documents": docs}
 
-    @server.tool()
+    @server.tool(annotations=_READ_ONLY)
     def check_policy_compliance(question: str) -> dict:
         """Advisory compliance check for an HR scenario, backed by policy retrieval.
 
@@ -162,7 +182,7 @@ def build_mcp_server(host: str | None = None, port: int | None = None) -> FastMC
             "relevant_sections": relevant_sections,
         }
 
-    @server.tool()
+    @server.tool(annotations=_READ_ONLY)
     def lookup_employee_profile(employee_id: str) -> dict:
         """Look up a synthetic employee profile by employee id.
 
@@ -178,7 +198,7 @@ def build_mcp_server(host: str | None = None, port: int | None = None) -> FastMC
         manager = by_id.get(manager_id) if manager_id else None
         return {**item, "manager_name": manager["name"] if manager else None}
 
-    @server.tool()
+    @server.tool(annotations=_READ_ONLY)
     def check_pto_balance(employee_id: str) -> dict:
         """Return synthetic PTO accrual and remaining balance data for an employee.
 
@@ -196,7 +216,7 @@ def build_mcp_server(host: str | None = None, port: int | None = None) -> FastMC
                 return {**item, "available_hours": round(available, 2)}
         return {"error": "not_found", "message": f"No PTO record exists for {employee_id}."}
 
-    @server.tool()
+    @server.tool(annotations=_READ_ONLY)
     def lookup_benefits_status(employee_id: str) -> dict:
         """Return the synthetic benefits status for an employee."""
         benefits = _load_json(_mock_data_dir() / "benefits_elections.json")
@@ -205,7 +225,7 @@ def build_mcp_server(host: str | None = None, port: int | None = None) -> FastMC
                 return item
         return {"error": "not_found", "message": f"No benefits record exists for {employee_id}."}
 
-    @server.tool()
+    @server.tool(annotations=_CREATE_TICKET)
     def create_mock_hr_ticket(employee_id: str, issue: str) -> dict:
         """Create a mock HR ticket for workflow demonstration without touching real systems.
 
@@ -228,7 +248,7 @@ def build_mcp_server(host: str | None = None, port: int | None = None) -> FastMC
             "note": "Mock action for demo purposes only; no real HR system was touched.",
         }
 
-    @server.tool()
+    @server.tool(annotations=_DRAFT_EMAIL)
     def draft_hr_email(employee_id: str, topic: str) -> dict:
         """Draft a mock HR email addressed to the employee about the given topic."""
         name = _employee_name(employee_id)
