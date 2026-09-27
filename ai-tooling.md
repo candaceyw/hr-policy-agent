@@ -59,7 +59,7 @@ checks that keep AI-generated code honest.
 
 AI output is not trusted on sight. It has to pass:
 
-- **Tests in the same phase.** 144 tests, offline by default (an autouse fixture
+- **Tests in the same phase.** 146 tests, offline by default (an autouse fixture
   forces the no-LLM path; tool-calling tests inject a scripted model). CI runs
   the full suite plus MCP discovery + a real tool call.
 - **`ruff check` clean** as a hard gate.

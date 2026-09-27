@@ -210,7 +210,7 @@ invoking it, reinforcing the orchestrator's confirmation gate.
 
 ## 5. Testing
 
-**144 tests, `ruff` clean, offline by default** (an autouse fixture forces the
+**146 tests, `ruff` clean, offline by default** (an autouse fixture forces the
 no-LLM path; tests that need tool-calling inject a `ScriptedChatModel`).
 
 | Area | Files | Count |
